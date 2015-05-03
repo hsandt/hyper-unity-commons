@@ -17,7 +17,6 @@ public class AutoSnap : EditorWindow
 	{
 		AutoSnap window = (AutoSnap) EditorWindow.GetWindow(typeof(AutoSnap));
 		window.maxSize = new Vector2(200, 100);
-		// window.Show(true); // make window non-floating
 	}
 
 	void OnGUI()
@@ -28,8 +27,10 @@ public class AutoSnap : EditorWindow
 		snapRotateValue = EditorGUILayout.FloatField ("Rotation Snap Value", snapRotateValue);
 	}
 
-	void Update()
+	void SnapUpdate()
 	{
+		// Snap selected parents (children will not be snapped individually)
+		// Debug.Log("SnapUpdate");
 		if (doSnap
 			&& !EditorApplication.isPlaying
 			&& Selection.transforms.Length > 0
@@ -39,6 +40,10 @@ public class AutoSnap : EditorWindow
 			prevPosition = Selection.transforms[0].position;
 		}
 
+		// rotation snap is not reliable, too small changes in rotation
+		//   will be ignored
+		// in mixed rotations, rounding rotations on individual axes
+		//   cause problems too
 		if (doRotateSnap
 			&& !EditorApplication.isPlaying
 			&& Selection.transforms.Length > 0
@@ -51,12 +56,24 @@ public class AutoSnap : EditorWindow
 		}
 	}
 
-	public void OnEnable() { EditorApplication.update += Update; }
+	// When windows is opened, let editor snap regularly (100 FPS)
+	// do not remove the event in OnDisable() if you want snapping to
+	//   be applied even when the window is closed
+	void OnEnable() { EditorApplication.update += SnapUpdate; }
+
+	void OnSceneGUI() {
+		Debug.Log("OnSceneGUI");
+	}
+
+	void OnDrawGizmos() {
+		Debug.Log("OnDrawGizmos");
+	}
 
 	void Snap()
 	{
 		foreach (Transform transform in Selection.transforms)
 		{
+			// Debug.Log(string.Format("Snapping {0}", transform));
 			Vector3 pos = transform.position;
 			pos.x = Round(pos.x);
 			pos.y = Round(pos.y);
@@ -84,9 +101,9 @@ public class AutoSnap : EditorWindow
 
 	float RotRound(float input)
 	{
-		Debug.Log("The division is: " + (input / snapRotateValue) );
-		Debug.Log("The rounding is: " + Mathf.Round(input / snapRotateValue) );
-		Debug.Log("The return is: " + (snapRotateValue * Mathf.Round(input / snapRotateValue)) );
+		// Debug.Log("The division is: " + (input / snapRotateValue) );
+		// Debug.Log("The rounding is: " + Mathf.Round(input / snapRotateValue) );
+		// Debug.Log("The return is: " + (snapRotateValue * Mathf.Round(input / snapRotateValue)) );
 		return snapRotateValue * Mathf.Round(input / snapRotateValue);
 	}
 }
