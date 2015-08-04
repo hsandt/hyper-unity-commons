@@ -11,7 +11,7 @@ public class ResourceNotFoundException : Exception {
 
 	// IMPROVE: support Type systemTypeInstance argument
 	public ResourceNotFoundException(string path) :
-	   base(string.Format("Resource \"{0}\" not found", path))
+	   base(string.Format("Resource \"{0}\" not found.", path))
 	{
 	   this.path = path;
 	}
