@@ -35,3 +35,40 @@ public class ResourceNotFoundException : Exception {
 	public string Path { get { return path; } }
 
 }
+
+public class UnassignedReferenceException : Exception {
+
+	private MonoBehaviour script;
+	private string referenceName;
+
+	protected UnassignedReferenceException() : base() {}
+
+	public UnassignedReferenceException(MonoBehaviour script, string referenceName) :
+	   base(string.Format("Script {0} has unassigned reference {1}. Please assign it in the inspector.", script, referenceName))
+	{
+	   this.script = script;
+	   this.referenceName = referenceName;
+	}
+
+	public UnassignedReferenceException(MonoBehaviour script, string referenceName, string message)
+	   : base(message)
+	{
+		this.script = script;
+		this.referenceName = referenceName;
+	}
+
+	public UnassignedReferenceException(MonoBehaviour script, string referenceName, string message, Exception innerException) :
+	   base(message, innerException)
+	{
+		this.script = script;
+		this.referenceName = referenceName;
+	}
+
+	protected UnassignedReferenceException(SerializationInfo info, StreamingContext context)
+	   : base(info, context)
+	{ }
+
+	public MonoBehaviour Script { get { return script; } }
+	public string ReferenceName { get { return referenceName; } }
+
+}
