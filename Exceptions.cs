@@ -44,7 +44,7 @@ public class UnassignedReferenceException : Exception {
 	protected UnassignedReferenceException() : base() {}
 
 	public UnassignedReferenceException(MonoBehaviour script, string referenceName) :
-	   base(string.Format("Script {0} has unassigned reference {1}. Please assign it in the inspector.", script, referenceName))
+	   base(string.Format("Attribute {1} of script {0} has not been assigned. Please assign it in the inspector.", script, referenceName))
 	{
 	   this.script = script;
 	   this.referenceName = referenceName;
