@@ -37,6 +37,11 @@ public static class GameObjectExtensions {
 		return gameObjectInstance;
 	}
 
+	/// Instantiate prefab / clone game object at parent's position
+	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr) {
+		return model.InstantiateUnderAtOn(parentTr, Vector3.zero);
+	}
+
 }
 
 public static class ComponentExtensions {
