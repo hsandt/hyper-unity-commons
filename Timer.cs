@@ -28,14 +28,14 @@ class Timer {
 		// if time is positive, decrease time of deltaTime
 		// (if time already 0, leave it so)
 		if (time > 0) {
-			time -= Time.deltaTime;
+			time -= deltaTime;
 			// if the countdown has reached 0 (or less), callback
 			if (time <= 0) {
 				time = 0; // optional
 				callback();
 			}
 		}
-		
+
 	}
 
 }
