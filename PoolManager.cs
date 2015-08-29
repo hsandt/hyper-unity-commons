@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public abstract class PoolManager<TPooledObject> : MonoBehaviour where TPooledObject : PooledObject {
+public abstract class PoolManager<TPooledObject> : MonoBehaviour where TPooledObject : MonoBehaviour, IPooledObject {
 
 	/* external references */
 	[SerializeField]
@@ -39,7 +39,7 @@ public abstract class PoolManager<TPooledObject> : MonoBehaviour where TPooledOb
 		// O(n)
 		for (int i = 0; i < poolSize; ++i) {
 			TPooledObject pooledObject = m_Pool[i];
-			if (!pooledObject.InUse) {
+			if (!pooledObject.IsInUse()) {
 				return pooledObject;
 			}
 		}
