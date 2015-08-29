@@ -72,3 +72,67 @@ public class UnassignedReferenceException : Exception {
 	public string ReferenceName { get { return referenceName; } }
 
 }
+
+public class UninitializedSingletonException : Exception {
+
+	private string singletonName;
+
+	protected UninitializedSingletonException() : base() {}
+
+	public UninitializedSingletonException(string singletonName) :
+	   base(string.Format("Singleton {0} has no instance initialized. Please create a game object and assign a {0} component to it.", singletonName))
+	{
+	   this.singletonName = singletonName;
+	}
+
+	public UninitializedSingletonException(string singletonName, string message)
+	   : base(message)
+	{
+		this.singletonName = singletonName;
+	}
+
+	public UninitializedSingletonException(string singletonName, string message, Exception innerException) :
+	   base(message, innerException)
+	{
+		this.singletonName = singletonName;
+	}
+
+	protected UninitializedSingletonException(SerializationInfo info, StreamingContext context)
+	   : base(info, context)
+	{ }
+
+	public string SingletonName { get { return singletonName; } }
+
+}
+
+public class ReinitializeSingletonException : Exception {
+
+	private string singletonName;
+
+	protected ReinitializeSingletonException() : base() {}
+
+	public ReinitializeSingletonException(string singletonName) :
+	   base(string.Format("Singleton {0} has already an instance initialized. Please make sure there is only one game object with a {0} component.", singletonName))
+	{
+	   this.singletonName = singletonName;
+	}
+
+	public ReinitializeSingletonException(string singletonName, string message)
+	   : base(message)
+	{
+		this.singletonName = singletonName;
+	}
+
+	public ReinitializeSingletonException(string singletonName, string message, Exception innerException) :
+	   base(message, innerException)
+	{
+		this.singletonName = singletonName;
+	}
+
+	protected ReinitializeSingletonException(SerializationInfo info, StreamingContext context)
+	   : base(info, context)
+	{ }
+
+	public string SingletonName { get { return singletonName; } }
+
+}
