@@ -30,24 +30,23 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 	public void Setup () {
 		// prepare one debug text per channel (similar to pool, but fewer objects and each has a fixed position)
 		for (int i = 0; i < nbChannels; ++i) {
-			GameObject debugTextInstance = debugTextPrefab.InstantiateUnderAtOn(transform, new Vector2(0f, i * -10f));
+			// wait to get text component -> font size before computing offset
+			GameObject debugTextInstance = debugTextPrefab.InstantiateUnderWithOffset(transform, Vector2.zero);
 			var debugText = debugTextInstance.GetComponentOrFail<DebugText>();
 			debugTextInstance.SetActive(false);
+			// each channel occupies a vertical space proportional to the text font size
+			debugTextInstance.transform.localPosition += new Vector3(0f, -i * debugText.text.fontSize * 1.2f, 0f);
 			m_DebugTexts.Add(debugText);
 		}
 	}
 
-	public void ShowDebugText(string text, int channel = 0, float duration = 1f) {
+	/// Print text on screen on channel for duration in seconds
+	public void ShowDebugText(string text, int channel = 0, float duration = 2f) {
 		if (channel >= nbChannels) {
 			throw new ArgumentException(string.Format("Channel #{0} does not exist (#0 - #{1} only)", channel, nbChannels - 1), "channel");
 		}
 		var debugText = m_DebugTexts[channel];
 		debugText.Show(text, duration);
-	}
-
-	/// Print text on screen for duration in seconds
-	public void Print(string text, int channel = 0, float duration = 1f) {
-		ShowDebugText(text, channel, duration);
 	}
 
 	// TODO: special text display for variables, that is shown in permanence and is updated when the var changes

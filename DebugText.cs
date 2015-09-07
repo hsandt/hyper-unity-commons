@@ -7,6 +7,7 @@ public class DebugText : MonoBehaviour
 {
     // reference to UI text
     Text m_Text;
+    public Text text { get { return m_Text; } }
 
     // // format of the string to display
     // [SerializeField]
