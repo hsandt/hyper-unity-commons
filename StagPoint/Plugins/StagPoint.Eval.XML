@@ -1,0 +1,362 @@
+<?xml version="1.0"?>
+<doc>
+  <assembly>
+    <name>StagPoint.Eval</name>
+  </assembly>
+  <members>
+    <member name="T:StagPoint.Eval.SourceInfo">
+      <summary>
+            Represents a location within source script
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.SourceInfo.ToString">
+      <summary>
+            Returns a human-readable textual representation of this instance
+            </summary>
+      <returns>
+      </returns>
+    </member>
+    <member name="T:StagPoint.Eval.CompileException">
+      <summary>
+            Represents an exception that occurred during script compilation 
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.CompileException.Location">
+      <summary>
+            Returns the location within the source script where the exception occurred.
+            </summary>
+    </member>
+    <member name="T:StagPoint.Eval.Parser.ParseException">
+      <summary>
+            Represents an error that occurred during lexical analysis of the script
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Parser.ParseException.Location">
+      <summary>
+            Returns the location of the error within the source script
+            </summary>
+    </member>
+    <member name="T:StagPoint.Eval.Parser.SyntaxError">
+      <summary>
+            A SyntaxError is thrown when the script engine encounters tokens or token 
+            order that does not conform to the syntax of the language when parsing code.
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Parser.SyntaxError.ToString">
+      <summary>
+            Returns a string representation of the object
+            </summary>
+      <returns>
+      </returns>
+    </member>
+    <member name="P:StagPoint.Eval.Parser.SyntaxError.Error">
+      <summary>
+            Describes the error that was encountered during compilation
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Parser.SyntaxError.Location">
+      <summary>
+            Indicates the location of the error within the script
+            </summary>
+    </member>
+    <member name="T:StagPoint.Eval.Environment">
+      <summary>
+            An Environment Record records the identifier bindings that are created within the scope of 
+            its associated Lexical Environment.
+            </summary>
+    </member>
+    <member name="F:StagPoint.Eval.Environment.ResolveEnvironmentVariable">
+      <summary>
+            This function will be called during script evaluation to allow the host to provide
+            custom bindings for variables that are not defined through the script (ie: can be 
+            used to provide bindings for host methods, properties, etc)
+            </summary>
+    </member>
+    <member name="F:StagPoint.Eval.Environment.AllowImplicitGlobals">
+      <summary>
+            If set to TRUE on the outermost environment record, any attempt to assign a value 
+            to an undeclared variable will result in an implicit global variable being created.
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Environment.#ctor">
+      <summary>
+            Instantiates a new instance of this class
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Environment.#ctor(StagPoint.Eval.Environment)">
+      <summary>
+            Instantiates a new instance of this class, with the specified parent environment
+            </summary>
+      <param name="parent">Specifies the outer environment record</param>
+    </member>
+    <member name="M:StagPoint.Eval.Environment.Push">
+      <summary>
+            Creates a new Environment representing a smaller scope within this Environment
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Environment.Pop">
+      <summary>
+            Releases this Environment's data and returns a pointer to the parent environment, if any
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Environment.AddVariable(StagPoint.Eval.VariableBase)">
+      <summary>
+            Adds a new variable to the environment record
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Environment.AddVariable(System.String,System.Object,System.Type)">
+      <summary>
+            Adds a new variable to the environment record
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Environment.AddConstant(System.String,System.Object)">
+      <summary>
+            Adds a named constant value to the environment record
+            </summary>
+      <param name="name">The name of the constant as it will be accessed by script</param>
+      <param name="value">The value of the contant</param>
+    </member>
+    <member name="P:StagPoint.Eval.Environment.Constants">
+      <summary>
+            Contains the list of constant values used by this environment
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Environment.Variables">
+      <summary>
+            Contains the list of all variables defined in this environment record
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Environment.Parent">
+      <summary>
+            Contains the outer environment record for this instance. This value may be NULL.
+            </summary>
+    </member>
+    <member name="T:StagPoint.Eval.Environment.VariableResolutionCallback">
+      <summary>
+            Describes the function signature required for the Environment.ResolveEnvironmentVariable callback
+            </summary>
+      <param name="name">The name of the variable being resolved</param>
+      <param name="variable">If the variable is found (or created), it must be returned in this out parameter</param>
+      <returns>Returns TRUE if the variable reference could be resolved</returns>
+    </member>
+    <member name="T:StagPoint.Eval.Expression">
+      <summary>
+            Represents a compiled script expression
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Expression.Type">
+      <summary>
+            Represents the return type of the expression
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Expression.Execute">
+      <summary>
+            Executes the expression and returns the result
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Expression.SetValue">
+      <summary>
+            Assigns a value to the expression. This callback will not be assigned for
+            read-only expressions
+            </summary>
+    </member>
+    <member name="T:StagPoint.Eval.VariableBase">
+      <summary>
+            Defines the minimum required data for a host-provided variable 
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.VariableBase.#ctor(System.String)">
+      <summary>
+            Returns a new instance of the VariableBase class
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.VariableBase.#ctor(System.String,System.Type)">
+      <summary>
+            Returns a new instance of the VariableBase class
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.VariableBase.Name">
+      <summary>
+            The name of the variable
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.VariableBase.Type">
+      <summary>
+            The data type of the variable
+            </summary>
+    </member>
+    <member name="T:StagPoint.Eval.Variable">
+      <summary>
+            Represents a variable that can be used in script, but whose backing is provided 
+            by the host application. This class can be overridden to allow for dynamic data 
+            storage and retrieval when the script variable is accessed.
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Variable.#ctor(System.String,System.Type)">
+      <summary>
+            Returns a new instance of the Variable class
+            </summary>
+      <param name="name">The name of the variable</param>
+      <param name="type">The data type of the variable</param>
+    </member>
+    <member name="M:StagPoint.Eval.Variable.#ctor(System.String,System.Object)">
+      <summary>
+            Returns a new instance of the Variable class
+            </summary>
+      <param name="name">The name of the variable</param>
+      <param name="value">The initial value of the variable</param>
+    </member>
+    <member name="M:StagPoint.Eval.Variable.#ctor(System.String,System.Object,System.Type)">
+      <summary>
+            Returns a new instance of the Variable class
+            </summary>
+      <param name="name">The name of the variable</param>
+      <param name="value">The initial value of the variable</param>
+      <param name="type">The data type of the variable</param>
+    </member>
+    <member name="P:StagPoint.Eval.Variable.IsReadOnly">
+      <summary>
+            Gets or sets whether the variable is "read only"
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Variable.Value">
+      <summary>
+            Gets or sets the current value of the variable
+            </summary>
+    </member>
+    <member name="T:StagPoint.Eval.BoundVariable">
+      <summary>
+            Represents a variable that can be used in script, but whose backing data is 
+            provided by a data-bound member in the host application. 
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.BoundVariable.#ctor(System.String,System.Object,System.Reflection.MemberInfo)">
+      <summary>
+            Returns a new instance of the BoundVariable class
+            </summary>
+      <param name="name">The name to bind to the variable</param>
+      <param name="target">The object instance which will be bound to the variable</param>
+      <param name="member">The member (field, property, or method) that will be bound to the variable</param>
+    </member>
+    <member name="P:StagPoint.Eval.BoundVariable.Target">
+      <summary>
+            The object instance which is bound to the variable
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.BoundVariable.Member">
+      <summary>
+            The member (field, property, or method) that is bound to the variable
+            </summary>
+    </member>
+    <member name="T:StagPoint.Eval.EvalEngine">
+      <summary>
+            Provides static convenience methods for script compilation and evaluation 
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.EvalEngine.Compile(System.String,StagPoint.Eval.Environment)">
+      <summary>
+            Compiles a script expression and returns an executable Delegate
+            </summary>
+      <param name="script">A string containing the script expression to compile</param>
+      <param name="environment">The script environment that will be used for the compiled script</param>
+    </member>
+    <member name="M:StagPoint.Eval.EvalEngine.Evaluate(System.String,StagPoint.Eval.Environment)">
+      <summary>
+            Evaluates a script expression and returns the result of the evaluation
+            </summary>
+      <param name="script">A string containing the script expression to compile</param>
+      <param name="environment">The "global" environment block for the given script</param>
+      <returns>
+      </returns>
+    </member>
+    <member name="T:StagPoint.Eval.Parser.Tokenizer">
+      <summary>
+            Splits a string containing script into its component tokens
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Parser.Tokenizer.Tokenize(System.String)">
+      <summary>
+            Scans the input string and returns the list of tokens representing the script's lexical structure
+            </summary>
+      <param name="code">The script source</param>
+    </member>
+    <member name="M:StagPoint.Eval.Parser.Tokenizer.Tokenize(System.String,System.Boolean,System.Boolean)">
+      <summary>
+            Scans the input string and returns the list of tokens representing the script's lexical structure
+            </summary>
+      <param name="code">The script source</param>
+      <param name="discardWhitespace">If set to TRUE, whitespace will not be included in the list of tokens</param>
+      <param name="discardComments">If set to TRUE, comments will not be included in the list of tokens</param>
+    </member>
+    <member name="T:StagPoint.Eval.Parser.TokenType">
+      <summary>
+            Represents the token type
+            </summary>
+    </member>
+    <member name="T:StagPoint.Eval.Parser.TokenList">
+      <summary>
+            Represents a collectio of Token objects
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Parser.TokenList.Pop">
+      <summary>
+            Returns the next available token in the collection and advances the current index
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Parser.TokenList.Peek">
+      <summary>
+            Returns the next available token in the collection without advancing the current index
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Parser.TokenList.Dispose">
+      <summary>
+            Returns the collection back to the object pool
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Parser.TokenList.Count">
+      <summary>
+            Returns the number of tokens in the collection
+            </summary>
+    </member>
+    <member name="T:StagPoint.Eval.Parser.Token">
+      <summary>
+            Represents an lexical token produced when parsing a script 
+            </summary>
+    </member>
+    <member name="M:StagPoint.Eval.Parser.Token.ToString">
+      <summary>
+            Returns a human-readable text representatio of this object
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Parser.Token.Type">
+      <summary>
+            Gets the token type
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Parser.Token.Value">
+      <summary>
+            Gets the token text
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Parser.Token.SourceInfo">
+      <summary>
+            Returns the token's position within the script text
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Parser.Token.LineNumber">
+      <summary>
+            Returns the line number in the source text for this token
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Parser.Token.LineOffset">
+      <summary>
+            Returns the position within the line where this token starts
+            </summary>
+    </member>
+    <member name="P:StagPoint.Eval.Parser.Token.Length">
+      <summary>
+            Returns the length of the token's text
+            </summary>
+    </member>
+  </members>
+</doc>
