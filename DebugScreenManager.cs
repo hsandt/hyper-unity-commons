@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+/// Usage: create an instance of DebugCanvas object in the scene. The prefab is provided
+/// in the same folder as this script, and contains both objects for the DebugScreenManager and the DebugText scripts
 public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 
 	protected DebugScreenManager () {} // guarantee this will be always a singleton only - can't use the constructor!
