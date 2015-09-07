@@ -33,11 +33,15 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 			// wait to get text component -> font size before computing offset
 			GameObject debugTextInstance = debugTextPrefab.InstantiateUnderWithOffset(transform, Vector2.zero);
 			var debugText = debugTextInstance.GetComponentOrFail<DebugText>();
-			debugTextInstance.SetActive(false);
 			// each channel occupies a vertical space proportional to the text font size
 			debugTextInstance.transform.localPosition += new Vector3(0f, -i * debugText.text.fontSize * 1.2f, 0f);
 			m_DebugTexts.Add(debugText);
+			debugTextInstance.SetActive(false);
 		}
+		// deactivate prefab to hide model text (later, also use it as the first instance)
+		// don't do it from the prefab, or Awake() will not be called
+		// don't do it before copying, or Awake() will not be called in copies (they have to be instantiated active)
+		debugTextPrefab.SetActive(false);
 	}
 
 	/// Print text on screen on channel for duration in seconds

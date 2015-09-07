@@ -28,9 +28,17 @@ public class DebugText : MonoBehaviour
         Init();
     }
 
+    void Start () {
+        Setup();
+    }
+
+    public void Setup () {
+    }
+
     void Update () {
         m_RemainingTime -= Time.deltaTime;
         if (m_RemainingTime <= 0) {
+            m_RemainingTime = 0;
             gameObject.SetActive(false);
         }
     }
