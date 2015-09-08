@@ -38,7 +38,7 @@ public static class GameObjectExtensions {
 
 	/// Instantiate prefab / clone game object at parent's position
 	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr) {
-		return model.InstantiateUnderAtOn(parentTr, Vector3.zero);
+		return InstantiateUnderAtOn(model, parentTr, Vector3.zero);
 	}
 
 	/// Instantiate prefab / clone game object under parent retaining the local position, adding some offset
@@ -47,9 +47,14 @@ public static class GameObjectExtensions {
 			throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 		}
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
-		gameObjectInstance.transform.SetParent(parentTr, false);  // retain local position
+		gameObjectInstance.transform.SetParent(parentTr, false);  // retain local position (and local scaling)
 		gameObjectInstance.transform.localPosition += offset;
 		return gameObjectInstance;
+	}
+
+	/// Instantiate prefab / clone game object under parent retaining the local transform
+	public static GameObject InstantiateUnderLocalTransform (this GameObject model, Transform parentTr) {
+		return InstantiateUnderWithOffset(model, parentTr, Vector3.zero);
 	}
 
 }
