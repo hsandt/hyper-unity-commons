@@ -67,7 +67,7 @@ namespace StagPoint.DeveloperTools
 		{
 
 			var window = Instance = GetWindow( typeof( ImmediateWindow ) ) as ImmediateWindow;
-			window.title = "Immediate";
+			window.titleContent.text = "Immediate";
 
 			return window;
 
@@ -125,7 +125,7 @@ namespace StagPoint.DeveloperTools
 		public void OnEnable()
 		{
 
-			this.title = "Immediate";
+			this.titleContent.text = "Immediate";
 			this.minSize = new Vector2( 600, 200 );
 			this.wantsMouseMove = true;
 
@@ -796,7 +796,7 @@ You can also use the following built-in helper functions:
 				if( lastText != text )
 				{
 					clearAutoComplete();
-					editor.pos = editor.selectPos = text.Length;
+					editor.cursorIndex = editor.selectIndex = text.Length;
 					hasShownCompletion = false;
 				}
 
@@ -859,6 +859,11 @@ You can also use the following built-in helper functions:
 					}
 					else if( evt.keyCode == KeyCode.V && !string.IsNullOrEmpty( EditorGUIUtility.systemCopyBuffer ) )
 					{
+						// note from hs
+						// copy paste kinda works with the native UI, so you can rely on it for simple cases
+						// however, auto-completion stuff will not be handled
+						// uncomment the next line to activate native handling (do not consume event)
+						// return;
 
 						var pasteText = EditorGUIUtility.systemCopyBuffer.Replace( "\n", "" ).Trim();
 						if( string.IsNullOrEmpty( pasteText ) )
@@ -866,8 +871,12 @@ You can also use the following built-in helper functions:
 
 						evt.Use();
 
-						var start = editor.pos;
-						var end = editor.selectPos;
+						// author: hs
+						// minor change: just swapped start and end so that selectIndex is the start
+						// because selectIndex is the initial cursor position and most people highlight
+						// text from left to right
+						var start = editor.selectIndex;
+						var end = editor.cursorIndex;
 
 						if( editor.hasSelection )
 						{
@@ -882,7 +891,13 @@ You can also use the following built-in helper functions:
 						}
 
 						text = lastText = text.Insert( start, pasteText );
-						editor.pos = editor.selectPos = start + pasteText.Length;
+						// FIXME: editor.content.text is not updated with text yet, so the cursorIndex and selectIndex set properties
+						// are clipped before the end of the final text if we pasted a text so that the new text is longer than the previous one
+						// The real fix if we still want to delay the update of editor.content.text is to also delay setting the values of cursorIndex / selectIndex
+						// as well (just after updating the text content).
+						// Otherwise, the next line provides a small fix, though redundant with the later text update
+						// editor.content.text = text;
+						editor.cursorIndex = editor.selectIndex = start + pasteText.Length;
 
 						clearAutoComplete();
 
@@ -894,8 +909,8 @@ You can also use the following built-in helper functions:
 
 						evt.Use();
 
-						var start = editor.pos;
-						var end = editor.selectPos;
+						var start = editor.selectIndex;
+						var end = editor.cursorIndex;
 
 						if( end < start )
 						{
@@ -907,7 +922,7 @@ You can also use the following built-in helper functions:
 						if( evt.keyCode == KeyCode.X )
 						{
 							text = lastText = text.Remove( start, end - start );
-							editor.selectPos = editor.pos = start;
+							editor.selectIndex = editor.cursorIndex = start;
 						}
 
 						return;
@@ -931,14 +946,14 @@ You can also use the following built-in helper functions:
 
 						case KeyCode.LeftArrow:
 						case KeyCode.Backspace:
-							if( editor.pos > 0 && !char.IsLetterOrDigit( text[ editor.pos - 1 ] ) )
+							if( editor.cursorIndex > 0 && !char.IsLetterOrDigit( text[ editor.cursorIndex - 1 ] ) )
 							{
 								clearAutoComplete();
 							}
 							break;
 
 						case KeyCode.Delete:
-							if( !char.IsLetterOrDigit( text[ editor.pos ] ) )
+							if( !char.IsLetterOrDigit( text[ editor.cursorIndex ] ) )
 							{
 								clearAutoComplete();
 							}
@@ -1026,7 +1041,7 @@ You can also use the following built-in helper functions:
 				{
 
 					// Find the token where the caret is positioned
-					var tokenIndex = getTokenIndex( tokens, editor.pos );
+					var tokenIndex = getTokenIndex( tokens, editor.cursorIndex );
 					var currentToken = tokens[ tokenIndex ];
 
 					// Determine what to show (if anything) based on the current token (and possibly keystroke)
@@ -1126,13 +1141,13 @@ You can also use the following built-in helper functions:
 
 					var triggers = new List<TokenType>() { TokenType.LeftParens, TokenType.Comma, TokenType.New };
 
-					var tokenIndex = getTokenIndex( tokens, editor.pos );
+					var tokenIndex = getTokenIndex( tokens, editor.cursorIndex );
 					var currentToken = tokens[ tokenIndex ];
 
 					if( currentToken.Type == TokenType.Identifier )
 					{
 						text = doAutoComplete( text, tokens, tokenIndex );
-						editor.pos = editor.selectPos += 1;
+						editor.cursorIndex = editor.selectIndex += 1;
 						return;
 					}
 					//else if( triggers.Contains( currentToken.Type ) )
@@ -1154,7 +1169,7 @@ You can also use the following built-in helper functions:
 			{
 
 				var tokens = Tokenizer.Tokenize( text, false, false );
-				var tokenIndex = getTokenIndex( tokens, editor.pos );
+				var tokenIndex = getTokenIndex( tokens, editor.cursorIndex );
 
 				return doAutoComplete( text, tokens, tokenIndex );
 
@@ -1176,7 +1191,7 @@ You can also use the following built-in helper functions:
 				{
 
 					editor.content.text = completion.text;
-					editor.pos = editor.selectPos = completion.text.Length;
+					editor.cursorIndex = editor.selectIndex = completion.text.Length;
 
 					clearAutoComplete();
 
@@ -1193,13 +1208,13 @@ You can also use the following built-in helper functions:
 						.Remove( currentToken.LineOffset, currentToken.Length )
 						.Insert( currentToken.LineOffset, completion.text );
 
-					editor.pos = editor.selectPos = currentToken.LineOffset + completion.text.Length;
+					editor.cursorIndex = editor.selectIndex = currentToken.LineOffset + completion.text.Length;
 
 				}
 				else
 				{
 					text = text.Insert( currentToken.LineOffset + currentToken.Length, completion.text );
-					editor.pos = editor.selectPos = currentToken.LineOffset + currentToken.Length + completion.text.Length;
+					editor.cursorIndex = editor.selectIndex = currentToken.LineOffset + currentToken.Length + completion.text.Length;
 				}
 
 				clearAutoComplete();
