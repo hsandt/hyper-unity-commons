@@ -29,10 +29,18 @@ public static class GameObjectExtensions {
 			throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 		}
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
-		gameObjectInstance.transform.SetParent(parentTr, true);  // preserve scaling
+		gameObjectInstance.transform.SetParent(parentTr, true);  // preserve world rotation and scaling
 		gameObjectInstance.transform.localPosition = localPos;
 		if (layer != -1)
 			gameObjectInstance.layer = layer;
+		return gameObjectInstance;
+	}
+
+	/// Instantiate prefab / clone game object and set it at world position under parent transform
+	public static GameObject InstantiateUnderWithWorldPosition (this GameObject model, Transform parentTr, Vector3 position) {
+		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
+		gameObjectInstance.transform.SetParent(parentTr, true);
+		gameObjectInstance.transform.position = position;
 		return gameObjectInstance;
 	}
 
@@ -47,7 +55,7 @@ public static class GameObjectExtensions {
 			throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 		}
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
-		gameObjectInstance.transform.SetParent(parentTr, false);  // retain local position (and local scaling)
+		gameObjectInstance.transform.SetParent(parentTr, false);  // retain local position, rotation, scaling
 		gameObjectInstance.transform.localPosition += offset;
 		return gameObjectInstance;
 	}
