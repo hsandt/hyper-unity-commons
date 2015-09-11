@@ -57,4 +57,8 @@ public class DebugText : MonoBehaviour
     {
         m_Text.text = text;
     }
+
+    public void Hide () {
+        gameObject.SetActive(false);
+    }
 }
