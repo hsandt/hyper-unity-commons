@@ -80,7 +80,7 @@ public class UninitializedSingletonException : Exception {
 	protected UninitializedSingletonException() : base() {}
 
 	public UninitializedSingletonException(string singletonName) :
-	   base(string.Format("Singleton {0} has no instance initialized. Please create a game object and assign a {0} component to it.", singletonName))
+	   base(string.Format("Singleton {0} has no instance initialized. Ensure that the game object with the {0} component has an Awake() method with \"Instance = this\".", singletonName))
 	{
 	   this.singletonName = singletonName;
 	}
