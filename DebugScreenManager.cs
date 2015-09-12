@@ -28,13 +28,13 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 
 	void Awake () {
 		Instance = this;
+		Init();
 	}
 
 	void Start () {
-		Setup();
 	}
 
-	public void Setup () {
+	public void Init () {
 		// prepare one debug text and one debug variable per channel (only one can appear per channel at a time)
 		// (similar to pool, but fewer objects and each has a fixed position)
 
