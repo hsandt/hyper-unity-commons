@@ -20,11 +20,11 @@ public abstract class PoolManager<TPooledObject> : MonoBehaviour where TPooledOb
 	List<TPooledObject> m_Pool = new List<TPooledObject>();
 
 	// Use this for initialization
-	void Start () {
-		Setup();
+	void Awake () {
+		Init();
 	}
 
-	protected void Setup () {
+	protected void Init () {
 		// Debug.LogFormat("Setup with poolSize: {0}", poolSize);
 		// prepare pool with enough bullets
 		for (int i = 0; i < poolSize; ++i) {
