@@ -4,13 +4,11 @@ public static class DebugScreen {
 
 	/// Print text on screen with default duration
 	public static void Print(int channel, string text) {
-		Debug.Log("1");
 		DebugScreenManager.Instance.ShowDebugText(text, channel);
 	}
 
 	/// Print formatted stext on screen with default duration
 	public static void Print(int channel, string text, params object[] args) {
-		Debug.Log("2");
 		DebugScreenManager.Instance.ShowDebugText(string.Format(text, args), channel);
 	}
 
