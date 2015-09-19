@@ -2,6 +2,9 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
+// SEO: before DebugScreenManager because the pool of initial messages is created in its Awake
+// and uses references initialized in DebugText.Awake()
+// (or initialize pool in Start())
 [RequireComponent(typeof (Text))]
 public class DebugText : MonoBehaviour
 {
