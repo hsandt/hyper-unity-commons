@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public static class GameObjectExtensions {
 
@@ -63,6 +63,13 @@ public static class GameObjectExtensions {
 	/// Instantiate prefab / clone game object under parent retaining the local transform
 	public static GameObject InstantiateUnderLocalTransform (this GameObject model, Transform parentTr) {
 		return InstantiateUnderWithOffset(model, parentTr, Vector3.zero);
+	}
+
+	/// Duplicate object under the same parent (breaks any prefab link) with a new name
+	public static GameObject Duplicate (this GameObject model, string name) {
+		GameObject clone = InstantiateUnder(model, model.transform.parent);
+		clone.name = name;
+		return clone;
 	}
 
 }
