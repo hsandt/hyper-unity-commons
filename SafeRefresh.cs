@@ -8,7 +8,7 @@ using System.Collections;
 public static class SafeRefresh
 {
 
-	[MenuItem( "Assets/Safe Refresh %&r", false, 39)]
+	[MenuItem( "Assets/Safe Refresh #&r", false, 39)]
 	static void RefreshSafe()
 	{
 		if (EditorApplication.isPlaying) {
