@@ -81,18 +81,6 @@ public static class ComponentExtensions {
 		return script.gameObject.GetComponentOrFail<T>();
 	}
 
-	/// Try to find a game object with tag, throw UnityException if none was found
-	public static GameObject FindWithTagOrFail(this MonoBehaviour script, string name) {
-		// Note: since this looks for game objects everywhere in the scene hierarchy,
-		// this could be static class method, such as SearchHelper.FindWithTagOrFail(name)
-		// (except for the debug message)
-		GameObject go = GameObject.FindWithTag(name);
-		if (go == null)
-			throw new UnityException(string.Format("No game object found with tag {0} as queried by {1}.",
-													name, script));
-		return go;
-	}
-
 }
 
 // from http://answers.unity3d.com/questions/150690/using-a-bitwise-operator-with-layermask.html
