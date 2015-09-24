@@ -149,7 +149,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   debugTextPrefab: {fileID: 133014}
   debugVariablePrefab: {fileID: 195948}
-  nbChannels: 3
+  nbChannels: 8
 --- !u!114 &11445374
 MonoBehaviour:
   m_ObjectHideFlags: 1
