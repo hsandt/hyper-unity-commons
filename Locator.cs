@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using UnityConstants;
-
 /// Static class that memoizes objects by tag
 public static class Locator {
 
