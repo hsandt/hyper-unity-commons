@@ -24,6 +24,7 @@ public abstract class MultiPoolManager<TKey, TPooledObject> : BetterBehaviour wh
 
 	/* state variables */
 	Dictionary<TKey, List<TPooledObject>> m_MultiPool = new Dictionary<TKey, List<TPooledObject>>();
+	// int nbObjectsInUse;
 
 	// Use this for initialization
 	void Awake () {
@@ -42,11 +43,13 @@ public abstract class MultiPoolManager<TKey, TPooledObject> : BetterBehaviour wh
 				pooledObject.Release();
 				m_MultiPool[entry.Key].Add(pooledObject);
 			}
+
+			// nbObjectsInUse = 0;
 		}
 	}
 
 	public TPooledObject GetObject (TKey objectType) {
-		// O(n)
+		// O(n), n pool size
 		for (int i = 0; i < poolSize; ++i) {
 			TPooledObject pooledObject = m_MultiPool[objectType][i];
 			if (!pooledObject.IsInUse()) {
@@ -61,5 +64,24 @@ public abstract class MultiPoolManager<TKey, TPooledObject> : BetterBehaviour wh
 	// public void ReleaseObject (TPooledObject pooledObject) {
 	// 	pooledObject.Release();
 	// }
+
+	/// Return true if any pooled object is in use
+	// ALTERNATIVE 1: all objects know their pools, and they notify an increment
+	//	or decrement in counter of objects in use, so we can directly answer
+	// ALTERNATIVE 2: two lists, one of objects released and one of objects in use
+	//	we can immediately check the length of the lists to know if any / all are used
+	public bool AnyInUse () {
+		// O(mn), m number of types, n pool size
+		foreach (var objectListPair in m_MultiPool)
+		{
+			for (int i = 0; i < poolSize; ++i) {
+				TPooledObject pooledObject = objectListPair.Value[i];
+				if (pooledObject.IsInUse()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 }
