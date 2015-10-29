@@ -2,11 +2,15 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
+// SEO: before DebugScreenManager because the pool of initial messages is created in its Awake
+// and uses references initialized in DebugText.Awake()
+// (or initialize pool in Start())
 [RequireComponent(typeof (Text))]
 public class DebugText : MonoBehaviour
 {
     // reference to UI text
     Text m_Text;
+    public Text text { get { return m_Text; } }
 
     // // format of the string to display
     // [SerializeField]
@@ -27,9 +31,17 @@ public class DebugText : MonoBehaviour
         Init();
     }
 
+    void Start () {
+        Setup();
+    }
+
+    public void Setup () {
+    }
+
     void Update () {
         m_RemainingTime -= Time.deltaTime;
         if (m_RemainingTime <= 0) {
+            m_RemainingTime = 0;
             gameObject.SetActive(false);
         }
     }
@@ -47,5 +59,9 @@ public class DebugText : MonoBehaviour
     public void UpdateText(string text)
     {
         m_Text.text = text;
+    }
+
+    public void Hide () {
+        gameObject.SetActive(false);
     }
 }
