@@ -32,6 +32,17 @@ public class ReorderMyComponents : EditorWindow {
 
     void OnGUI () {
 		Transform currentTransform = Selection.activeTransform;
+
+		// Fix suggested by Unity user Victor. Remove line above and uncomment block below if experiencing
+		/*
+		Transform currentTransform;
+		if (Selection.GetFiltered(typeof(Transform), SelectionMode.Unfiltered) != null && Selection.GetFiltered(typeof(Transform), SelectionMode.Unfiltered).Length > 0) {
+			currentTransform = (Transform) Selection.GetFiltered(typeof(Transform), SelectionMode.Unfiltered)[0];
+		} else {
+			currentTransform = Selection.activeTransform;
+		}
+		*/
+
 		if (currentTransform != null) {
 			Component[] comps = currentTransform.GetComponents<Component>();
 
