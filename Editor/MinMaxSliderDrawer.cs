@@ -12,23 +12,26 @@ class MinMaxSliderDrawer : PropertyDrawer {
 			Vector2 range = property.vector2Value;
 			float min = range.x;
 			float max = range.y;
-			EditorGUI.LabelField(position, "Min Val:", min.ToString());  // ADDED
-			EditorGUI.LabelField(new Rect(position.x,position.y+20,position.width,position.height), "Max Val:", max.ToString());  // ADDED
 			MinMaxSliderAttribute attr = attribute as MinMaxSliderAttribute;
 			EditorGUI.BeginChangeCheck ();
-			EditorGUI.MinMaxSlider (label, new Rect(position.x,position.y+40,position.width,position.height), ref min, ref max, attr.min, attr.max);
+			EditorGUI.MinMaxSlider (label, position, ref min, ref max, attr.min, attr.max);
 			if (EditorGUI.EndChangeCheck ()) {
 				range.x = min;
 				range.y = max;
 				property.vector2Value = range;
 			}
+			position.y += 20;
+			EditorGUI.LabelField(position, "Min Val:", min.ToString());  // ADDED
+			position.y += 20;
+			EditorGUI.LabelField(position, "Max Val:", max.ToString());  // ADDED
+
 		} else {
 			EditorGUI.LabelField (position, label, "Use only with Vector2");
 		}
 	}
 
 	public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
-	    var extraHeight = 40;
+	    var extraHeight = 2 * 20f;
 	    return base.GetPropertyHeight(property, label) + extraHeight;
 	}
 
