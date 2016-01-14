@@ -17,9 +17,17 @@ public static class MathUtil {
 		// return signedRemainder + divisor;
 	}
 
-	/* complement x on total in place */
-	public static float Complement (ref float x, float total) {
-		return total - x;
+	/// Complement x on total in place
+	public static void Complement (ref float x, float total) {
+		x = total - x;
+	}
+
+	/// Decrease value in place until 0
+	public static void CountDown (ref float t, float delta) {
+		if (t > 0f) {
+			t -= delta;
+			if (t < 0f) t = 0f;
+		}
 	}
 
 }
