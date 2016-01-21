@@ -1190,7 +1190,7 @@ You can also use the following built-in helper functions:
 				if( string.IsNullOrEmpty( text ) )
 				{
 
-					editor.content.text = completion.text;
+					editor.text = completion.text;
 					editor.cursorIndex = editor.selectIndex = completion.text.Length;
 
 					clearAutoComplete();
