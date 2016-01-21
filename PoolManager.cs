@@ -19,11 +19,14 @@ public abstract class PoolManager<TPooledObject> : MonoBehaviour where TPooledOb
 	/* state variables */
 	List<TPooledObject> m_Pool = new List<TPooledObject>();
 
-	// Use this for initialization
+	// TEMPLATE METHOD FOR DERIVED CLASSES
 	void Awake () {
 		Init();
 	}
 
+	/// <summary>
+	/// Initialize pool by creating [poolSize] copies of the pooled object
+	/// </summary>
 	protected void Init () {
 		// Debug.LogFormat("Setup with poolSize: {0}", poolSize);
 		// prepare pool with enough bullets
