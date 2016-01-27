@@ -1,3 +1,5 @@
+// Dependency: Commons/Helper/Extensions.cs
+
 using System;
 using UnityEngine;
 using UnityEngine.UI;
