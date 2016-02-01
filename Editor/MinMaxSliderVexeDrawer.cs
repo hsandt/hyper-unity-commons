@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using Vexe.Editor.Drawers;
+//using Vexe.Editor.Drawers;
 
 // class MinMaxSliderVexeDrawer : AttributeDrawer<Vector2, MinMaxSliderVexeAttribute> {
 

@@ -1,7 +1,6 @@
 // https://gist.github.com/frarees/9791517
 using UnityEngine;
 using UnityEditor;
-using Vexe.Editor.Drawers;
 
 [CustomPropertyDrawer (typeof (MinMaxSliderAttribute))]
 class MinMaxSliderDrawer : PropertyDrawer {
