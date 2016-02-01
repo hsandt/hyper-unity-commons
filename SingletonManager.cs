@@ -16,7 +16,7 @@ public class SingletonManager<T> : MonoBehaviour where T : MonoBehaviour {
 
 	public static T Instance {
 		get {
-			if (_instance == null) throw new UninitializedSingletonException(typeof(T).ToString());
+//			if (_instance == null) throw new UninitializedSingletonException(typeof(T).ToString());
 			return _instance;
 		}
 		protected set {
