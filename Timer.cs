@@ -17,14 +17,19 @@ class Timer {
 	/// Set the current time of the Timer
 	/// null or negative value: stop the timer
 	/// positive value: relaunch the timer until it reaches 0 and triggers callback
-	public void SetTime(float _time) {
+	public void SetTime (float _time) {
 		time = _time;
+	}
+
+	/// Reset timer to 0 without calling the callback
+	public void Stop () {
+		time = 0;
 	}
 
 	// alternative: use Timer : MonoBehavior + FixedUpdate
 	// alternative 2: use a TimerManager that knows each Timer object and updates them
-	/// Countdown called by each script containing a timer
-	public void CountDown(float deltaTime) {
+	/// Countdown called by each script containing a timer, in its Update or FixedUpdate
+	public void CountDown (float deltaTime) {
 		// if time is positive, decrease time of deltaTime
 		// (if time already 0, leave it so)
 		if (time > 0) {
