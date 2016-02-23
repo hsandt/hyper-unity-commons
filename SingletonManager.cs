@@ -12,11 +12,17 @@ using UnityEngine;
 /// </summary>
 public class SingletonManager<T> : MonoBehaviour where T : MonoBehaviour {
 
+	// TEMPLATE
+	// protected T () {}
+	// void Awake () {
+	// 	Instance = this;
+	// }
+
 	private static T _instance;
 
 	public static T Instance {
 		get {
-			if (_instance == null) throw new UninitializedSingletonException(typeof(T).ToString());
+//			if (_instance == null) throw new UninitializedSingletonException(typeof(T).ToString());
 			return _instance;
 		}
 		protected set {
