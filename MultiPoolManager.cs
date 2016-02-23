@@ -36,15 +36,17 @@ public abstract class MultiPoolManager<TKey, TPooledObject> : BetterBehaviour wh
 		foreach (KeyValuePair<TKey, GameObject> entry in prefabDict)
 		{
 			m_MultiPool[entry.Key] = new List<TPooledObject>();
+			GameObject pooledObjectPrefab = entry.Value;
 			for (int i = 0; i < poolSize; ++i) {
-			    GameObject pooledObjectPrefab = entry.Value;
 				GameObject pooledGameObject = pooledObjectPrefab.InstantiateUnder(poolTransform);
 				TPooledObject pooledObject = pooledGameObject.GetComponentOrFail<TPooledObject>();
 				pooledObject.Release();
 				m_MultiPool[entry.Key].Add(pooledObject);
 			}
 
-			// nbObjectsInUse = 0;
+			// in case prefab reference is a scene instance, deactivate it (no effect if prefab is an asset since runtime)
+			pooledObjectPrefab.SetActive(false);
+			// nbObjectsInUse = 0;  // uncomment if you choose ALTERNATIVE 1 in AnyInUse()
 		}
 	}
 

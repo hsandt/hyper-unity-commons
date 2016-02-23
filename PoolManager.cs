@@ -36,6 +36,9 @@ public abstract class PoolManager<TPooledObject> : MonoBehaviour where TPooledOb
 			pooledObject.Release();
 			m_Pool.Add(pooledObject);
 		}
+
+		// in case prefab reference is a scene instance, deactivate it (no effect if prefab is an asset since runtime)
+		pooledObjectPrefab.SetActive(false);
 	}
 
 	public TPooledObject GetObject () {
