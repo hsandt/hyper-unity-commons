@@ -10,16 +10,16 @@ public abstract class MultiPoolManager<TKey, TPooledObject> : BetterBehaviour wh
 
 	/* external references */
 	/// Parent of all the pooled objects
-	[SerializeField]
+	[Serialize]
 	protected Transform poolTransform;
 
 	/// Dictionary of prefabs used to generate pooled objects, per key
-	[SerializeField]
+	[Serialize]
 	protected Dictionary<TKey, GameObject> prefabDict;
 
 	/* parameters */
 	/// Max number of objects to pool for each type (multi-pool total size is a multiple)
-	[SerializeField]
+	[Serialize]
 	protected int poolSize = 20;
 
 	/* state variables */
@@ -36,15 +36,17 @@ public abstract class MultiPoolManager<TKey, TPooledObject> : BetterBehaviour wh
 		foreach (KeyValuePair<TKey, GameObject> entry in prefabDict)
 		{
 			m_MultiPool[entry.Key] = new List<TPooledObject>();
+			GameObject pooledObjectPrefab = entry.Value;
 			for (int i = 0; i < poolSize; ++i) {
-			    GameObject pooledObjectPrefab = entry.Value;
 				GameObject pooledGameObject = pooledObjectPrefab.InstantiateUnder(poolTransform);
 				TPooledObject pooledObject = pooledGameObject.GetComponentOrFail<TPooledObject>();
 				pooledObject.Release();
 				m_MultiPool[entry.Key].Add(pooledObject);
 			}
 
-			// nbObjectsInUse = 0;
+			// in case prefab reference is a scene instance, deactivate it (no effect if prefab is an asset since runtime)
+			pooledObjectPrefab.SetActive(false);
+			// nbObjectsInUse = 0;  // uncomment if you choose ALTERNATIVE 1 in AnyInUse()
 		}
 	}
 
@@ -66,12 +68,13 @@ public abstract class MultiPoolManager<TKey, TPooledObject> : BetterBehaviour wh
 	// }
 
 	/// Return true if any pooled object is in use
-	// ALTERNATIVE 1: all objects know their pools, and they notify an increment
-	//	or decrement in counter of objects in use, so we can directly answer
-	// ALTERNATIVE 2: two lists, one of objects released and one of objects in use
-	//	we can immediately check the length of the lists to know if any / all are used
 	public bool AnyInUse () {
+		// CURRENT ALGORITHM: for every pooled object type, for every stored object, check if this object is in use
 		// O(mn), m number of types, n pool size
+		// ALTERNATIVE 1: all objects know their pools, and they notify an increment
+		//	or decrement in counter of objects in use, so we can directly answer
+		// ALTERNATIVE 2: two lists, one of objects released and one of objects in use
+		//	we can immediately check the length of the lists to know if any / all are used
 		foreach (var objectListPair in m_MultiPool)
 		{
 			for (int i = 0; i < poolSize; ++i) {

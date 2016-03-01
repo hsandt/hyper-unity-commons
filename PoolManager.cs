@@ -19,11 +19,14 @@ public abstract class PoolManager<TPooledObject> : MonoBehaviour where TPooledOb
 	/* state variables */
 	List<TPooledObject> m_Pool = new List<TPooledObject>();
 
-	// Use this for initialization
+	// TEMPLATE METHOD FOR DERIVED CLASSES
 	void Awake () {
 		Init();
 	}
 
+	/// <summary>
+	/// Initialize pool by creating [poolSize] copies of the pooled object
+	/// </summary>
 	protected void Init () {
 		// Debug.LogFormat("Setup with poolSize: {0}", poolSize);
 		// prepare pool with enough bullets
@@ -33,6 +36,9 @@ public abstract class PoolManager<TPooledObject> : MonoBehaviour where TPooledOb
 			pooledObject.Release();
 			m_Pool.Add(pooledObject);
 		}
+
+		// in case prefab reference is a scene instance, deactivate it (no effect if prefab is an asset since runtime)
+		pooledObjectPrefab.SetActive(false);
 	}
 
 	public TPooledObject GetObject () {
