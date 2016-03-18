@@ -1,4 +1,10 @@
-﻿using UnityEngine;
+﻿/* DEPENDENCIES
+ *
+ * DebugDrawingExtension Unity Asset Store package
+ *
+ */
+
+using UnityEngine;
 using System.Collections;
 
 public static class Physics2DUtil {
