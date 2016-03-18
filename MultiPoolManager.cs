@@ -1,29 +1,30 @@
 ﻿using UnityEngine;
-using Vexe.Runtime.Types;
+// using Vexe.Runtime.Types;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
 /// Manager for a heterogeneous pool of game objects sharing a common script that implements IPooledObject
 /// TKey is a key that identifies each type of game object
-public abstract class MultiPoolManager<TKey, TPooledObject> : BetterBehaviour where TPooledObject : MonoBehaviour, IPooledObject {
+public abstract class MultiPoolManager<TKey, TPooledObject> : MonoBehaviour where TPooledObject : MonoBehaviour, IPooledObject {
 
 	/* external references */
 	/// Parent of all the pooled objects
-	[Serialize]
+	// [Serialize]
+	[SerializeField]
 	protected Transform poolTransform;
 
 	/// Dictionary of prefabs used to generate pooled objects, per key
-	[Serialize]
+	[SerializeField]
 	protected Dictionary<TKey, GameObject> prefabDict;
 
 	/* parameters */
 	/// Max number of objects to pool for each type (multi-pool total size is a multiple)
-	[Serialize]
+	[SerializeField]
 	protected int poolSize = 20;
 
 	/* state variables */
-	Dictionary<TKey, List<TPooledObject>> m_MultiPool = new Dictionary<TKey, List<TPooledObject>>();
+	public Dictionary<TKey, List<TPooledObject>> m_MultiPool = new Dictionary<TKey, List<TPooledObject>>();
 	// int nbObjectsInUse;
 
 	// Use this for initialization
