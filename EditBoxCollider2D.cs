@@ -14,13 +14,18 @@ public class EditBoxCollider2D : MonoBehaviour
 	/// </summary>
 	[SerializeField] bool alwaysShowCollider;
 
+	/// <summary>
+	/// Color used to always show collider
+	/// </summary>
+	[SerializeField] Color drawColor = Color.blue;
+
 	void Awake () {
 		m_BoxCollider2D = GetComponent<BoxCollider2D>();
 	}
 
 	void OnDrawGizmos() {
 		if (alwaysShowCollider) {
-			GizmosUtil.DrawBounds2D(m_BoxCollider2D.bounds, Color.blue);
+			GizmosUtil.DrawBounds2D(m_BoxCollider2D.bounds, drawColor);
 		}
 	}
 
