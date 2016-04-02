@@ -19,4 +19,9 @@ public static class VectorUtil {
 		// return (Vector2) Vector3.ProjectOnPlane((Vector3) vector, (Vector3) normal);
 	}
 
+	/// Return vector rotated by 90 clockwise
+	public static Vector2 Rotate90CW (Vector2 vector) {
+		return new Vector2(vector.y, -vector.x);
+	}
+
 }
