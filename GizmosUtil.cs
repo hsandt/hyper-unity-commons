@@ -8,8 +8,15 @@ public static class GizmosUtil {
 	/// </summary>
 	/// <param name="p1">Local 1st coordinates of the line.</param>
 	/// <param name="p2">Local 2nt coordinates of the line.</param>
-	public static void DrawLocalLine (Transform tr, Vector3 p1, Vector3 p2) {
+	public static void DrawLocalLine (Transform tr, Vector3 p1, Vector3 p2, Color? color = null) {
+		Color oldColor = Gizmos.color;
+		if (color != null)
+			Gizmos.color = (Color) color;
+
 		Gizmos.DrawLine(tr.TransformPoint(p1), tr.TransformPoint(p2));
+		
+		if (color != null)
+			Gizmos.color = oldColor;
 	}
 
 	/// <summary>
