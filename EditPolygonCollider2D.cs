@@ -16,6 +16,11 @@ public class EditPolygonCollider2D : MonoBehaviour
 	/// </summary>
 	[SerializeField] bool alwaysShowCollider;
 
+	/// <summary>
+	/// Color used to always show collider
+	/// </summary>
+	[SerializeField] Color drawColor = Color.blue;
+
 	void Awake () {
 		m_PolygonCollider2D = GetComponent<PolygonCollider2D>();
 	}
@@ -23,12 +28,13 @@ public class EditPolygonCollider2D : MonoBehaviour
 	void OnDrawGizmos() {
 		if (alwaysShowCollider) {
 			Vector2[] points = m_PolygonCollider2D.points;
-			Gizmos.color = Color.blue;
+			
+			Gizmos.color = drawColor;
 
 			// for every point (except for the last one), draw line to the next point
 			for(int i = 0; i < points.Length-1; i++)
 			{
-				GizmosUtil.DrawLocalLine(transform, (Vector3) points[i], (Vector3) points[i+1]);
+				GizmosUtil.DrawLocalLine(transform, (Vector3) points[i], (Vector3) points[i+1], drawColor);
 			}
 			// for polygons, close with the last segment
 			GizmosUtil.DrawLocalLine(transform, (Vector3) points[points.Length - 1], (Vector3) points[0]);
