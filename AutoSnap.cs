@@ -20,12 +20,13 @@ public class AutoSnap : EditorWindow
 	static void Init()
 	{
 		// window = GetWindow<AutoSnap>();
-		if (window == null) {
-			window = ScriptableObject.CreateInstance<AutoSnap>();
-			Vector2 windowSize = new Vector2(275, 100);
-			window.minSize = windowSize;
-			window.maxSize = windowSize;
-		}
+		window = GetWindowWithRect<AutoSnap>(new Rect (100, 100, 275, 100), utility: true, title: "Auto Snap");
+		// if (window == null) {
+		// 	window = ScriptableObject.CreateInstance<AutoSnap>();
+		// 	Vector2 windowSize = new Vector2(275, 100);
+		// 	window.minSize = windowSize;
+		// 	window.maxSize = windowSize;
+		// }
 
 		if (EditorPrefs.HasKey("AutoSnap.doSnap"))
 			window.doSnap = EditorPrefs.GetBool("AutoSnap.doSnap");
@@ -37,7 +38,7 @@ public class AutoSnap : EditorWindow
 			window.snapRotateValue = EditorPrefs.GetFloat("AutoSnap.snapRotateValue");
 
 		// window.Show();
-		window.ShowUtility();
+		// window.ShowUtility();
 		window.Focus();
 	}
 
@@ -52,7 +53,7 @@ public class AutoSnap : EditorWindow
 	}
 
 	void Save() {
-		Debug.LogFormat("Save by {0}", GetInstanceID());
+		// Debug.LogFormat("Save by {0}", GetInstanceID());
 		EditorPrefs.SetBool("AutoSnap.doSnap", doSnap);
 		EditorPrefs.SetFloat("AutoSnap.snapValue", snapValue);
 		EditorPrefs.SetBool("AutoSnap.doRotateSnap", doRotateSnap);

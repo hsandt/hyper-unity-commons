@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
-public static class SafeRefresh
+public static class EditorAssets
 {
 
 	[MenuItem( "Assets/Safe Refresh %&a", false, 39)]

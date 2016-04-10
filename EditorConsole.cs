@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 
-static class UsefulShortcuts
+static class EditorConsole
 {
     [MenuItem ("Tools/Clear Console _F2")] // CMD + SHIFT + C
     static void ClearConsole () {
