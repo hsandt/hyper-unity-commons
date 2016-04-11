@@ -11,12 +11,12 @@ public class AutoSnap : EditorWindow
 
 	Vector3 prevPosition;
 	Vector3 prevRotation;
-	bool doSnap = true;
-	bool doRotateSnap = true;
+	bool doSnap = false;
+	bool doRotateSnap = false;
 	float snapValue = 1f;
 	float snapRotateValue = 45f;
 
-	[MenuItem( "Edit/Auto Snap %l" )]
+	[MenuItem("Edit/Auto Snap %l")]
 	static void Init()
 	{
 		// window = GetWindow<AutoSnap>();
