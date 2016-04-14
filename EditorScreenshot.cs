@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using System;
 using System.Collections;
@@ -9,7 +9,6 @@ public class EditorScreenshot : EditorWindow
 {
 
 	string screenshotFolderPath = "Screenshots";
-
 	int nextScreenshotIndex = 0;
 
 	[MenuItem("Window/Editor Screenshot")]
@@ -29,6 +28,11 @@ public class EditorScreenshot : EditorWindow
 
 	void OnGUI()
 	{
+		EditorGUI.BeginChangeCheck ();
+		screenshotFolderPath = EditorGUILayout.TextField("Save path: ", screenshotFolderPath);
+		if (EditorGUI.EndChangeCheck ())
+			EditorPrefs.SetString("EditorScreenshot.screenshotFolderPath", screenshotFolderPath);
+
 		if (GUILayout.Button("Take screenshot")) TakeScreenshot();
 	}
 
