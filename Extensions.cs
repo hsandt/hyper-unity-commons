@@ -85,12 +85,29 @@ public static class ComponentExtensions {
 // from http://answers.unity3d.com/questions/150690/using-a-bitwise-operator-with-layermask.html
 public static class LayerMaskExtensions {
 
-	public static bool Contains(this LayerMask mask, int layer) {
+	public static bool Contains (this LayerMask mask, int layer) {
 		return (mask.value & (1 << layer)) > 0;
 	}
 
-	public static bool Contains(this LayerMask mask, GameObject go) {
+	public static bool Contains (this LayerMask mask, GameObject go) {
 		return (mask.value & (1 << go.layer)) > 0;
+	}
+
+}
+
+// Inspired by UI Extensions CanvasGroupActivator.cs
+public static class CanvasGroupExtensions {
+
+	public static void Activate (this CanvasGroup group) {
+		group.alpha = 1f;
+		group.interactable = true;
+		group.blocksRaycasts = true;
+	}
+
+	public static void Deactivate (this CanvasGroup group) {
+		group.alpha = 0f;
+		group.interactable = false;
+		group.blocksRaycasts = false;
 	}
 
 }
