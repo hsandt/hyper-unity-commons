@@ -7,7 +7,7 @@ using System.Collections;
 /// </summary>
 public class PlayParticleOnce : MonoBehaviour {
 
-	[SerializeField] new ParticleSystem particleSystem;
+	[SerializeField] ParticleSystem particleSystem;
 	[Tooltip("Duration wanted for the particle effects. Always set it to a lower value than the particles' lifetime. Fade particles out before that time.")]
 	[SerializeField] float m_ParticleEffectDuration = 1f;
 
