@@ -23,7 +23,7 @@ public static class Physics2DUtil {
 		Bounds debugBounds = new Bounds();
 		debugBounds.min = (Vector3) pointA;
 		debugBounds.max = (Vector3) pointB;
-		DebugExtension.DebugBounds(debugBounds, color ?? Color.red, duration, depthTest: false);
+		DebugUtil.DebugBounds2D(debugBounds, color ?? Color.red, duration, depthTest: false);
 	#endif
 		return Physics2D.OverlapArea(pointA, pointB, layerMask, minDepth, maxDepth);
 	}
@@ -34,7 +34,7 @@ public static class Physics2DUtil {
 		Bounds debugBounds = new Bounds();
 		debugBounds.min = (Vector3) pointA;
 		debugBounds.max = (Vector3) pointB;
-		DebugExtension.DebugBounds(debugBounds, color ?? Color.red, duration, depthTest: false);
+		DebugUtil.DebugBounds2D(debugBounds, color ?? Color.red, duration, depthTest: false);
 	#endif
 		return Physics2D.OverlapAreaNonAlloc(pointA, pointB, results, layerMask, minDepth, maxDepth);
 	}
