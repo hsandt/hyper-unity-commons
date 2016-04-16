@@ -1,3 +1,5 @@
+// Based on http://wiki.unity3d.com/index.php/Singleton
+
 using UnityEngine;
 
 /// <summary>
