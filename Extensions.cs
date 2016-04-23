@@ -98,14 +98,28 @@ public static class LayerMaskExtensions {
 // Inspired by UI Extensions CanvasGroupActivator.cs
 public static class CanvasGroupExtensions {
 
+	/// Make canvas group visible and interactable with mouse / touch input
 	public static void Activate (this CanvasGroup group) {
 		group.alpha = 1f;
 		group.interactable = true;
 		group.blocksRaycasts = true;
 	}
 
+	/// Make canvas group invisible and not interactable with mouse / touch input
 	public static void Deactivate (this CanvasGroup group) {
 		group.alpha = 0f;
+		group.interactable = false;
+		group.blocksRaycasts = false;
+	}
+
+	/// Make canvas group interactable with mouse / touch input without changing its visibility
+	public static void EnableInteraction (this CanvasGroup group) {
+		group.interactable = true;
+		group.blocksRaycasts = true;
+	}
+
+	/// Make canvas group not interactable with mouse / touch input
+	public static void DisableInteraction (this CanvasGroup group) {
 		group.interactable = false;
 		group.blocksRaycasts = false;
 	}
