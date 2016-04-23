@@ -23,6 +23,15 @@ public static class GameObjectExtensions {
 		return component;
 	}
 
+	/// Instantiate prefab / clone game object (helper to avoid casting to GameObject every time)
+	public static GameObject Instantiate (this GameObject model) {
+		if (model == null) {
+			throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
+		}
+		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
+		return gameObjectInstance;
+	}
+
 	/// Instantiate prefab / clone game object and set it at local position under parent transform on layer layer
 	public static GameObject InstantiateUnderAtOn (this GameObject model, Transform parentTr, Vector3 localPos, int layer = -1) {
 		if (model == null) {
