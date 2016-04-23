@@ -104,6 +104,22 @@ public static class LayerMaskExtensions {
 
 }
 
+public static class ColorExtensions {
+
+	public static Color ToVisible (this Color color) {
+		Color visibleColor = color;
+		visibleColor.a = 1;
+		return visibleColor;
+	}
+
+	public static Color ToInvisible (this Color color) {
+		Color invisibleColor = color;
+		invisibleColor.a = 0;
+		return invisibleColor;
+	}
+
+}
+
 // Inspired by UI Extensions CanvasGroupActivator.cs
 public static class CanvasGroupExtensions {
 
