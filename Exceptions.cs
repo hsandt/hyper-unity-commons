@@ -1,7 +1,9 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+#if !(UNITY_WP8 || UNITY_WSA)
 using System.Runtime.Serialization;
+#endif
 
 public class ResourceNotFoundException : Exception {
 
@@ -28,9 +30,11 @@ public class ResourceNotFoundException : Exception {
 	   this.path = path;
 	}
 
+#if !(UNITY_WP8 || UNITY_WSA)
 	protected ResourceNotFoundException(SerializationInfo info, StreamingContext context)
 	   : base(info, context)
 	{ }
+#endif
 
 	public string Path { get { return path; } }
 
@@ -64,9 +68,11 @@ public class UnassignedReferenceException : Exception {
 		this.referenceName = referenceName;
 	}
 
+#if !(UNITY_WP8 || UNITY_WSA)
 	protected UnassignedReferenceException(SerializationInfo info, StreamingContext context)
 	   : base(info, context)
 	{ }
+#endif
 
 	public MonoBehaviour Script { get { return script; } }
 	public string ReferenceName { get { return referenceName; } }
@@ -97,9 +103,11 @@ public class UninitializedSingletonException : Exception {
 		this.singletonName = singletonName;
 	}
 
+#if !(UNITY_WP8 || UNITY_WSA)
 	protected UninitializedSingletonException(SerializationInfo info, StreamingContext context)
 	   : base(info, context)
 	{ }
+#endif
 
 	public string SingletonName { get { return singletonName; } }
 
@@ -129,10 +137,12 @@ public class ReinitializeSingletonException : Exception {
 		this.singletonName = singletonName;
 	}
 
+#if !(UNITY_WP8 || UNITY_WSA)
 	protected ReinitializeSingletonException(SerializationInfo info, StreamingContext context)
 	   : base(info, context)
 	{ }
-
+#endif
+	
 	public string SingletonName { get { return singletonName; } }
 
 }
