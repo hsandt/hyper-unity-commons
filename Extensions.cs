@@ -25,18 +25,32 @@ public static class GameObjectExtensions {
 
 	/// Instantiate prefab / clone game object (helper to avoid casting to GameObject every time)
 	public static GameObject Instantiate (this GameObject model) {
-		if (model == null) {
-			throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
-		}
+		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
+		return gameObjectInstance;
+	}
+
+	/// Instantiate prefab / clone game object at parent's position
+	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr, bool keepLocalPosition = false) {
+		GameObject gameObjectInstance = Instantiate(model);
+		gameObjectInstance.transform.SetParent(parentTr, false);
+		if (!keepLocalPosition)
+			gameObjectInstance.transform.localPosition = Vector3.zero;
+		return gameObjectInstance;
+	}
+
+	/// Instantiate prefab / clone game object under parent retaining the local position, adding some offset
+	public static GameObject InstantiateUnderWithOffset (this GameObject model, Transform parentTr, Vector3 offset) {
+		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
+		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
+		gameObjectInstance.transform.SetParent(parentTr, false);  // retain local position, rotation, scaling
+		gameObjectInstance.transform.localPosition += offset;
 		return gameObjectInstance;
 	}
 
 	/// Instantiate prefab / clone game object and set it at local position under parent transform on layer layer
 	public static GameObject InstantiateUnderAtOn (this GameObject model, Transform parentTr, Vector3 localPos, int layer = -1) {
-		if (model == null) {
-			throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
-		}
+		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
 		gameObjectInstance.transform.SetParent(parentTr, true);  // preserve world rotation and scaling
 		gameObjectInstance.transform.localPosition = localPos;
@@ -54,28 +68,14 @@ public static class GameObjectExtensions {
 		return gameObjectInstance;
 	}
 
-	/// Instantiate prefab / clone game object at parent's position
-	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr) {
-		return InstantiateUnderAtOn(model, parentTr, Vector3.zero);
-	}
-
-	/// Instantiate prefab / clone game object under parent retaining the local position, adding some offset
-	public static GameObject InstantiateUnderWithOffset (this GameObject model, Transform parentTr, Vector3 offset) {
-		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
-		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
-		gameObjectInstance.transform.SetParent(parentTr, false);  // retain local position, rotation, scaling
-		gameObjectInstance.transform.localPosition += offset;
-		return gameObjectInstance;
-	}
-
 	/// Instantiate prefab / clone game object under parent retaining the local transform
 	public static GameObject InstantiateUnderLocalTransform (this GameObject model, Transform parentTr) {
 		return InstantiateUnderWithOffset(model, parentTr, Vector3.zero);
 	}
 
-	/// Duplicate object under the same parent (breaks any prefab link) with a new name
+	/// Duplicate object under the same parent with the same local position, with a new name. This breaks any prefab link.
 	public static GameObject Duplicate (this GameObject model, string name) {
-		GameObject clone = InstantiateUnder(model, model.transform.parent);
+		GameObject clone = InstantiateUnder(model, model.transform.parent, true);
 		clone.name = name;
 		return clone;
 	}
