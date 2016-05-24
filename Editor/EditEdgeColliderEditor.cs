@@ -12,8 +12,8 @@ public class EditEdgeCollider2DEditor : Editor {
 	public override void OnInspectorGUI() {
 		DrawDefaultInspector();
 		
-		// get the edge collider component yourself instead of counting on a member variable storing
-		// the component reference, since Awake() may not be called before this in the editor
+		// get the edge collider component yourself instead of counting on a member variable of EditEdgeCollider2D storing
+		// the component reference in its Awake(), since Awake may not be called before this method in the editor
 		EdgeCollider2D collider = ((EditEdgeCollider2D) target).GetComponent<EdgeCollider2D>();
 		
 		if (collider != null) {
