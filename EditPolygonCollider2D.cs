@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿// Requirement: GizmosUtil from Unity Commons - Helper on BitBucket
+
+using UnityEngine;
 using System.Collections;
 
 [ExecuteInEditMode]
