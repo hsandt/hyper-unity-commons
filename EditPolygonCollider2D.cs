@@ -1,6 +1,4 @@
-﻿// 
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 [ExecuteInEditMode]
@@ -8,7 +6,7 @@ using System.Collections;
 public class EditPolygonCollider2D : MonoBehaviour
 {
 
-	public PolygonCollider2D polygonCollider2D { get { return m_PolygonCollider2D; } }
+	// public PolygonCollider2D polygonCollider2D { get { return m_PolygonCollider2D; } }
 	PolygonCollider2D m_PolygonCollider2D;
 
 	/// <summary>

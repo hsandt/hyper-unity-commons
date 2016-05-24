@@ -2,6 +2,7 @@
 using System.Collections;
 
 [ExecuteInEditMode]
+[RequireComponent(typeof(EdgeCollider2D))]
 public class EditEdgeCollider2D : MonoBehaviour
 {
 

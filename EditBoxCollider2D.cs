@@ -6,7 +6,7 @@ using System.Collections;
 public class EditBoxCollider2D : MonoBehaviour
 {
 
-	public BoxCollider2D BoxCollider2D { get { return m_BoxCollider2D; } }
+	// public BoxCollider2D BoxCollider2D { get { return m_BoxCollider2D; } }
 	BoxCollider2D m_BoxCollider2D;
 
 	/// <summary>
