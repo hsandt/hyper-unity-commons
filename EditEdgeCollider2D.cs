@@ -1,7 +1,14 @@
-﻿using UnityEngine;
+﻿/* DEPENDENCIES
+ *
+ * GizmosUtil from Unity Commons - Helper on BitBucket
+ *
+ */
+
+using UnityEngine;
 using System.Collections;
 
 [ExecuteInEditMode]
+[RequireComponent(typeof(EdgeCollider2D))]
 public class EditEdgeCollider2D : MonoBehaviour
 {
 
