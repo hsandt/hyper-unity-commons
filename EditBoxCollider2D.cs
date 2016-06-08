@@ -6,7 +6,6 @@ using System.Collections;
 public class EditBoxCollider2D : MonoBehaviour
 {
 
-	public BoxCollider2D BoxCollider2D { get { return m_BoxCollider2D; } }
 	BoxCollider2D m_BoxCollider2D;
 
 	/// <summary>
@@ -25,7 +24,8 @@ public class EditBoxCollider2D : MonoBehaviour
 
 	void OnDrawGizmos() {
 		if (alwaysShowCollider) {
-			GizmosUtil.DrawBounds2D(m_BoxCollider2D.bounds, drawColor);
+			Gizmos.color = drawColor;
+			GizmosUtil.DrawLocalBox2D(m_BoxCollider2D.offset, m_BoxCollider2D.size, transform);
 		}
 	}
 

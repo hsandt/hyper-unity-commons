@@ -8,7 +8,6 @@ using System.Collections;
 public class EditPolygonCollider2D : MonoBehaviour
 {
 
-	public PolygonCollider2D polygonCollider2D { get { return m_PolygonCollider2D; } }
 	PolygonCollider2D m_PolygonCollider2D;
 
 	/// <summary>
@@ -34,10 +33,10 @@ public class EditPolygonCollider2D : MonoBehaviour
 			// for every point (except for the last one), draw line to the next point
 			for(int i = 0; i < points.Length-1; i++)
 			{
-				GizmosUtil.DrawLocalLine(transform, (Vector3) points[i], (Vector3) points[i+1], drawColor);
+				GizmosUtil.DrawLocalLine((Vector3) points[i], (Vector3) points[i+1], transform);
 			}
 			// for polygons, close with the last segment
-			GizmosUtil.DrawLocalLine(transform, (Vector3) points[points.Length - 1], (Vector3) points[0]);
+			GizmosUtil.DrawLocalLine((Vector3) points[points.Length - 1], (Vector3) points[0], transform);
 		}
 	}
 

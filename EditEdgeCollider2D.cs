@@ -5,7 +5,6 @@ using System.Collections;
 public class EditEdgeCollider2D : MonoBehaviour
 {
 
-	// public EdgeCollider2D edgeCollider2D { get { return m_EdgeCollider2D; } }
 	EdgeCollider2D m_EdgeCollider2D;
 
 	/// <summary>
@@ -31,7 +30,7 @@ public class EditEdgeCollider2D : MonoBehaviour
 			// for every point (except for the last one), draw line to the next point
 			for(int i = 0; i < points.Length-1; i++)
 			{
-				GizmosUtil.DrawLocalLine(transform, (Vector3) points[i], (Vector3) points[i+1]);
+				GizmosUtil.DrawLocalLine((Vector3) points[i], (Vector3) points[i+1], transform);
 			}
 		}
 	}

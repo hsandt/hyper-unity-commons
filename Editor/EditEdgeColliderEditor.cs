@@ -1,6 +1,6 @@
-﻿// http://stackoverflow.com/questions/29819697/manually-edit-unity3d-collider-coordinates
+﻿// From http://stackoverflow.com/questions/29819697/manually-edit-unity3d-collider-coordinates
 // Raphael Marques
-// adapted by hsandt
+// adapted by Long Nguyen Huu (hsandt)
 
 using UnityEngine;
 using UnityEditor;
@@ -12,8 +12,8 @@ public class EditEdgeCollider2DEditor : Editor {
 	public override void OnInspectorGUI() {
 		DrawDefaultInspector();
 		
-		// get the edge collider component yourself instead of counting on a member variable storing
-		// the component reference, since Awake() may not be called before this in the editor
+		// Get the edge collider component directly instead of depending on a member variable storing
+		// the component reference, since Awake() may not be called before this method in the editor
 		EdgeCollider2D collider = ((EditEdgeCollider2D) target).GetComponent<EdgeCollider2D>();
 		
 		if (collider != null) {
