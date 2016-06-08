@@ -23,11 +23,34 @@ public static class GameObjectExtensions {
 		return component;
 	}
 
+	/// Instantiate prefab / clone game object (helper to avoid casting to GameObject every time)
+	public static GameObject Instantiate (this GameObject model) {
+		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
+		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
+		return gameObjectInstance;
+	}
+
+	/// Instantiate prefab / clone game object at parent's position
+	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr, bool keepLocalPosition = false) {
+		GameObject gameObjectInstance = Instantiate(model);
+		gameObjectInstance.transform.SetParent(parentTr, false);
+		if (!keepLocalPosition)
+			gameObjectInstance.transform.localPosition = Vector3.zero;
+		return gameObjectInstance;
+	}
+
+	/// Instantiate prefab / clone game object under parent retaining the local position, adding some offset
+	public static GameObject InstantiateUnderWithOffset (this GameObject model, Transform parentTr, Vector3 offset) {
+		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
+		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
+		gameObjectInstance.transform.SetParent(parentTr, false);  // retain local position, rotation, scaling
+		gameObjectInstance.transform.localPosition += offset;
+		return gameObjectInstance;
+	}
+
 	/// Instantiate prefab / clone game object and set it at local position under parent transform on layer layer
 	public static GameObject InstantiateUnderAtOn (this GameObject model, Transform parentTr, Vector3 localPos, int layer = -1) {
-		if (model == null) {
-			throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
-		}
+		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
 		gameObjectInstance.transform.SetParent(parentTr, true);  // preserve world rotation and scaling
 		gameObjectInstance.transform.localPosition = localPos;
@@ -45,28 +68,14 @@ public static class GameObjectExtensions {
 		return gameObjectInstance;
 	}
 
-	/// Instantiate prefab / clone game object at parent's position
-	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr) {
-		return InstantiateUnderAtOn(model, parentTr, Vector3.zero);
-	}
-
-	/// Instantiate prefab / clone game object under parent retaining the local position, adding some offset
-	public static GameObject InstantiateUnderWithOffset (this GameObject model, Transform parentTr, Vector3 offset) {
-		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
-		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
-		gameObjectInstance.transform.SetParent(parentTr, false);  // retain local position, rotation, scaling
-		gameObjectInstance.transform.localPosition += offset;
-		return gameObjectInstance;
-	}
-
 	/// Instantiate prefab / clone game object under parent retaining the local transform
 	public static GameObject InstantiateUnderLocalTransform (this GameObject model, Transform parentTr) {
 		return InstantiateUnderWithOffset(model, parentTr, Vector3.zero);
 	}
 
-	/// Duplicate object under the same parent (breaks any prefab link) with a new name
+	/// Duplicate object under the same parent with the same local position, with a new name. This breaks any prefab link.
 	public static GameObject Duplicate (this GameObject model, string name) {
-		GameObject clone = InstantiateUnder(model, model.transform.parent);
+		GameObject clone = InstantiateUnder(model, model.transform.parent, true);
 		clone.name = name;
 		return clone;
 	}
@@ -95,17 +104,47 @@ public static class LayerMaskExtensions {
 
 }
 
+public static class ColorExtensions {
+
+	public static Color ToVisible (this Color color) {
+		Color visibleColor = color;
+		visibleColor.a = 1;
+		return visibleColor;
+	}
+
+	public static Color ToInvisible (this Color color) {
+		Color invisibleColor = color;
+		invisibleColor.a = 0;
+		return invisibleColor;
+	}
+
+}
+
 // Inspired by UI Extensions CanvasGroupActivator.cs
 public static class CanvasGroupExtensions {
 
+	/// Make canvas group visible and interactable with mouse / touch input
 	public static void Activate (this CanvasGroup group) {
 		group.alpha = 1f;
 		group.interactable = true;
 		group.blocksRaycasts = true;
 	}
 
+	/// Make canvas group invisible and not interactable with mouse / touch input
 	public static void Deactivate (this CanvasGroup group) {
 		group.alpha = 0f;
+		group.interactable = false;
+		group.blocksRaycasts = false;
+	}
+
+	/// Make canvas group interactable with mouse / touch input without changing its visibility
+	public static void EnableInteraction (this CanvasGroup group) {
+		group.interactable = true;
+		group.blocksRaycasts = true;
+	}
+
+	/// Make canvas group not interactable with mouse / touch input
+	public static void DisableInteraction (this CanvasGroup group) {
 		group.interactable = false;
 		group.blocksRaycasts = false;
 	}
