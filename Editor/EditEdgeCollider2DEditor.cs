@@ -22,7 +22,7 @@ public class EditEdgeCollider2DEditor : Editor {
 				points[i] = UnityEditor.EditorGUILayout.Vector2Field(i.ToString(), points[i]);
 			}
 			collider.points = points;
-			UnityEditor.EditorUtility.SetDirty(collider);
+			EditorUtility.SetDirty(collider);
 		}
 	}
 
