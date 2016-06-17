@@ -23,23 +23,16 @@ public class Fading : MonoBehaviour {
 		image.color = image.color.ToInvisible();
 	}
 
-	/// Fade in from invisible
+	/// Fade in from invisible. Image must start visible, else will interpolate toward invisible color.
+	/// Call image.DOKill before calling this method if you want to remove all previous tweens immediately
 	public Tweener FadeIn (float duration) {
-		// cancel any previous tween
-		image.DOKill();
-
-		// set black screen to be fully invisible (in case it was not in this state already)
-		image.color = image.color.ToInvisible();
+		// this method should not have any immediate side-effect, only return the Tweener (no DOKill, no direct visibility change)
 		return image.DOColor(image.color.ToVisible(), duration);
 	}
 
-	/// Fade out from fully visible
+	/// Fade out from fully visible (call DOKill manually, since this function will be called immediately even in a sequence)
 	public Tweener FadeOut (float duration) {
-		// cancel any previous tween
-		image.DOKill();
-
-		// set black screen to be fully invisible (in case it was not in this state already)
-		image.color = image.color.ToVisible();
+		// this method should not have any immediate side-effect, only return the Tweener (no DOKill, no direct visibility change)
 		return image.DOColor(image.color.ToInvisible(), duration);
 	}
 
