@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
+[CanEditMultipleObjects]
 [CustomEditor(typeof(EditPolygonCollider2D))]
 public class EditPolygonCollider2DEditor : Editor {
 	

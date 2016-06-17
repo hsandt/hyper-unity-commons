@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
+[CanEditMultipleObjects]
 [CustomEditor(typeof(EditEdgeCollider2D))]
 public class EditEdgeCollider2DEditor : Editor {
 	
