@@ -118,6 +118,12 @@ public static class ColorExtensions {
 		return invisibleColor;
 	}
 
+	public static Color ToAlpha (this Color color, float alpha) {
+		Color alphaColor = color;
+		alphaColor.a = alpha;
+		return alphaColor;
+	}
+
 }
 
 // Inspired by UI Extensions CanvasGroupActivator.cs

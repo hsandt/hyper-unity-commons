@@ -36,4 +36,9 @@ public class Fading : MonoBehaviour {
 		return image.DOColor(image.color.ToInvisible(), duration);
 	}
 
+	/// Fade to given alpha
+	public Tweener FadeTo (float alpha, float duration) {
+		return image.DOColor(image.color.ToAlpha(alpha), duration);
+	}
+
 }
