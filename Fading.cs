@@ -4,6 +4,7 @@ using System.Collections;
 
 using DG.Tweening;
 
+/// DEPRECATED: use Graphic extensions instead
 [RequireComponent(typeof(Image))]
 public class Fading : MonoBehaviour {
 
