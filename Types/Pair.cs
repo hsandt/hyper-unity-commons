@@ -4,9 +4,10 @@ public struct Pair<T, U> {
 	public T First { get; set; }
 	public U Second { get; set; }
 
-	public Pair(T first, U second) {
-		this.First = first;
-		this.Second = second;
+	// this() is required to initialize automatically assigned properties on some .NET versions (only MonoDevelop spots the error, Unity is fine)
+	public Pair(T first, U second) : this() {
+		First = first;
+		Second = second;
 	}
 
 	public override string ToString()

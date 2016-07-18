@@ -7,11 +7,8 @@ using System.Collections;
 /// </summary>
 public class PlayParticleOnce : MonoBehaviour {
 
-	[SerializeField] ParticleSystem particleSystem;
-	[Tooltip("Duration wanted for the particle effects. Always set it to a lower value than the particles' lifetime. Fade particles out before that time.")]
-	[SerializeField] float m_ParticleEffectDuration = 1f;
-
 	Timer m_ParticleEffectTimer;
+	private ParticleSystem currentParticleSystem;
 
 	// Use this for initialization
 	void Awake () {
@@ -24,10 +21,10 @@ public class PlayParticleOnce : MonoBehaviour {
 	}
 
 	public void Setup () {
-		particleSystem.gameObject.SetActive(false);
 	}
 
 	public void Clear () {
+		StopParticle();
 		m_ParticleEffectTimer.Stop();
 	}
 
@@ -42,17 +39,20 @@ public class PlayParticleOnce : MonoBehaviour {
 		m_ParticleEffectTimer.CountDown(Time.deltaTime);
 	}
 
-	public void PlayParticle () {
+	/// Play particleSystem and stop after particleEffectDuration
+	/// particleEffectDuration: Duration wanted for the particle effects. Always set it to a lower value than the particles' lifetime. Fade particles out before that time.
+	public void PlayParticle (ParticleSystem particleSystem, float particleEffectDuration) {
 		// Debug.Log("Play particle");
-		particleSystem.gameObject.SetActive(true);
-		particleSystem.Play();  // required if PFX is not Play on Awake
-		m_ParticleEffectTimer.SetTime(m_ParticleEffectDuration);
+		currentParticleSystem = particleSystem;
+		currentParticleSystem.gameObject.SetActive(true);
+		currentParticleSystem.Play();  // required if PFX is not Play on Awake
+		m_ParticleEffectTimer.SetTime(particleEffectDuration);
 	}
 
 	public void StopParticle () {
 		// Debug.Log("Stop particle");
-		//    	damageParticles.Stop();
-		particleSystem.gameObject.SetActive(false);
+		currentParticleSystem.gameObject.SetActive(false);
+		currentParticleSystem = null;
 	}
 
 }
