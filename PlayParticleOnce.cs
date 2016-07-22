@@ -51,8 +51,11 @@ public class PlayParticleOnce : MonoBehaviour {
 
 	public void StopParticle () {
 		// Debug.Log("Stop particle");
-		currentParticleSystem.gameObject.SetActive(false);
-		currentParticleSystem = null;
+		// if any current particle playing, stop it now
+		if (currentParticleSystem) {
+			currentParticleSystem.gameObject.SetActive(false);
+			currentParticleSystem = null;
+		}
 	}
 
 }
