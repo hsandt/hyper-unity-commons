@@ -11,7 +11,7 @@ public class BranchingCodeEditorWindow : EditorWindow
     [MenuItem("Debug/Code Branching")]
     static void OpenWindow()
     {
-        BranchingCodeEditorWindow editorWindow = (BranchingCodeEditorWindow) GetWindow(typeof(KeyEditorWindow), false, "Branching code");
+        BranchingCodeEditorWindow editorWindow = (BranchingCodeEditorWindow) GetWindow(typeof(BranchingCodeEditorWindow), false, "Branching code");
         editorWindow.Show();
     }
 
