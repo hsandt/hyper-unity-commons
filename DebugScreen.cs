@@ -1,6 +1,9 @@
 using UnityEngine;
 
+/// Static class for easy debugging
 public static class DebugScreen {
+
+	// All methods start by checking the existence of DebugScreenManager.Instance for safety. In particular, the DebugScreenManager object is EditorOnly so the standalone would crash without
 
 	/// Print text on screen with default duration
 	public static void Print(int channel, string text) {
