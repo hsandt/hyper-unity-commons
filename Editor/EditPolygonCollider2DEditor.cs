@@ -13,6 +13,10 @@ public class EditPolygonCollider2DEditor : Editor {
 	public override void OnInspectorGUI() {
 		DrawDefaultInspector();
 
+		/*
+		 * This custom inspector is now obsolete in Unity 5.4 where coordinates can be manually edited in the main component, in Normal view
+		 * I may restore this code if I add something to make it better than the native Unity coordinate editor, such as +/- buttons to insert and remove points
+
 		// Get the edge collider component directly instead of depending on a member variable storing
 		// the component reference, since Awake() may not be called before this method in the editor
 		PolygonCollider2D collider = ((EditPolygonCollider2D) target).GetComponent<PolygonCollider2D>();
@@ -25,6 +29,8 @@ public class EditPolygonCollider2DEditor : Editor {
 			collider.points = points;
 			EditorUtility.SetDirty(collider);
 		}
+
+		*/
 	}
 
 }
