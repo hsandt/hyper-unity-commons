@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-/// <summary>
-/// This script allows playing particle effects that work only once,
-/// but reseting them before particles start to die
-/// </summary>
+/// DEPRECATED: use ParticlePlayer on *the object with the ParticleSystem* instead
+/// This component allows playing particle effects based on bursts by reseting them before the particles die
 public class PlayParticleOnce : MonoBehaviour {
 
 	Timer m_ParticleEffectTimer;
