@@ -13,7 +13,6 @@ public class PlayParticleOnce : MonoBehaviour {
 		m_ParticleEffectTimer = new Timer(StopParticle);
 	}
 
-	// Update is called once per frame
 	void Start () {
 		Setup();
 	}
