@@ -12,6 +12,7 @@ public class Fading : MonoBehaviour {
 
 	void Awake () {
 		image = GetComponent<Image>();
+		Debug.LogWarning("Fading component is deprecated, use Graphic extensions instead");
 	}
 
 	public void CutIn () {
