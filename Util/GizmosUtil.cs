@@ -4,18 +4,39 @@ using System.Collections;
 public static class GizmosUtil {
 
 	/// <summary>
-	/// Draw a line with local coordinates, with current gizmos parameters
+	/// Draw a line with local coordinates
 	/// </summary>
 	/// <param name="p1">Local 1st coordinates of the line.</param>
 	/// <param name="p2">Local 2nt coordinates of the line.</param>
-	/// <param name="tr">Transform used to for local coordinates</param>
-	/// <param name="color">Draw color.</param>
+	/// <param name="tr">Transform used for local coordinates.</param>
+	/// <param name="color">Optional draw color. Current gizmos color if not set.</param>
 	public static void DrawLocalLine (Vector3 p1, Vector3 p2, Transform tr, Color? color = null) {
 		Color oldColor = Gizmos.color;
 		if (color != null)
 			Gizmos.color = (Color) color;
 
 		Gizmos.DrawLine(tr.TransformPoint(p1), tr.TransformPoint(p2));
+		
+		if (color != null)
+			Gizmos.color = oldColor;
+	}
+
+	/// <summary>
+	/// Draw a ray with local coordinates, with current gizmos parameters
+	/// </summary>
+	/// <param name="p1">Local origin of the ray.</param>
+	/// <param name="p2">Direction (and distance) of the ray.</param>
+	/// <param name="tr">Transform used for local coordinates.</param>
+	/// <param name="preserveRayScale">Should direction length be preserved? If false, direction is scaled with transform tr.</param>
+	/// <param name="color">Optional draw color. Current gizmos color if not set.</param>
+	public static void DrawLocalRay (Vector3 localOrigin, Vector3 localDirection, Transform tr, bool preserveRayScale = true, Color? color = null) {
+		Color oldColor = Gizmos.color;
+		if (color != null)
+			Gizmos.color = (Color) color;
+
+		Vector3 origin = tr.TransformPoint(localOrigin);
+		Vector3 direction = preserveRayScale ? tr.TransformDirection(localDirection) : tr.TransformVector(localDirection);
+		Gizmos.DrawRay(origin, direction);
 		
 		if (color != null)
 			Gizmos.color = oldColor;
