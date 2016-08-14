@@ -1,72 +1,86 @@
 ﻿using UnityEngine;
-// using Vexe.Runtime.Types;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
-/// Manager for a heterogeneous pool of game objects sharing a common script that implements IPooledObject
-/// TKey is a key that identifies each type of game object
-public abstract class MultiPoolManager<TKey, TPooledObject> : MonoBehaviour where TPooledObject : MonoBehaviour, IPooledObject {
+/// Manager for a heterogeneous pool of game objects sharing a common script TPooledObject that implements IPooledObject
+/// Unlike PoolManager, this manager loads the prefabs by resource name (dictionary cannot be serialized directly and list of references are long to drag and drop)
+/// When inheriting from this base class, use the derived class as the T generic argument so that you can access a singleton instance of the derived class
+public abstract class MultiPoolManager<TPooledObject, T> : SingletonManager<T> where TPooledObject : MonoBehaviour, IPooledObject where T : MonoBehaviour {
 
-	/* external references */
+	/* External references */
+
 	/// Parent of all the pooled objects
-	// [Serialize]
-	[SerializeField]
-	protected Transform poolTransform;
+	public Transform poolTransform;
 
-	/// Dictionary of prefabs used to generate pooled objects, per key
-	[SerializeField]
-	protected Dictionary<TKey, GameObject> prefabDict;
+	/* Parameters */
 
-	/* parameters */
-	/// Max number of objects to pool for each type (multi-pool total size is a multiple)
-	[SerializeField]
-	protected int poolSize = 20;
+	[Tooltip("Path of gameobject prefabs to load, starting just after Resources/")]
+	[SerializeField] protected string resourcePrefabsPath;
 
-	/* state variables */
-	public Dictionary<TKey, List<TPooledObject>> m_MultiPool = new Dictionary<TKey, List<TPooledObject>>();
+	[Tooltip("Max number of objects to pool for each type (multi-pool total size is a multiple)")]
+	[SerializeField] protected int poolSize = 10;
+
+	/* State variables */
+	
+	/// Dictionary of resource prefabs used to generate pooled objects, per name
+	protected Dictionary<string, GameObject> prefabLibrary = new Dictionary<string, GameObject>();
+
+	/// Pool of object instances, per name
+	Dictionary<string, List<TPooledObject>> m_MultiPool = new Dictionary<string, List<TPooledObject>>();
+	
 	// int nbObjectsInUse;
 
-	// Use this for initialization
-	void Awake () {
-		Init();
-	}
+	// TEMPLATE
+	// void Awake () {
+	// 	Instance = this;
+
+	// 	Init();
+	// }
 
 	protected void Init () {
-		// initialize pool with poolSize objects of each type
-		foreach (KeyValuePair<TKey, GameObject> entry in prefabDict)
-		{
-			m_MultiPool[entry.Key] = new List<TPooledObject>();
-			GameObject pooledObjectPrefab = entry.Value;
-			for (int i = 0; i < poolSize; ++i) {
-				GameObject pooledGameObject = pooledObjectPrefab.InstantiateUnder(poolTransform);
-				TPooledObject pooledObject = pooledGameObject.GetComponentOrFail<TPooledObject>();
-				pooledObject.Release();
-				m_MultiPool[entry.Key].Add(pooledObject);
-			}
+		LoadAllPrefabs();
 
-			// in case prefab reference is a scene instance, deactivate it (no effect if prefab is an asset since runtime)
-			pooledObjectPrefab.SetActive(false);
-			// nbObjectsInUse = 0;  // uncomment if you choose ALTERNATIVE 1 in AnyInUse()
+		foreach (var entry in prefabLibrary) {
+			string prefabName = entry.Key;
+			GameObject prefab = entry.Value;
+			GeneratePool(prefabName, prefab);
 		}
 	}
 
-	public TPooledObject GetObject (TKey objectType) {
+	void LoadAllPrefabs () {
+		GameObject[] prefabs = Resources.LoadAll<GameObject>(resourcePrefabsPath);
+		for (int i = 0; i < prefabs.Length; ++i) {
+			Debug.LogFormat("[MultiPoolManager] Adding {0}/{1} to prefab library", resourcePrefabsPath, prefabs[i].name);
+			prefabLibrary.Add(prefabs[i].name, prefabs[i]);
+		}
+	}
+
+	/// Initialize and fill pool [prefabName] with [poolSize] prefab instances
+	void GeneratePool (string prefabName, GameObject prefab) {
+		Debug.LogFormat("[MultiPoolManager] Setup prefab pool of size {0} for {1}", poolSize, prefab.name);
+		m_MultiPool.Add(prefabName, new List<TPooledObject>());
+		for (int i = 0; i < poolSize; ++i) {
+			GameObject sourceObject = prefab.InstantiateUnder(poolTransform);
+			TPooledObject pooledObject = sourceObject.GetComponentOrFail<TPooledObject>();
+			pooledObject.Release();
+			m_MultiPool[prefabName].Add(pooledObject);
+		}
+	}
+
+	/// Retrieve a released instance in the pool of objects called prefabName
+	public TPooledObject GetObject (string prefabName) {
 		// O(n), n pool size
 		for (int i = 0; i < poolSize; ++i) {
-			TPooledObject pooledObject = m_MultiPool[objectType][i];
+			TPooledObject pooledObject = m_MultiPool[prefabName][i];
 			if (!pooledObject.IsInUse()) {
 				return pooledObject;
 			}
 		}
 		// starvation
-		Debug.LogWarningFormat("Multi-pool starvation, cannot get released object of type {0}", objectType);
+		Debug.LogWarningFormat("Multi-pool starvation, cannot get a released instance of object {0}", prefabName);
 		return null;
 	}
-
-	// public void ReleaseObject (TPooledObject pooledObject) {
-	// 	pooledObject.Release();
-	// }
 
 	/// Return true if any pooled object is in use
 	public bool AnyInUse () {
@@ -76,10 +90,10 @@ public abstract class MultiPoolManager<TKey, TPooledObject> : MonoBehaviour wher
 		//	or decrement in counter of objects in use, so we can directly answer
 		// ALTERNATIVE 2: two lists, one of objects released and one of objects in use
 		//	we can immediately check the length of the lists to know if any / all are used
-		foreach (var objectListPair in m_MultiPool)
+		foreach (var nameListPair in m_MultiPool)
 		{
 			for (int i = 0; i < poolSize; ++i) {
-				TPooledObject pooledObject = objectListPair.Value[i];
+				TPooledObject pooledObject = nameListPair.Value[i];
 				if (pooledObject.IsInUse()) {
 					return true;
 				}
