@@ -13,7 +13,8 @@ public class RestartWindow : EditorWindow {
 
 	[MenuItem("Window/Restart")]
 	private static void ShowWindow () {
-		RestartWindow window = (RestartWindow)EditorWindow.GetWindow(typeof(RestartWindow));
+		EditorWindow.GetWindow(typeof(RestartWindow));
+		// RestartWindow window = (RestartWindow)EditorWindow.GetWindow(typeof(RestartWindow));
 		// window.autoRepaintOnSceneChange = true;
 	}
 
