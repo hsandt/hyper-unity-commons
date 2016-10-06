@@ -66,4 +66,9 @@ public class DebugText : MonoBehaviour
     public void Hide () {
         gameObject.SetActive(false);
     }
+
+    /// Is the object currently used? It cannot be requested if true.
+    public bool IsInUse() {
+        return gameObject.activeSelf;
+    }
 }
