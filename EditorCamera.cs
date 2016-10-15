@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Reflection;
 
-public static class FaceCamera
+public static class EditorCamera
 {
 
 	[MenuItem( "GameObject/Align Rotation with Camera" )]
