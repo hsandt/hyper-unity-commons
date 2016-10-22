@@ -24,7 +24,10 @@ public class SingletonManager<T> : MonoBehaviour where T : MonoBehaviour {
 
 	public static T Instance {
 		get {
-//			if (_instance == null) throw new UninitializedSingletonException(typeof(T).ToString());
+#if UNITY_EDITOR
+// Hot reload support
+			if (_instance == null) _instance = FindObjectOfType<T>();
+#endif
 			return _instance;
 		}
 		protected set {
