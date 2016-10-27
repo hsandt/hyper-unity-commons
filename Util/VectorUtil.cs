@@ -23,8 +23,18 @@ public static class VectorUtil {
 	}
 
 	/// Return vector rotated by 90 clockwise
+	public static Vector2 Rotate (Vector2 vector, float angle) {
+		return (Vector2) (Quaternion.AngleAxis(angle, Vector3.forward) * vector);
+	}
+
+	/// Return vector rotated by 90 clockwise
 	public static Vector2 Rotate90CW (Vector2 vector) {
 		return new Vector2(vector.y, -vector.x);
+	}
+
+	/// Return vector rotated by 90 counter-clockwise
+	public static Vector2 Rotate90CCW (Vector2 vector) {
+		return new Vector2(-vector.y, vector.x);
 	}
 
 	/// Return the distance between a point and a segment
