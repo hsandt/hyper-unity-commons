@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+// IMPROVE: when variable has not been updated for several frames, darken the label
+
 /// Usage: create an instance of DebugCanvas object in the scene. The prefab is provided
 /// in the same folder as this script, and contains both objects for the DebugScreenManager and the DebugText scripts
 public class DebugScreenManager : SingletonManager<DebugScreenManager> {
