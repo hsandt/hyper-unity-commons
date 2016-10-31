@@ -1,10 +1,19 @@
 ﻿using System;
 using UnityEngine;
 
+// IMPROVE: make it a scriptable object and draw its serialized property inside code tuning editor window
+// (as a shortcut to editing the scriptable object from the project view)
+// ISSUE: this will drag a ScriptableObject asset into the build, which should not be done not non-development build ->
+// ALTERNATIVE: use a MonoBehaviour + object in scene...
+
 /// Code Tuning runtime class (required to run the game without knowing editor stuff)
 /// Builds will be playable with default values, but we advise to remove any CodeTuning references in the code before building
 public class CodeTuning
 {
+	#if UNITY_EDITOR
+	/// Is code tuning active? If not, use default values.
+	public bool active = false;
+	#endif
 
 	public int branchIndex;
 	public static int GetBranchIndex (int defaultValue) {
@@ -33,10 +42,11 @@ public class CodeTuning
 	}
 
 	private CodeTuning () {}
-	
+
+	// IMPROVE: make CodeTuning usable in build in development mode (DEVELOPMENT_BUILD macro), using on-screen value sliders
 	static T TryGetValue<T>(T tuningValue, T defaultValue) {
 		#if UNITY_EDITOR
-		return tuningValue;
+		return Instance.active ? tuningValue : defaultValue;
 		#else
 		Debug.LogErrorFormat("CodeTuning cannot be used to get tuning values outside Editor, returning default value {0}", defaultValue);
 		return defaultValue;
