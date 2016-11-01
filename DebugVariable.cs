@@ -49,7 +49,8 @@ public class DebugVariable : MonoBehaviour {
 	}
 
 	public void SetValue<T>(T value) {
-		debugValue.text = value.ToString();
+		string valueText = value == null ? "null" : value.ToString();
+		debugValue.text = valueText;
 	}
 
 	// void OnUpdateVariable(string variableName, string valueText) {

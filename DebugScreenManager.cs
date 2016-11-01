@@ -123,7 +123,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 	}
 
 	/// Update value of variable by name
-	public void UpdateVariable<T>(string variableName, T value) {
+	void UpdateVariable<T>(string variableName, T value) {
 		// send update variable event to all debug variable scripts, they will update if they are concerned
 		// alternative: keep a dictionary of DebugVariable per variable name and directly update the one concerned
 		m_DebugVariableDict[variableName].SetValue<T>(value);

@@ -23,15 +23,15 @@ public static class DebugScreen {
 			DebugScreenManager.Instance.ShowDebugText(string.Format(text, args), 2f);
 	}
 
-	public static void PrintVar<T>(int channel, string variableName, T value) {
-		if (DebugScreenManager.Instance != null)
-			DebugScreenManager.Instance.ShowDebugVariable(variableName, value, channel);
-	}
-
-	public static void UpdateVar<T>(string variableName, T value) {
-		if (DebugScreenManager.Instance != null)
-			DebugScreenManager.Instance.UpdateVariable(variableName, value);
-	}
+//	public static void PrintVar<T>(int channel, string variableName, T value) {
+//		if (DebugScreenManager.Instance != null)
+//			DebugScreenManager.Instance.ShowDebugVariable(variableName, value, channel);
+//	}
+//
+//	public static void UpdateVar<T>(string variableName, T value) {
+//		if (DebugScreenManager.Instance != null)
+//			DebugScreenManager.Instance.UpdateVariable(variableName, value);
+//	}
 
 	// Print or update variable on screen, on first available channel
 	public static void PrintVar<T>(string variableName, T value) {
