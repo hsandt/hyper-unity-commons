@@ -16,7 +16,7 @@ public static class GizmosUtil {
 			Gizmos.color = (Color) color;
 
 		Gizmos.DrawLine(tr.TransformPoint(p1), tr.TransformPoint(p2));
-		
+
 		if (color != null)
 			Gizmos.color = oldColor;
 	}
@@ -37,7 +37,7 @@ public static class GizmosUtil {
 		Vector3 origin = tr.TransformPoint(localOrigin);
 		Vector3 direction = preserveRayScale ? tr.TransformDirection(localDirection) : tr.TransformVector(localDirection);
 		Gizmos.DrawRay(origin, direction);
-		
+
 		if (color != null)
 			Gizmos.color = oldColor;
 	}
@@ -49,10 +49,14 @@ public static class GizmosUtil {
 
 		Vector2[] corners = GetCornersFromLimits(left, right, bottom, top);
 		// draw the 4 edges by cycling between pair of corners
+		// IMPROVE:
+		// Matrix4x4 oldMatrix = Gizmos.matrix;
+		// Gizmos.matrix = tr.localToWorldMatrix;
 		for (int i = 0; i < 4; ++i) {
 			Gizmos.DrawLine(tr.TransformPoint((Vector3) corners[i]), tr.TransformPoint((Vector3) corners[(i + 1) % 4]));
 		}
-		
+		// Gizmos.matrix = oldMatrix;
+
 		if (color != null)
 			Gizmos.color = oldColor;
 	}
@@ -67,7 +71,7 @@ public static class GizmosUtil {
 		for (int i = 0; i < 4; ++i) {
 			Gizmos.DrawLine(tr.TransformPoint((Vector3) corners[i]), tr.TransformPoint((Vector3) corners[(i + 1) % 4]));
 		}
-		
+
 		if (color != null)
 			Gizmos.color = oldColor;
 	}
