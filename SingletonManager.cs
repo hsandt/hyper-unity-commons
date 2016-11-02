@@ -24,10 +24,7 @@ public class SingletonManager<T> : MonoBehaviour where T : MonoBehaviour {
 
 	public static T Instance {
 		get {
-#if UNITY_EDITOR
-// Hot reload support
-			if (_instance == null) _instance = FindObjectOfType<T>();
-#endif
+			// if (_instance == null) _instance = FindObjectOfType<T>();
 			return _instance;
 		}
 		protected set {
