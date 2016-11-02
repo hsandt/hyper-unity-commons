@@ -39,5 +39,15 @@ public static class DebugScreen {
 			DebugScreenManager.Instance.ShowOrUpdateDebugVariable(variableName, value);
 	}
 
+	public static void SetContext (string context) {
+		if (DebugScreenManager.Instance != null)
+			DebugScreenManager.Instance.SetContext(context);
+		
+	}
+
+	public static void ClearContext () {
+		if (DebugScreenManager.Instance != null)
+			DebugScreenManager.Instance.ClearContext();
+	}
 
 }

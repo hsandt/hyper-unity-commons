@@ -11,23 +11,32 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 
 	protected DebugScreenManager () {} // guarantee this will be always a singleton only - can't use the constructor!
 
+	/* Prefabs */
+
 	// debug text and variable prefabs used to create on-screen debug messages
 	public GameObject debugTextPrefab;
 	public GameObject debugVariablePrefab;
 
+	/* Parameters */
+
+	[SerializeField]
+	int nbChannels = 8;  // channels are instantiated on setup, so you cannot change add channels while running; if you want to, run Init() on value change
+
+	/* State vars */
+
+	/// Context string, used to differenciate debug texts called from the same line but by different objects that are not accessible from the method calling the debug
+	string context = null;
+
+	// Texts and variables used to debug
 	List<DebugText> m_DebugTexts = new List<DebugText>();
 	List<DebugVariable> m_DebugVariables = new List<DebugVariable>();
 
 	/// Dictionary of variable name => debug variable
 	Dictionary<string, DebugVariable> m_DebugVariableDict = new Dictionary<string, DebugVariable>();
 
-	// parameters
-	[SerializeField]
-	int nbChannels = 8;  // channels are instantiated on setup, so you cannot change add channels while running; if you want to, run Init() on value change
-
 	// variable update event
-	public delegate void UpdateVariableHandler(string variableName, string valueText);
-	public static event UpdateVariableHandler UpdateVariableEvent;
+//	public delegate void UpdateVariableHandler(string variableName, string valueText);
+//	public static event UpdateVariableHandler UpdateVariableEvent;
 
 	void Awake () {
 		Instance = this;
@@ -75,6 +84,8 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 		return -1;
 	}
 
+	// IMPROVE: categorize debug texts by string category ("character", "item", etc.) rather than numeric channel
+
 	/// Print text on screen on channel for duration in seconds
 	public void ShowDebugText(string text, float duration) {
 		int nextChannelAvailable = GetNextChannelAvailable();
@@ -90,6 +101,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 			debugVariableAtChannel.Hide();
 			m_DebugVariableDict.Remove(debugVariableAtChannel.VarName);
 		}
+		if (!string.IsNullOrEmpty(context)) text = string.Format("({0}) {1}", context, text);
 		m_DebugTexts[channel].Show(text, duration);
 	}
 
@@ -100,8 +112,11 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 		ShowDebugVariable<T>(variableName, value, nextChannelAvailable);
 	}
 
+	// OPTIMIZATION: only update text as human-visible time (if pausing step by step in the editor, update each frame, ie consider real time)
+
 	/// Show or update variable on screen, in 1st channel available
 	public void ShowOrUpdateDebugVariable<T>(string variableName, T value) {
+		if (!string.IsNullOrEmpty(context)) variableName = string.Format("({0}) {1}", context, variableName);
 		if (!m_DebugVariableDict.ContainsKey(variableName)) {
 			ShowDebugVariable<T>(variableName, value);
 		} else {
@@ -118,6 +133,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 			// no need to hide here, since we'll reuse it soon enough
 			m_DebugVariableDict.Remove(debugVariableAtChannel.VarName);
 		}
+		// REFACTOR: Show only shows, call SetValue to update separately
 		debugVariableAtChannel.Show(variableName, value);
 		m_DebugVariableDict.Add(variableName, debugVariableAtChannel);
 	}
@@ -142,6 +158,16 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 		}
 	}
 
-	// TODO: special text display for variables, that is shown in permanence and is updated when the var changes
+	public string GetContext () {
+		return context;
+	}
+
+	public void SetContext (string context) {
+		this.context = context;
+	}
+
+	public void ClearContext () {
+		context = null;
+	}
 
 }

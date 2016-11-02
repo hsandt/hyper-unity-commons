@@ -50,6 +50,9 @@ public class DebugVariable : MonoBehaviour {
 
 	public void SetValue<T>(T value) {
 		string valueText = value == null ? "null" : value.ToString();
+		// REFACTOR: pass context as argument?
+//		string context = DebugScreenManager.Instance.GetContext();
+//		if (!string.IsNullOrEmpty(context)) valueText = string.Format("({0}) {1}", context, valueText);
 		debugValue.text = valueText;
 	}
 
