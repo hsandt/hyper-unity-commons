@@ -7,7 +7,7 @@ public static class GizmosUtil {
 	/// Draw a line with local coordinates
 	/// </summary>
 	/// <param name="p1">Local 1st coordinates of the line.</param>
-	/// <param name="p2">Local 2nt coordinates of the line.</param>
+	/// <param name="p2">Local 2nd coordinates of the line.</param>
 	/// <param name="tr">Transform used for local coordinates.</param>
 	/// <param name="color">Optional draw color. Current gizmos color if not set.</param>
 	public static void DrawLocalLine (Vector3 p1, Vector3 p2, Transform tr, Color? color = null) {

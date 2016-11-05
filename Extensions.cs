@@ -24,6 +24,7 @@ public static class GameObjectExtensions {
 	}
 
 	/// Instantiate prefab / clone game object (helper to avoid casting to GameObject every time)
+	[System.Obsolete("Use Instantiate as GameObject instead")]
 	public static GameObject Instantiate (this GameObject model) {
 		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
@@ -31,6 +32,7 @@ public static class GameObjectExtensions {
 	}
 
 	/// Instantiate prefab / clone game object at parent's position
+	[System.Obsolete("Use Instantiate as GameObject with parent and worldPositionStays arguments instead")]
 	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr, bool keepLocalPosition = false) {
 		GameObject gameObjectInstance = Instantiate(model);
 		gameObjectInstance.transform.SetParent(parentTr, false);
@@ -40,6 +42,7 @@ public static class GameObjectExtensions {
 	}
 
 	/// Instantiate prefab / clone game object under parent retaining the local position, adding some offset
+	[System.Obsolete("Use Instantiate as GameObject with parent argument, then add offset to localPosition instead")]
 	public static GameObject InstantiateUnderWithOffset (this GameObject model, Transform parentTr, Vector3 offset) {
 		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
@@ -60,6 +63,7 @@ public static class GameObjectExtensions {
 	}
 
 	/// Instantiate prefab / clone game object and set it at world position under parent transform
+	[System.Obsolete("Use Instantiate as GameObject with parent and position arguments instead")]
 	public static GameObject InstantiateUnderWithWorldPosition (this GameObject model, Transform parentTr, Vector3 position) {
 		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
@@ -69,6 +73,7 @@ public static class GameObjectExtensions {
 	}
 
 	/// Instantiate prefab / clone game object under parent retaining the local transform
+	[System.Obsolete("Use Instantiate as GameObject with parent argument instead")]
 	public static GameObject InstantiateUnderLocalTransform (this GameObject model, Transform parentTr) {
 		return InstantiateUnderWithOffset(model, parentTr, Vector3.zero);
 	}
