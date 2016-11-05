@@ -9,6 +9,10 @@ using System.Collections.Generic;
 /// in the same folder as this script, and contains both objects for the DebugScreenManager and the DebugText scripts
 public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 
+#if UNITY_EDITOR
+	[System.NonSerialized] bool initialized;  // Hot reload support
+#endif
+
 	protected DebugScreenManager () {} // guarantee this will be always a singleton only - can't use the constructor!
 
 	/* Prefabs */
@@ -24,8 +28,9 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 
 	/* State vars */
 
-	/// Context string, used to differenciate debug texts called from the same line but by different objects that are not accessible from the method calling the debug
-	string context = null;
+	/// Context game object, used to differenciate debug texts called from the same line but by different objects that are not accessible from the method calling the debug
+	/// Can also be used by other debug functions
+	public GameObject context = null;
 
 	// Texts and variables used to debug
 	List<DebugText> m_DebugTexts = new List<DebugText>();
@@ -39,6 +44,9 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 //	public static event UpdateVariableHandler UpdateVariableEvent;
 
 	void Awake () {
+#if UNITY_EDITOR
+		initialized = true;  // Hot reload support
+#endif
 		Instance = this;
 		Init();
 	}
@@ -53,12 +61,19 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 		for (int i = 0; i < nbChannels; ++i) {
 			Vector3 offset = i * fontSize * 1.2f * Vector3.down;
 
-			GameObject debugTextInstance = debugTextPrefab.InstantiateUnderWithOffset(transform, offset);
+			// GameObject debugTextInstance = debugTextPrefab.InstantiateUnderWithOffset(transform, offset);
+
+			GameObject debugTextInstance = Instantiate(debugTextPrefab, transform) as GameObject;
+			debugTextInstance.transform.localPosition += offset;
+
 			var debugText = debugTextInstance.GetComponentOrFail<DebugText>();
 			m_DebugTexts.Add(debugText);
 			debugTextInstance.SetActive(false);
 
-			GameObject debugVariableInstance = debugVariablePrefab.InstantiateUnderWithOffset(transform, offset);
+			// GameObject debugVariableInstance = debugVariablePrefab.InstantiateUnderWithOffset(transform, offset);
+			GameObject debugVariableInstance = Instantiate(debugVariablePrefab,  transform) as GameObject;
+			debugVariableInstance.transform.localPosition += offset;
+
 			var debugVariable = debugVariableInstance.GetComponentOrFail<DebugVariable>();
 			m_DebugVariables.Add(debugVariable);
 			debugVariableInstance.SetActive(false);
@@ -101,7 +116,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 			debugVariableAtChannel.Hide();
 			m_DebugVariableDict.Remove(debugVariableAtChannel.VarName);
 		}
-		if (!string.IsNullOrEmpty(context)) text = string.Format("({0}) {1}", context, text);
+		if (context != null) text = string.Format("({0}) {1}", context.name, text);
 		m_DebugTexts[channel].Show(text, duration);
 	}
 
@@ -116,7 +131,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 
 	/// Show or update variable on screen, in 1st channel available
 	public void ShowOrUpdateDebugVariable<T>(string variableName, T value) {
-		if (!string.IsNullOrEmpty(context)) variableName = string.Format("({0}) {1}", context, variableName);
+		if (context != null) variableName = string.Format("({0}) {1}", context.name, variableName);
 		if (!m_DebugVariableDict.ContainsKey(variableName)) {
 			ShowDebugVariable<T>(variableName, value);
 		} else {
@@ -152,22 +167,29 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 		m_DebugVariables[channel].Hide();
 	}
 
+	public void ClearAllChannels() {
+		for (int i = 0; i < nbChannels; ++i) {
+			CheckChannelValidity(i);
+			m_DebugTexts[i].Hide();
+			m_DebugVariables[i].Hide();
+		}
+	}
+
 	void CheckChannelValidity (int channel) {
 		if (channel >= nbChannels) {
 			throw new ArgumentException(string.Format("Channel #{0} does not exist (#0 - #{1} only)", channel, nbChannels - 1), "channel");
 		}
 	}
 
-	public string GetContext () {
-		return context;
+#if UNITY_EDITOR
+	// Hot reload support
+	void OnEnable () {
+		if (!initialized) {
+			Debug.Log("[DEBUG SCREEN MANAGER] Hot Reload");
+			Instance = this;
+			ClearAllChannels();
+		}
 	}
-
-	public void SetContext (string context) {
-		this.context = context;
-	}
-
-	public void ClearContext () {
-		context = null;
-	}
+#endif
 
 }

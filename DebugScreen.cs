@@ -5,6 +5,11 @@ public static class DebugScreen {
 
 	// All methods start by checking the existence of DebugScreenManager.Instance for safety. In particular, the DebugScreenManager object is EditorOnly so the standalone would crash without
 
+	public static GameObject context {
+		get { return DebugScreenManager.Instance != null ? DebugScreenManager.Instance.context : null; }
+		set { if (DebugScreenManager.Instance != null) DebugScreenManager.Instance.context = value; }
+	}
+
 	/// Print text on screen with default duration
 	public static void Print(int channel, string text) {
 		if (DebugScreenManager.Instance != null)
@@ -37,17 +42,6 @@ public static class DebugScreen {
 	public static void PrintVar<T>(string variableName, T value) {
 		if (DebugScreenManager.Instance != null)
 			DebugScreenManager.Instance.ShowOrUpdateDebugVariable(variableName, value);
-	}
-
-	public static void SetContext (string context) {
-		if (DebugScreenManager.Instance != null)
-			DebugScreenManager.Instance.SetContext(context);
-		
-	}
-
-	public static void ClearContext () {
-		if (DebugScreenManager.Instance != null)
-			DebugScreenManager.Instance.ClearContext();
 	}
 
 }
