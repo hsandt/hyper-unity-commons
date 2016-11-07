@@ -19,23 +19,31 @@ namespace StagPoint.DeveloperTools
 	public class ImmediateWindow : EditorWindow
 	{
 
+		const string WELCOME_KEY = "immediate-window-welcome";
+
 		#region Static constructor
 
 		static ImmediateWindow()
 		{
 
-			const string WELCOME_KEY = "immediate-window-welcome";
 
-			var hasShownWelcome = EditorPrefs.GetBool( WELCOME_KEY, false );
-			if( hasShownWelcome )
-				return;
+			// ERROR:
+			// GetBool is not allowed to be called from a ScriptableObject constructor (or instance field initializer), call it in OnEnable instead. Called from ScriptableObject 'ImmediateWindow'.
+			// See "Script Serialization" page in the Unity Manual for further details.
+			// SOLUTION: do this in OnEnable (welcome message will only appear when accessing ImmediateWindow once) or find how to trigger a Welcome window properly (other plugins such as DOTween do it)
 
-			EditorPrefs.SetBool( WELCOME_KEY, true );
+			// MOVED TO OnEnable
 
-			if( !EditorUtility.DisplayDialog( "Immediate Window", "You have successfully installed the Immediate Window Extension.\n\nDo you wish to view the online QuickStart guide?", "Yes", "No" ) )
-				return;
+			// var hasShownWelcome = EditorPrefs.GetBool( WELCOME_KEY, false );
+			// if( hasShownWelcome )
+			// 	return;
 
-			ShowQuickstart();
+			// EditorPrefs.SetBool( WELCOME_KEY, true );
+
+			// if( !EditorUtility.DisplayDialog( "Immediate Window", "You have successfully installed the Immediate Window Extension.\n\nDo you wish to view the online QuickStart guide?", "Yes", "No" ) )
+			// 	return;
+
+			// ShowQuickstart();
 
 		}
 
@@ -133,6 +141,17 @@ namespace StagPoint.DeveloperTools
 			initializeAutoComplete();
 			Repaint();
 
+			// WELCOME MESSAGE moved here
+			var hasShownWelcome = EditorPrefs.GetBool( WELCOME_KEY, false );
+			if( hasShownWelcome )
+				return;
+
+			EditorPrefs.SetBool( WELCOME_KEY, true );
+
+			if( !EditorUtility.DisplayDialog( "Immediate Window", "You have successfully installed the Immediate Window Extension.\n\nDo you wish to view the online QuickStart guide?", "Yes", "No" ) )
+				return;
+
+			ShowQuickstart();
 		}
 
 		public void OnFocus()
