@@ -80,7 +80,7 @@ public static class GameObjectExtensions {
 
 	/// Duplicate object under the same parent with the same local position, with a new name. This breaks any prefab link.
 	public static GameObject Duplicate (this GameObject model, string name) {
-		GameObject clone = InstantiateUnder(model, model.transform.parent, true);
+		GameObject clone = Object.Instantiate(model, model.transform.parent) as GameObject;
 		clone.name = name;
 		return clone;
 	}
