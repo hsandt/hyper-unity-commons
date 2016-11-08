@@ -22,13 +22,13 @@ public abstract class MultiPoolManager<TPooledObject, T> : SingletonManager<T> w
 	[SerializeField] protected int poolSize = 10;
 
 	/* State variables */
-	
+
 	/// Dictionary of resource prefabs used to generate pooled objects, per name
 	protected Dictionary<string, GameObject> prefabLibrary = new Dictionary<string, GameObject>();
 
 	/// Pool of object instances, per name
 	Dictionary<string, List<TPooledObject>> m_MultiPool = new Dictionary<string, List<TPooledObject>>();
-	
+
 	// int nbObjectsInUse;
 
 	// TEMPLATE
@@ -61,7 +61,7 @@ public abstract class MultiPoolManager<TPooledObject, T> : SingletonManager<T> w
 		Debug.LogFormat("[MultiPoolManager] Setup prefab pool of size {0} for {1}", poolSize, prefab.name);
 		m_MultiPool.Add(prefabName, new List<TPooledObject>());
 		for (int i = 0; i < poolSize; ++i) {
-			GameObject sourceObject = prefab.InstantiateUnder(poolTransform);
+			GameObject sourceObject = Instantiate(prefab, poolTransform) as GameObject;
 			TPooledObject pooledObject = sourceObject.GetComponentOrFail<TPooledObject>();
 			pooledObject.Release();
 			m_MultiPool[prefabName].Add(pooledObject);
