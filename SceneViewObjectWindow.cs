@@ -32,14 +32,14 @@ public class SceneViewObjectWindow : EditorWindow
 	void OnGUI()
 	{
 		Event e = Event.current;
-		m_UseStack = GUILayout.Toggle(m_UseStack,"Use Stack");
+		m_UseStack = GUILayout.Toggle(m_UseStack, "Use Stack");
 		if (m_UseStack)
 			m_MaxStackSize = GUILayout.HorizontalSlider(m_MaxStackSize,1,20);
 
 		for(int i = m_Stack.Count-1;i>=0;i--)
 		{
 			GUILayout.BeginHorizontal();
-			EditorGUILayout.ObjectField(m_Stack[i],typeof(GameObject));
+			EditorGUILayout.ObjectField(m_Stack[i], typeof(GameObject), true);
 			if (GUILayoutUtility.GetLastRect().Contains(e.mousePosition) && e.type == EventType.MouseDrag)
 			{
 				DragAndDrop.PrepareStartDrag ();
