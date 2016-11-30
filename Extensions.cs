@@ -24,20 +24,16 @@ public static class GameObjectExtensions {
 	}
 
 	/// Instantiate prefab / clone game object (helper to avoid casting to GameObject every time)
-	[System.Obsolete("Use Instantiate as GameObject instead")]
 	public static GameObject Instantiate (this GameObject model) {
 		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
 		return gameObjectInstance;
 	}
 
-	/// Instantiate prefab / clone game object at parent's position
-	[System.Obsolete("Use Instantiate as GameObject with parent and worldPositionStays arguments instead")]
-	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr, bool keepLocalPosition = false) {
-		GameObject gameObjectInstance = Instantiate(model);
-		gameObjectInstance.transform.SetParent(parentTr, false);
-		if (!keepLocalPosition)
-			gameObjectInstance.transform.localPosition = Vector3.zero;
+	/// Instantiate prefab / clone game object under parent (named InstantiateUnder to avoid conflict with Instantiate<Transform>(Transform))
+	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr, bool instantiateInWorldSpace = false) {
+		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
+		GameObject gameObjectInstance = Object.Instantiate(model, parentTr, instantiateInWorldSpace) as GameObject;
 		return gameObjectInstance;
 	}
 
