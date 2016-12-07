@@ -792,7 +792,7 @@ You can also use the following built-in helper functions:
 				}
 
 				// Obtain the control ID and event information before editing the user's command text
-				var controlID = GUIUtility.GetControlID( this.GetHashCode() & this.guid.GetHashCode(), FocusType.Native );
+				var controlID = GUIUtility.GetControlID( this.GetHashCode() & this.guid.GetHashCode(), FocusType.Passive );
 				var evt = Event.current;
 				var eventType = evt.GetTypeForControl( controlID );
 
