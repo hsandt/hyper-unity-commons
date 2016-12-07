@@ -3,7 +3,7 @@ using System.Collections;
 
 public static class MathUtil {
 
-	public const float SQRT2 = 1.4142f; // or just type the truncated value yourself
+	public const float SQRT2 = 1.4142f;
 
 	public static int Truncate (float x) {
 		return (int) (Mathf.Sign(x) * Mathf.Floor(Mathf.Abs(x)));

@@ -15,6 +15,7 @@ public class VectorDeltaEqualityComparer : IEqualityComparer<Vector2>
 		var a = (Vector2) x;
 		var b = (Vector2) y;
 
+		// ALTERNATIVE: imitate VectorComparerBase.cs in Unity Test Tools
 		float delta = Vector2.Distance(a, b);
 		return delta < _epsilon;
 	}
