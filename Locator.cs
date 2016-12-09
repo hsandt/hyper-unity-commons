@@ -18,12 +18,17 @@ public static class Locator {
 
 		// function body (if memoize pattern is reused elsewhere, refactor)
 		GameObject go = GameObject.FindWithTag(tag);
-		if (go == null) throw ExceptionsUtil.CreateExceptionFormat("Could not locate game object with tag {0}.", tag);
-		tr = go.transform;
+		if (go != null) {
+			tr = go.transform;
 
-		// memoize transform and return it
-		taggedTransforms[tag] = tr;
-		return tr;
+			// memoize transform and return it
+			taggedTransforms[tag] = tr;
+			return tr;
+		}
+		else {
+			Debug.LogWarningFormat("Could not locate game object with tag {0}.", tag);
+			return null;
+		}
 	}
 
 }
