@@ -24,7 +24,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 	/* Parameters */
 
 	[SerializeField]
-	int nbChannels = 8;  // channels are instantiated on setup, so you cannot change add channels while running; if you want to, run Init() on value change
+	int nbChannels = 8;  // channels are instantiated on Awake, so you cannot change add channels while running; if you want to, run Init() on value change
 
 	/* State vars */
 
@@ -67,6 +67,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 			debugTextInstance.transform.localPosition += offset;
 
 			var debugText = debugTextInstance.GetComponentOrFail<DebugText>();
+			debugText.channelIndex = i;
 			m_DebugTexts.Add(debugText);
 			debugTextInstance.SetActive(false);
 
@@ -75,6 +76,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 			debugVariableInstance.transform.localPosition += offset;
 
 			var debugVariable = debugVariableInstance.GetComponentOrFail<DebugVariable>();
+			debugVariable.channelIndex = i;
 			m_DebugVariables.Add(debugVariable);
 			debugVariableInstance.SetActive(false);
 		}
@@ -120,13 +122,6 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 		m_DebugTexts[channel].Show(text, duration);
 	}
 
-	/// Start displaying value of variable on screen, in 1st channel available
-	public void ShowDebugVariable<T>(string variableName, T value) {
-		int nextChannelAvailable = GetNextChannelAvailable();
-		if (nextChannelAvailable == -1) return;
-		ShowDebugVariable<T>(variableName, value, nextChannelAvailable);
-	}
-
 	// OPTIMIZATION: only update text as human-visible time (if pausing step by step in the editor, update each frame, ie consider real time)
 
 	/// Show or update variable on screen, in 1st channel available
@@ -139,13 +134,20 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 		}
 	}
 
+	/// Start displaying value of variable on screen, in 1st channel available
+	public void ShowDebugVariable<T>(string variableName, T value) {
+		int nextChannelAvailable = GetNextChannelAvailable();
+		if (nextChannelAvailable == -1) return;
+		ShowDebugVariable<T>(variableName, value, nextChannelAvailable);
+	}
+
 	/// Start displaying value of variable on screen
 	public void ShowDebugVariable<T>(string variableName, T value, int channel) {
 		CheckChannelValidity(channel);
 		m_DebugTexts[channel].Hide();
 		DebugVariable debugVariableAtChannel = m_DebugVariables[channel];
 		if (debugVariableAtChannel.IsInUse()) {
-			// no need to hide here, since we'll reuse it soon enough
+			// no need to hide here, since we'll reuse it now
 			m_DebugVariableDict.Remove(debugVariableAtChannel.VarName);
 		}
 		// REFACTOR: Show only shows, call SetValue to update separately
@@ -155,8 +157,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 
 	/// Update value of variable by name
 	void UpdateVariable<T>(string variableName, T value) {
-		// send update variable event to all debug variable scripts, they will update if they are concerned
-		// alternative: keep a dictionary of DebugVariable per variable name and directly update the one concerned
+		// REFACTOR: delegate to DebugVariable.UpdateValue() method
 		m_DebugVariableDict[variableName].SetValue<T>(value);
 		// UpdateVariableEvent(variableName, value.ToString());
 	}

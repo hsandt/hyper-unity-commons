@@ -18,8 +18,14 @@ public class DebugText : MonoBehaviour
     // [SerializeField]
     // string m_FormatString;
 
-    // display channel: printing on an existing channel replaces the previous text
-    string channel;
+	/// Time it takes to fade color if the text is not updated
+	const float colorChangeTime = 2f;
+
+    /// Channel index used by this entry
+    public int channelIndex;
+
+    /// Time passed since last update
+    float timeSinceLastUpdate;
 
     // how much time remains before text destruction
     float m_RemainingTime;
@@ -41,12 +47,20 @@ public class DebugText : MonoBehaviour
     }
 
     void Update () {
+		timeSinceLastUpdate += Time.deltaTime;
+        UpdateColor();
+
         m_RemainingTime -= Time.deltaTime;
         if (m_RemainingTime <= 0) {
             m_RemainingTime = 0;
             gameObject.SetActive(false);
         }
     }
+
+    /// Update the color based on the current timeSinceLastUpdate
+    void UpdateColor () {
+		m_Text.color = Color.Lerp(Color.white, Color.grey, timeSinceLastUpdate / colorChangeTime);
+	}
 
     /// Show text or duration in sec
     public void Show (string text, float duration = 1f) {
@@ -61,10 +75,13 @@ public class DebugText : MonoBehaviour
     public void UpdateText(string text)
     {
         m_Text.text = text;
+        timeSinceLastUpdate = 0f;
+		UpdateColor();
     }
 
     public void Hide () {
         gameObject.SetActive(false);
+        timeSinceLastUpdate = 0f;
     }
 
     /// Is the object currently used? It cannot be requested if true.

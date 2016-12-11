@@ -14,6 +14,15 @@ public class DebugVariable : MonoBehaviour {
 	/// True if a variable is shown in this container ("the pooled object is used")
 	// bool used;
 
+	/// Time it takes to fade color if the text is not updated
+	const float colorChangeTime = 2f;
+
+	/// Channel index used by this entry
+	public int channelIndex;
+
+	/// Time passed since last update
+	float timeSinceLastUpdate;
+
 	/// Name of the current variable represented, if any
 	string varName;
 	public string VarName { get { return varName; } }
@@ -28,7 +37,9 @@ public class DebugVariable : MonoBehaviour {
 	}
 
 
-	void FixedUpdate () {
+	void Update () {
+		timeSinceLastUpdate += Time.deltaTime;
+		UpdateColor();
 	}
 
 	/// Show variable with initial value
@@ -54,6 +65,13 @@ public class DebugVariable : MonoBehaviour {
 //		string context = DebugScreenManager.Instance.GetContext();
 //		if (!string.IsNullOrEmpty(context)) valueText = string.Format("({0}) {1}", context, valueText);
 		debugValue.text = valueText;
+		timeSinceLastUpdate = 0f;
+		UpdateColor();
+	}
+
+	/// Update the color based on the current timeSinceLastUpdate
+	void UpdateColor () {
+		debugValue.color = Color.Lerp(Color.white, Color.grey, timeSinceLastUpdate / colorChangeTime);
 	}
 
 	// void OnUpdateVariable(string variableName, string valueText) {
@@ -64,6 +82,7 @@ public class DebugVariable : MonoBehaviour {
 
 	public void Hide () {
 	    gameObject.SetActive(false);
+		timeSinceLastUpdate = 0f;
 	    // used = false;
 	}
 
