@@ -9,6 +9,7 @@ class Timer {
 
 	private float time; // current time on the internal clock
 
+	// TODO: add looping boolean parameter for auto-loop
 	public Timer (Action _callback, float _time = 0) {
 		callback = _callback;
 		time = _time; // default value 0 to start with a stopped timer
