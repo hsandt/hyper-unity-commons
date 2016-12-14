@@ -2,7 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public abstract class PoolManager<TPooledObject> : MonoBehaviour where TPooledObject : MonoBehaviour, IPooledObject {
+/// When inheriting from this base class, use the derived class as the T generic argument so that you can access a singleton instance of the derived class
+public abstract class PoolManager<TPooledObject, T> : SingletonManager<T> where TPooledObject : MonoBehaviour, IPooledObject where T : MonoBehaviour {
 
 	/* external references */
 	[SerializeField]
@@ -20,9 +21,10 @@ public abstract class PoolManager<TPooledObject> : MonoBehaviour where TPooledOb
 	List<TPooledObject> m_Pool = new List<TPooledObject>();
 
 	// TEMPLATE METHOD FOR DERIVED CLASSES
-	void Awake () {
-		Init();
-	}
+	// void Awake () {
+	// 	Instance = this;
+	// 	Init();
+	// }
 
 	/// <summary>
 	/// Initialize pool by creating [poolSize] copies of the pooled object
