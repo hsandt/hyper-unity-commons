@@ -13,7 +13,7 @@ class MinMaxSliderDrawer : PropertyDrawer {
 			float max = range.y;
 			MinMaxSliderAttribute attr = attribute as MinMaxSliderAttribute;
 			EditorGUI.BeginChangeCheck ();
-			EditorGUI.MinMaxSlider (label, position, ref min, ref max, attr.min, attr.max);
+			EditorGUI.MinMaxSlider (position, label, ref min, ref max, attr.min, attr.max);
 			if (EditorGUI.EndChangeCheck ()) {
 				range.x = min;
 				range.y = max;
