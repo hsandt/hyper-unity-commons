@@ -3,9 +3,10 @@ using System.Collections;
 
 public class RectContainer : MonoBehaviour {
 
+	/// Actual rect data (initialize with other values in your MonoBehaviour's Reset)
 	public Rect rect = new Rect(-0.5f, -0.5f, 1f, 1f);
 
-	public Vector2 min { get { return transform.TransformPoint(rect.min); } }
-	public Vector2 max { get { return transform.TransformPoint(rect.max); } }
+	public Vector2 min { get { return transform.TransformPoint(rect.min); } set { rect.min = transform.InverseTransformPoint(value); } }
+	public Vector2 max { get { return transform.TransformPoint(rect.max); } set { rect.max = transform.InverseTransformPoint(value); } }
 
 }
