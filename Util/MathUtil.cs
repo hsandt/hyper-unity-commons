@@ -30,8 +30,8 @@ public static class MathUtil {
 		}
 	}
 
-	/// Return the smallest signed angle from angle from to angle to, in degrees, in both angles are between 0 and 360 or -180 and 180
-	public static float GetSmallestAngle (float from, float to) {
+	/// Return the signed smallest angle from angle from to angle to, in degrees, in both angles are between 0 and 360 or -180 and 180
+	public static float GetSignedSmallestAngle (float from, float to) {
 		float delta = to - from;
 		if (delta < -180f) delta += 360f;
 		if (delta > 180f) delta -= 360f;
