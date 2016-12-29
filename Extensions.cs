@@ -95,10 +95,12 @@ public static class ComponentExtensions {
 // from http://answers.unity3d.com/questions/150690/using-a-bitwise-operator-with-layermask.html
 public static class LayerMaskExtensions {
 
+	/// Does the layer mask contain the specified layer?
 	public static bool Contains (this LayerMask mask, int layer) {
 		return (mask.value & (1 << layer)) > 0;
 	}
 
+	/// Does the layer mask contain the layer of the specified game object?
 	public static bool Contains (this LayerMask mask, GameObject go) {
 		return (mask.value & (1 << go.layer)) > 0;
 	}

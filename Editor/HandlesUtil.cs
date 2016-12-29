@@ -8,18 +8,18 @@ public class HandlesUtil {
 	const float handleSize = 0.1f;
 	static Handles.DrawCapFunction handleCap = Handles.CubeCap;
 
-	public static void DrawRect (ref Rect rect, Transform owner) {
+	public static void DrawRect (ref Rect rect, Transform owner, Color color) {
 
 		Color oldColor = Handles.color;
 		// if the rectangle is reversed, change the color to notify the user
 		if (rect.width >= 0 && rect.height >= 0)
-			Handles.color = Color.white;
+			Handles.color = color;
 		else if (rect.width < 0 && rect.height >= 0)
-			Handles.color = Color.yellow;
+			Handles.color = Color.Lerp(color, Color.yellow, 0.5f);
 		else if (rect.width >= 0)
-			Handles.color = Color.yellow;
+			Handles.color = Color.Lerp(color, Color.yellow, 0.5f);
 		else
-			Handles.color = Color.red;
+			Handles.color = Color.Lerp(color, Color.red, 0.5f);
 
 		Matrix4x4 oldMatrix = Handles.matrix;
 

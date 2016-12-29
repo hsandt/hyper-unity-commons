@@ -11,7 +11,7 @@ public class RectContainerEditor : Editor {
 		RectContainer rectContainer = (RectContainer) target;
 
 		Undo.RecordObject(rectContainer, "Resized Rect");
-		HandlesUtil.DrawRect(ref rectContainer.rect, rectContainer.transform);
+		HandlesUtil.DrawRect(ref rectContainer.rect, rectContainer.transform, rectContainer.drawColor);
 	}
 
 }
