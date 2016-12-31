@@ -22,7 +22,7 @@ public static class GizmosUtil {
 	}
 
 	/// <summary>
-	/// Draw a ray with local coordinates, with current gizmos parameters
+	/// Draw a ray with local coordinates
 	/// </summary>
 	/// <param name="p1">Local origin of the ray.</param>
 	/// <param name="p2">Direction (and distance) of the ray.</param>
@@ -40,6 +40,26 @@ public static class GizmosUtil {
 
 		if (color != null)
 			Gizmos.color = oldColor;
+	}
+
+	/// <summary>
+	/// Draw a polyline from an array of points, using the current gizmos parameter
+	/// </summary>
+	/// <param name="points">Array of points of the polyline.</param>
+	public static void DrawPolyLine (Vector3[] points) {
+		for (int i = 0; i < points.Length - 1; ++i) {
+			Gizmos.DrawLine(points[i], points[i + 1]);
+		}
+	}
+
+	/// <summary>
+	/// Draw a closed polyline from an array of points, using the current gizmos parameter
+	/// </summary>
+	/// <param name="points">Array of points of the polyline not duplicating the 1st point as the last.</param>
+	public static void DrawClosedPolyLine (Vector3[] points) {
+		for (int i = 0; i < points.Length; ++i) {
+			Gizmos.DrawLine(points[i], points[(i + 1) % points.Length]);
+		}
 	}
 
 	public static void DrawLocalBox2D (float left, float right, float bottom, float top, Transform tr, Color? color = null) {
@@ -98,7 +118,7 @@ public static class GizmosUtil {
 			Gizmos.color = oldColor;
 	}
 
-	static Vector2[] GetCornersFromLimits(float left, float right, float bottom, float top) {
+	public static Vector2[] GetCornersFromLimits(float left, float right, float bottom, float top) {
 		Vector2 bottomLeft = new Vector2(left, bottom);
 		Vector2 bottomRight = new Vector2(right, bottom);
 		Vector2 topRight = new Vector2(right, top);
@@ -106,7 +126,7 @@ public static class GizmosUtil {
 		return new Vector2[] {bottomLeft, bottomRight, topRight, topLeft};
 	}
 
-	static Vector2[] GetCornersFromBox2DParams(Vector2 offset, Vector2 size) {
+	public static Vector2[] GetCornersFromBox2DParams(Vector2 offset, Vector2 size) {
 		Vector2 extents = size / 2;
 		Vector2 bottomLeft = offset - extents;
 		Vector2 bottomRight = offset + new Vector2(extents.x, - extents.y);
@@ -117,7 +137,7 @@ public static class GizmosUtil {
 
 	/// Return 4 corners from bounds, in the order: bottom-left, bottom-right, top-right, top-left
 	/// Note that it only preserves Z for the bounds center
-	static Vector3[] GetCornersFromBounds (Bounds bounds) {
+	public static Vector3[] GetCornersFromBounds (Bounds bounds) {
 		Vector3 center = bounds.center;
 		Vector3 extents = bounds.extents;
 
@@ -126,6 +146,49 @@ public static class GizmosUtil {
 		Vector3 topRight = center + new Vector3(extents.x, extents.y);
 		Vector3 topLeft = center + new Vector3(- extents.x, extents.y);
 		return new Vector3[] {bottomLeft, bottomRight, topRight, topLeft};
+	}
+
+	/// <summary>
+	/// Draw a rect under a transform, ignoring its scale if one of the lossy scale coordinate is null
+	/// </summary>
+	/// <param name="rect">Rect to draw</param>
+	/// <param name="owner">Rect owner transform</param>
+	/// <param name="color">Draw color</param>
+	public static void DrawRect (Rect rect, Transform owner, Color color) {
+		Color oldColor = Gizmos.color;
+		
+		// if the rectangle is reversed, change the color to notify the user
+		if (rect.width >= 0 && rect.height >= 0)
+			Gizmos.color = color;
+		else if (rect.width < 0 && rect.height >= 0)
+			Gizmos.color = Color.Lerp(color, Color.yellow, 0.5f);
+		else if (rect.width >= 0)
+			Gizmos.color = Color.Lerp(color, Color.yellow, 0.5f);
+		else
+			Gizmos.color = Color.Lerp(color, Color.red, 0.5f);
+
+		Matrix4x4 oldMatrix = Gizmos.matrix;
+
+		// only use the local matrix if scale is valid (no null coordinates)
+		// else, only consider position and rotation to avoid producing NaN values
+		if (owner.lossyScale.x != 0 && owner.lossyScale.y != 0 && owner.lossyScale.z != 0)
+			Gizmos.matrix = owner.localToWorldMatrix;
+		else {
+			Gizmos.matrix = Matrix4x4.TRS(owner.position, owner.rotation, Vector3.one);
+		}
+
+		// Draw rect edges
+		var points = new Vector3[] {
+			new Vector3(rect.xMin, rect.yMin),
+			new Vector3(rect.xMax, rect.yMin),
+			new Vector3(rect.xMax, rect.yMax),
+			new Vector3(rect.xMin, rect.yMax)
+		};
+
+		DrawClosedPolyLine(points);
+
+		Gizmos.matrix = oldMatrix;
+		Gizmos.color = oldColor;
 	}
 
 }

@@ -9,8 +9,8 @@ public class HandlesUtil {
 	static Handles.DrawCapFunction handleCap = Handles.CubeCap;
 
 	public static void DrawRect (ref Rect rect, Transform owner, Color color) {
-
 		Color oldColor = Handles.color;
+
 		// if the rectangle is reversed, change the color to notify the user
 		if (rect.width >= 0 && rect.height >= 0)
 			Handles.color = color;
