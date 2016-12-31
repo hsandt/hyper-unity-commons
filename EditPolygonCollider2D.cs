@@ -12,7 +12,7 @@ using System.Collections;
 [RequireComponent(typeof(PolygonCollider2D))]
 public class EditPolygonCollider2D : MonoBehaviour
 {
-
+	#if UNITY_EDITOR
 	PolygonCollider2D m_PolygonCollider2D;
 
 	/// <summary>
@@ -44,6 +44,6 @@ public class EditPolygonCollider2D : MonoBehaviour
 			GizmosUtil.DrawLocalLine((Vector3) points[points.Length - 1], (Vector3) points[0], transform);
 		}
 	}
-
+	#endif
 }
 

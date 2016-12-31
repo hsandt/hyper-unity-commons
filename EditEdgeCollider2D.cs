@@ -12,7 +12,7 @@ using System.Collections;
 [RequireComponent(typeof(EdgeCollider2D))]
 public class EditEdgeCollider2D : MonoBehaviour
 {
-
+	#if UNITY_EDITOR
 	EdgeCollider2D m_EdgeCollider2D;
 
 	/// <summary>
@@ -42,6 +42,6 @@ public class EditEdgeCollider2D : MonoBehaviour
 			}
 		}
 	}
-
+	#endif
 }
 

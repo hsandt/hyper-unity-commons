@@ -12,7 +12,7 @@ using System.Collections;
 [RequireComponent(typeof(BoxCollider2D))]
 public class EditBoxCollider2D : MonoBehaviour
 {
-
+	#if UNITY_EDITOR
 	BoxCollider2D m_BoxCollider2D;
 
 	/// <summary>
@@ -35,6 +35,5 @@ public class EditBoxCollider2D : MonoBehaviour
 			GizmosUtil.DrawLocalBox2D(m_BoxCollider2D.offset, m_BoxCollider2D.size, transform);
 		}
 	}
-
+	#endif
 }
-
