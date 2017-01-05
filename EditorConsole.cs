@@ -6,7 +6,7 @@ using System;
 
 static class EditorConsole
 {
-    [MenuItem ("Tools/Clear Console _F10")]
+    [MenuItem ("Tools/Clear Console _F3")]
     static void ClearConsole () {
         // This simply does "LogEntries.Clear()" the long way (reflection needed because LogEntries is an internal class)
         var logEntries = Type.GetType("UnityEditorInternal.LogEntries,UnityEditor.dll");
