@@ -12,12 +12,22 @@ public class CodeTuning
 {
 	#if UNITY_EDITOR
 	/// Is code tuning active? If not, use default values.
-	public bool active = false;
+	public bool active;
 	#endif
 
 	public int branchIndex;
 	public static int GetBranchIndex (int defaultValue) {
 		return TryGetValue<int> (Instance.branchIndex, defaultValue);
+	}
+
+	public bool bool1;
+	public static bool GetBool1 (bool defaultValue) {
+		return TryGetValue<bool> (Instance.bool1, defaultValue);
+	}
+
+	public bool bool2;
+	public static bool GetBool2 (bool defaultValue) {
+		return TryGetValue<bool> (Instance.bool2, defaultValue);
 	}
 
 	public float float1;
