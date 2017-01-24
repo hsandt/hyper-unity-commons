@@ -25,9 +25,11 @@ public class HandlesUtil {
 
 		// only use the local matrix if scale is valid (no null coordinates)
 		// else, only consider position and rotation to avoid producing NaN values
-		if (owner.lossyScale.x != 0 && owner.lossyScale.y != 0 && owner.lossyScale.z != 0)
+		if (owner.lossyScale.x != 0 && owner.lossyScale.y != 0 && owner.lossyScale.z != 0) {
 			Handles.matrix = owner.localToWorldMatrix;
+		}
 		else {
+			// rotation is supported by not recommended, esp. because AABB operations cannot be applied, and the world rect based on the min and max corners is incorrect
 			Handles.matrix = Matrix4x4.TRS(owner.position, owner.rotation, Vector3.one);
 		}
 
