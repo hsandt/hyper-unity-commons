@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Collections;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -81,13 +82,24 @@ public class EditorScreenshot : EditorWindow
 		// 	EditorWindow.GetWindow(gameViewType);
 		// }
 
-		string path = string.Format("{0}/{1}{2:00}.png", screenshotFolderPath, screenshotFilenamePrefix, nextScreenshotIndex);
-		Application.CaptureScreenshot(path);
+		try
+		{
+			if (!Directory.Exists(screenshotFolderPath))
+			{
+				Directory.CreateDirectory(screenshotFolderPath);
+			}
+			string path = string.Format("{0}/{1}{2:00}.png", screenshotFolderPath, screenshotFilenamePrefix, nextScreenshotIndex);
+			Application.CaptureScreenshot(path);
 
-		Debug.LogFormat("Screenshot recorded at {0} ({1})", path, UnityStats.screenRes);
+			Debug.LogFormat("Screenshot recorded at {0} ({1})", path, UnityStats.screenRes);
 
-		++nextScreenshotIndex;
-		EditorPrefs.SetInt("EditorScreenshot.nextScreenshotIndex", nextScreenshotIndex);
+			++nextScreenshotIndex;
+			EditorPrefs.SetInt("EditorScreenshot.nextScreenshotIndex", nextScreenshotIndex);
+		}
+		catch (IOException ex)
+		{
+			Console.WriteLine(ex.Message);
+		}
 	}
 
 }
