@@ -15,7 +15,12 @@ public static class GizmosUtil {
 		if (color != null)
 			Gizmos.color = (Color) color;
 
-		Gizmos.DrawLine(tr.TransformPoint(p1), tr.TransformPoint(p2));
+		Matrix4x4 oldMatrix;
+		SetGizmosMatrix(tr, out oldMatrix);
+
+		Gizmos.DrawLine(p1, p2);
+
+		Gizmos.matrix = oldMatrix;
 
 		if (color != null)
 			Gizmos.color = oldColor;
@@ -67,15 +72,17 @@ public static class GizmosUtil {
 		if (color != null)
 			Gizmos.color = (Color) color;
 
+		Matrix4x4 oldMatrix;
+		SetGizmosMatrix(tr, out oldMatrix);
+
 		Vector2[] corners = GetCornersFromLimits(left, right, bottom, top);
+
 		// draw the 4 edges by cycling between pair of corners
-		// IMPROVE:
-		// Matrix4x4 oldMatrix = Gizmos.matrix;
-		// Gizmos.matrix = tr.localToWorldMatrix;
 		for (int i = 0; i < 4; ++i) {
-			Gizmos.DrawLine(tr.TransformPoint((Vector3) corners[i]), tr.TransformPoint((Vector3) corners[(i + 1) % 4]));
+			Gizmos.DrawLine((Vector3) corners[i], (Vector3) corners[(i + 1) % 4]);
 		}
-		// Gizmos.matrix = oldMatrix;
+
+		Gizmos.matrix = oldMatrix;
 
 		if (color != null)
 			Gizmos.color = oldColor;
@@ -86,11 +93,37 @@ public static class GizmosUtil {
 		if (color != null)
 			Gizmos.color = (Color) color;
 
+		Matrix4x4 oldMatrix;
+		SetGizmosMatrix(tr, out oldMatrix);
+
 		Vector2[] corners = GetCornersFromBox2DParams(offset, size);
+
 		// draw the 4 edges by cycling between pair of corners
 		for (int i = 0; i < 4; ++i) {
-			Gizmos.DrawLine(tr.TransformPoint((Vector3) corners[i]), tr.TransformPoint((Vector3) corners[(i + 1) % 4]));
+			Gizmos.DrawLine((Vector3) corners[i], (Vector3) corners[(i + 1) % 4]);
 		}
+
+		Gizmos.matrix = oldMatrix;
+
+		if (color != null)
+			Gizmos.color = oldColor;
+	}
+
+	/// Draw a filled rectangle from offset and size in transform local frame
+	public static void DrawLocalSquare (Vector2 offset, Vector2 size, Transform tr, Color? color = null) {
+		Color oldColor = Gizmos.color;
+		if (color != null) {
+			Color baseColor = (Color) color;
+			Gizmos.color = new Color(baseColor.r * 2f, baseColor.g * 2f, baseColor.b * 2f, baseColor.a);  // 3D gizmos are drawn with half color intensity, balance that
+		}
+
+		Matrix4x4 oldMatrix;
+		SetGizmosMatrix(tr, out oldMatrix);
+
+		// draw a flat cube to simulate a filled square
+		Gizmos.DrawCube((Vector3) offset, (Vector3) size);
+
+		Gizmos.matrix = oldMatrix;
 
 		if (color != null)
 			Gizmos.color = oldColor;
@@ -109,6 +142,7 @@ public static class GizmosUtil {
 			Gizmos.color = (Color) color;
 
 		Vector3[] corners = GetCornersFromBounds(bounds);
+
 		// draw the 4 edges by cycling between pair of corners
 		for (int i = 0; i < 4; ++i) {
 			Gizmos.DrawLine(corners[i], corners[(i + 1) % 4]);
@@ -156,7 +190,7 @@ public static class GizmosUtil {
 	/// <param name="color">Draw color</param>
 	public static void DrawRect (Rect rect, Transform owner, Color color) {
 		Color oldColor = Gizmos.color;
-		
+
 		// if the rectangle is reversed, change the color to notify the user
 		if (rect.width >= 0 && rect.height >= 0)
 			Gizmos.color = color;
@@ -167,15 +201,8 @@ public static class GizmosUtil {
 		else
 			Gizmos.color = Color.Lerp(color, Color.red, 0.5f);
 
-		Matrix4x4 oldMatrix = Gizmos.matrix;
-
-		// only use the local matrix if scale is valid (no null coordinates)
-		// else, only consider position and rotation to avoid producing NaN values
-		if (owner.lossyScale.x != 0 && owner.lossyScale.y != 0 && owner.lossyScale.z != 0)
-			Gizmos.matrix = owner.localToWorldMatrix;
-		else {
-			Gizmos.matrix = Matrix4x4.TRS(owner.position, owner.rotation, Vector3.one);
-		}
+		Matrix4x4 oldMatrix;
+		SetGizmosMatrix(owner, out oldMatrix);
 
 		// Draw rect edges
 		var points = new Vector3[] {
@@ -189,6 +216,20 @@ public static class GizmosUtil {
 
 		Gizmos.matrix = oldMatrix;
 		Gizmos.color = oldColor;
+	}
+
+	/// Store the current Gizmos matrix to oldMatrix reference, and set the Gizmos matrix to the local matrix
+	// of the passed transform, ignoring scale if it has null components
+	static void SetGizmosMatrix(Transform tr, out Matrix4x4 oldMatrix) {
+		oldMatrix = Gizmos.matrix;
+
+		// only use the local matrix if scale is valid (no null coordinates)
+		// else, only consider position and rotation to avoid producing NaN values
+		if (tr.lossyScale.x != 0 && tr.lossyScale.y != 0 && tr.lossyScale.z != 0)
+			Gizmos.matrix = tr.localToWorldMatrix;
+		else {
+			Gizmos.matrix = Matrix4x4.TRS(tr.position, tr.rotation, Vector3.one);
+		}
 	}
 
 }
