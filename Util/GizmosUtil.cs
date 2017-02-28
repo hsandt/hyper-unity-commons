@@ -220,7 +220,7 @@ public static class GizmosUtil {
 
 	/// Store the current Gizmos matrix to oldMatrix reference, and set the Gizmos matrix to the local matrix
 	// of the passed transform, ignoring scale if it has null components
-	static void SetGizmosMatrix(Transform tr, out Matrix4x4 oldMatrix) {
+	public static void SetGizmosMatrix(Transform tr, out Matrix4x4 oldMatrix) {
 		oldMatrix = Gizmos.matrix;
 
 		// only use the local matrix if scale is valid (no null coordinates)

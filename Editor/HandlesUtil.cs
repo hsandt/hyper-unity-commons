@@ -5,8 +5,8 @@ using System.Collections;
 
 public class HandlesUtil {
 
-	const float handleSize = 0.1f;
-	static Handles.DrawCapFunction handleCap = Handles.CubeCap;
+	const float handleSize = 0.2f;
+	static readonly Handles.DrawCapFunction defaultHandleCap = Handles.CubeCap;
 
 	public static void DrawRect (ref Rect rect, Transform owner, Color color) {
 		Color oldColor = Handles.color;
@@ -116,9 +116,27 @@ public class HandlesUtil {
 		Handles.color = oldColor;
 	}
 
-	static Vector2 DrawFreeMoveHandle (Vector2 pos) {
+	public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2 snap = default(Vector2), Handles.DrawCapFunction drawCapFunction = null) {
 		return (Vector2) Handles.FreeMoveHandle ((Vector3) pos, Quaternion.identity,
-			HandleUtility.GetHandleSize ((Vector3) pos) * handleSize, Vector3.zero, handleCap);
+			HandleUtility.GetHandleSize ((Vector3) pos) * handleSize, (Vector3) snap, drawCapFunction ?? defaultHandleCap);
 	}
 
+	public static Vector3 DrawFreeMoveHandle (Vector3 pos, Vector3 snap = default(Vector3), Handles.DrawCapFunction drawCapFunction = null) {
+		return Handles.FreeMoveHandle (pos, Quaternion.identity,
+			HandleUtility.GetHandleSize (pos) * handleSize, snap, drawCapFunction ?? defaultHandleCap);
+	}
+
+	/// Store the current Handles matrix to oldMatrix reference, and set the Handles matrix to the local matrix
+	// of the passed transform, ignoring scale if it has null components
+	public static void SetHandlesMatrix(Transform tr, out Matrix4x4 oldMatrix) {
+		oldMatrix = Handles.matrix;
+
+		// only use the local matrix if scale is valid (no null coordinates)
+		// else, only consider position and rotation to avoid producing NaN values
+		if (tr.lossyScale.x != 0 && tr.lossyScale.y != 0 && tr.lossyScale.z != 0)
+			Handles.matrix = tr.localToWorldMatrix;
+		else {
+			Handles.matrix = Matrix4x4.TRS(tr.position, tr.rotation, Vector3.one);
+		}
+	}
 }
