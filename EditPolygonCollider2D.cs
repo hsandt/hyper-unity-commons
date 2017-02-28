@@ -31,8 +31,16 @@ public class EditPolygonCollider2D : MonoBehaviour
 
 	void OnDrawGizmos() {
 		if (alwaysShowCollider) {
+			if (m_PolygonCollider2D == null) {
+				// component is serialized so reference is not lost on compilation, but the component may have been removed
+				// and another collider component may have been added, so check for it
+				m_PolygonCollider2D = GetComponent<PolygonCollider2D>();
+				if (m_PolygonCollider2D == null)
+					return;
+			}
+
 			Vector2[] points = m_PolygonCollider2D.points;
-			
+
 			Gizmos.color = drawColor;
 
 			// for every point (except for the last one), draw line to the next point
@@ -46,4 +54,3 @@ public class EditPolygonCollider2D : MonoBehaviour
 	}
 	#endif
 }
-

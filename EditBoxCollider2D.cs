@@ -31,6 +31,14 @@ public class EditBoxCollider2D : MonoBehaviour
 
 	void OnDrawGizmos() {
 		if (alwaysShowCollider) {
+			if (m_BoxCollider2D == null) {
+				// component is serialized so reference is not lost on compilation, but the component may have been removed
+				// and another collider component may have been added, so check for it
+				m_BoxCollider2D = GetComponent<BoxCollider2D>();
+				if (m_BoxCollider2D == null)
+					return;
+			}
+
 			Gizmos.color = drawColor;
 			GizmosUtil.DrawLocalBox2D(m_BoxCollider2D.offset, m_BoxCollider2D.size, transform);
 		}

@@ -30,7 +30,15 @@ public class EditEdgeCollider2D : MonoBehaviour
 	}
 
 	void OnDrawGizmos() {
-		if (alwaysShowCollider && m_EdgeCollider2D != null) {
+		if (alwaysShowCollider) {
+			if (m_EdgeCollider2D == null) {
+				// component is serialized so reference is not lost on compilation, but the component may have been removed
+				// and another collider component may have been added, so check for it
+				m_EdgeCollider2D = GetComponent<EdgeCollider2D>();
+				if (m_EdgeCollider2D == null)
+					return;
+			}
+
 			Vector2[] points = m_EdgeCollider2D.points;
 
 			Gizmos.color = drawColor;
@@ -44,4 +52,3 @@ public class EditEdgeCollider2D : MonoBehaviour
 	}
 	#endif
 }
-
