@@ -48,13 +48,36 @@ public static class GizmosUtil {
 	}
 
 	/// <summary>
-	/// Draw a polyline from an array of points, using the current gizmos parameter
+	/// Draw an open polyline from an array of points, using the current gizmos parameter
 	/// </summary>
 	/// <param name="points">Array of points of the polyline.</param>
-	public static void DrawPolyLine (Vector3[] points) {
+	/// <param name="tr">Transform used for local coordinates.</param>
+	/// <param name="color">Optional draw color. Current gizmos color if not set.</param>
+	public static void DrawLocalPolyLine (Vector3[] points, Transform tr, Color? color = null) {
+		Matrix4x4 oldMatrix;
+		SetGizmosMatrix(tr, out oldMatrix);
+
+		DrawPolyLine(points, color);
+
+		Gizmos.matrix = oldMatrix;
+	}
+
+	/// <summary>
+	/// Draw an open polyline from an array of points, using the current gizmos parameter
+	/// </summary>
+	/// <param name="points">Array of points of the polyline.</param>
+	/// <param name="color">Optional draw color. Current gizmos color if not set.</param>
+	public static void DrawPolyLine (Vector3[] points, Color? color = null) {
+		Color oldColor = Gizmos.color;
+		if (color != null)
+			Gizmos.color = (Color) color;
+		
 		for (int i = 0; i < points.Length - 1; ++i) {
 			Gizmos.DrawLine(points[i], points[i + 1]);
 		}
+
+		if (color != null)
+			Gizmos.color = oldColor;
 	}
 
 	/// <summary>
