@@ -10,7 +10,7 @@ public class VectorUtilTests {
 	Vector2 u;
 	Vector2 v;
 
-	[TestFixtureSetUp]
+	[OneTimeSetUp]
 	public void Init () {
 		origin = Vector2.zero;
 		u = Vector2.right;

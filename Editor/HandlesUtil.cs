@@ -6,7 +6,7 @@ using System.Collections;
 public class HandlesUtil {
 
 	const float handleSize = 0.2f;
-	static readonly Handles.DrawCapFunction defaultHandleCap = Handles.CubeCap;
+	static readonly Handles.CapFunction defaultHandleCap = Handles.CubeHandleCap;  // Unity 5.6
 
 	public static void DrawRect (ref Rect rect, Transform owner, Color color) {
 		Color oldColor = Handles.color;
@@ -116,14 +116,14 @@ public class HandlesUtil {
 		Handles.color = oldColor;
 	}
 
-	public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2 snap = default(Vector2), Handles.DrawCapFunction drawCapFunction = null) {
+	public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2 snap = default(Vector2), Handles.CapFunction capFunction = null) {
 		return (Vector2) Handles.FreeMoveHandle ((Vector3) pos, Quaternion.identity,
-			HandleUtility.GetHandleSize ((Vector3) pos) * handleSize, (Vector3) snap, drawCapFunction ?? defaultHandleCap);
+			HandleUtility.GetHandleSize ((Vector3) pos) * handleSize, (Vector3) snap, capFunction ?? defaultHandleCap);
 	}
 
-	public static Vector3 DrawFreeMoveHandle (Vector3 pos, Vector3 snap = default(Vector3), Handles.DrawCapFunction drawCapFunction = null) {
+	public static Vector3 DrawFreeMoveHandle (Vector3 pos, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null) {
 		return Handles.FreeMoveHandle (pos, Quaternion.identity,
-			HandleUtility.GetHandleSize (pos) * handleSize, snap, drawCapFunction ?? defaultHandleCap);
+			HandleUtility.GetHandleSize (pos) * handleSize, snap, capFunction ?? defaultHandleCap);
 	}
 
 	/// Store the current Handles matrix to oldMatrix reference, and set the Handles matrix to the local matrix
