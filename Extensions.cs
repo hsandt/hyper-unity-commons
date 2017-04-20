@@ -1,5 +1,13 @@
 ﻿using UnityEngine;
 
+public static class Vector2Extensions {
+
+	public static Vector3 ToVector3 (this Vector2 vector2, float z) {
+		return new Vector3(vector2.x, vector2.y, z);
+	}
+
+}
+
 public static class GameObjectExtensions {
 
 	/// Extension to search any child transform with name passed as argument

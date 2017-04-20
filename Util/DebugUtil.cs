@@ -1,7 +1,22 @@
+// DEPENDENCIES: Commons-Helper Extensions
+
 using UnityEngine;
 using System.Collections;
 
 public static class DebugUtil {
+
+	/// <summary>
+	/// Draw a 2D line at the given Z, with given color, for given duration.
+	/// </summary>
+	/// <param name="start">Point in world space where the line should start.</param>
+	/// <param name="end">Point in world space where the line should end.</param>
+	/// <param name="color">Color of the line.</param>
+	/// <param name="duration">How long the line should be visible (s).</param>
+	/// <param name="depthTest">Should the line be obscured by objects closer to the camera?</param>
+	public static void DrawLine2D(Vector2 start, Vector2 end, float z, Color color, float duration = 0f, bool depthTest = true)
+	{
+		Debug.DrawLine(start.ToVector3(z), end.ToVector3(z), color, duration, depthTest);
+	}
 
 	/// <summary>
 	/// Debug the 2D part of 3D bounds at its center Z, with given color, for given duration.
