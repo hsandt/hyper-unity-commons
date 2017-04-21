@@ -5,10 +5,8 @@ using UnityEngine;
 /// Builds will be playable with default values, but we advise to remove any CodeTuning references in the code before building
 public class CodeTuning
 {
-	#if UNITY_EDITOR
 	/// Is code tuning active? If not, use default values.
 	public bool active;
-	#endif
 
 	public int branchIndex;
 	public static int GetBranchIndex (int defaultValue) {
@@ -49,12 +47,7 @@ public class CodeTuning
 	private CodeTuning () {}
 
 	static T TryGetValue<T>(T tuningValue, T defaultValue) {
-		#if UNITY_EDITOR
 		return Instance.active ? tuningValue : defaultValue;
-		#else
-		Debug.LogErrorFormat("CodeTuning cannot be used to get tuning values outside Editor, returning default value {0}", defaultValue);
-		return defaultValue;
-		#endif
 	}
 
 }
