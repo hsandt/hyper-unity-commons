@@ -51,6 +51,7 @@
  * isDraggable (true, false)  Toggles mouse drag functionality
  * =========================================================================*/
 
+// REFACTOR / OPTIMIZE: use IMGUI (entirely in code) instead of Legacy GUI
 
 using UnityEngine;
 using System.Collections;
@@ -76,6 +77,7 @@ public class DebugConsole : MonoBehaviour
 	public bool visible = true;                    // Does output show on screen by default or do we have to enable it with code?
 	public bool pixelCorrect = false; // set to be pixel Correct linespacing
 	public bool attachToStandardLog = false; // use the custom log methods as callbacks when Unity Debug log methods are called (reenable component to update behaviour)
+	public bool dontDestroyOnLoad = false;
 	public static bool isVisible
 	{
 		get
@@ -138,6 +140,10 @@ public class DebugConsole : MonoBehaviour
 	void Awake()
 	{
 		s_Instance = this;
+
+		if (dontDestroyOnLoad)
+			DontDestroyOnLoad(this);
+
 		InitGuis();
 	}
 
@@ -255,6 +261,8 @@ public class DebugConsole : MonoBehaviour
 			}
 		}
 
+		if (Input.GetKeyDown(KeyCode.F3))
+			Clear();
 	}
 	//+++++++++ INTERFACE FUNCTIONS ++++++++++++++++++++++++++++++++
 	public static void Log(string message, LogType type)
