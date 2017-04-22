@@ -83,13 +83,13 @@ public static class Build {
 	}
 
 	/// Build Windows 64
-	[MenuItem("Build/Build Windows 64 (Development) _F10")]
+	[MenuItem("Build/Build Windows 64 (Development)")]
 	static void BuildWindows64Development () {
 		BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, true, BuildOptions.None);
 	}
 
 	/// Build Windows 64
-	[MenuItem("Build/Build Windows 64")]
+	[MenuItem("Build/Build Windows 64 _F10")]
 	static void BuildWindows64 () {
 		BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, false, BuildOptions.None);
 	}
