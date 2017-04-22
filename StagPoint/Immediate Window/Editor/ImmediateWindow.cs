@@ -19,7 +19,7 @@ namespace StagPoint.DeveloperTools
 	public class ImmediateWindow : EditorWindow
 	{
 
-		const string WELCOME_KEY = "immediate-window-welcome";
+		// const string WELCOME_KEY = "immediate-window-welcome";
 
 		#region Static constructor
 
@@ -53,8 +53,9 @@ namespace StagPoint.DeveloperTools
 
 		public static ImmediateWindow Instance = null;
 
-		[MenuItem( "Tools/StagPoint/Immediate Window/Open Immediate Window", false, 0 )]
-		[MenuItem( "Window/Immediate Window _F5" )]
+		// [MenuItem( "Tools/StagPoint/Immediate Window/Open Immediate Window", false, 0 )]
+		// [MenuItem( "Window/Immediate Window _F5" )]
+		[MenuItem( "Debug/Immediate Window _F5" )]
 		public static void OpenScriptWindow()
 		{
 
@@ -65,15 +66,17 @@ namespace StagPoint.DeveloperTools
 
 		}
 
+		// StagPoint website is dead (2017-04-22)
+		/*
 		[MenuItem( "Tools/StagPoint/Immediate Window/Online Help", false, 1 )]
 		public static void ShowQuickstart()
 		{
 			Help.BrowseURL( "http://www.stagpoint.com/immediate-window/quickstart/" );
 		}
+		*/
 
 		private static ImmediateWindow OpenWindow()
 		{
-
 			var window = Instance = GetWindow( typeof( ImmediateWindow ) ) as ImmediateWindow;
 			window.titleContent.text = "Immediate";
 
@@ -89,6 +92,9 @@ namespace StagPoint.DeveloperTools
 
 		private static GUIStyle outputAreaStyle = null;
 		private static GUIStyle outputLineStyle = null;
+
+		private static Color darkGray = new Color32(85, 85, 85, 255); // ADDED: Animation Curve Editor background (#555555)
+		private static Texture2D darkGrayTexture; // ADDED: texture for outputAreaStyle
 
 		private static List<string> output = new List<string>()
 		{
@@ -142,6 +148,8 @@ namespace StagPoint.DeveloperTools
 			Repaint();
 
 			// WELCOME MESSAGE moved here
+			// but commented out since StagPoint website is dead
+			/*
 			var hasShownWelcome = EditorPrefs.GetBool( WELCOME_KEY, false );
 			if( hasShownWelcome )
 				return;
@@ -152,6 +160,7 @@ namespace StagPoint.DeveloperTools
 				return;
 
 			ShowQuickstart();
+			*/
 		}
 
 		public void OnFocus()
@@ -251,7 +260,6 @@ namespace StagPoint.DeveloperTools
 
 		private void logMessage( string message, int warningLevel )
 		{
-
 			var color = "white";
 			if( warningLevel == 1 )
 				color = "yellow";
@@ -653,6 +661,21 @@ You can also use the following built-in helper functions:
 
 		}
 
+		// ADDED from https://forum.unity3d.com/threads/giving-unitygui-elements-a-background-color.20510/#post-430604
+		private static Texture2D MakeTex(int width, int height, Color col)
+	    {
+	        Color[] pix = new Color[width*height];
+
+	        for(int i = 0; i < pix.Length; i++)
+	            pix[i] = col;
+
+	        Texture2D result = new Texture2D(width, height);
+	        result.SetPixels(pix);
+	        result.Apply();
+
+	        return result;
+	    }
+
 		private void showOutput()
 		{
 
@@ -660,9 +683,18 @@ You can also use the following built-in helper functions:
 
 			if( outputAreaStyle == null )
 			{
-
-				outputAreaStyle = new GUIStyle( (GUIStyle)"AnimationCurveEditorBackground" );
+				// Style "AnimationCurveEditorBackground" cannot be found, and the line below with GetStyle doesn't work either.
+				// (it is present in ParticleSystemCurveEditor, but apparently now inaccessible)
+				// Instead, pick some style as a base and set the background texture directly with the color I picked from the Animation Curve Editor
+				// See all styless available in Unity decompiled: EditorStyles.cs
+				// outputAreaStyle = new GUIStyle( GUI.skin.GetStyle("AnimationCurveEditorBackground") );
+				// outputAreaStyle = new GUIStyle( (GUIStyle)"AnimationCurveEditorBackground" );
+				outputAreaStyle = new GUIStyle( GUI.skin.GetStyle("ControlLabel") );
 				outputAreaStyle.padding = new RectOffset( 5, 5, 5, 5 );
+				// ADDED: compute dark gray texture from Animation Curve Editor background (#555555)
+				if (darkGrayTexture == null)
+					darkGrayTexture = MakeTex(1, 1, darkGray);
+				outputAreaStyle.normal.background = darkGrayTexture;
 
 				outputLineStyle = new GUIStyle( (GUIStyle)"IN Label" );
 				outputLineStyle.normal.textColor = textColor;
@@ -727,7 +759,7 @@ You can also use the following built-in helper functions:
 			#region Private variables
 
 			private static string IDENTIFIER_CHACTERS = "@$_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-			private string AUTO_COMPLETE_CHARACTERS = " {}[]().,:;+-*/%&|^!~=<>?@#'\"\\";
+			private string AUTO_COMPLETE_CHARACTERS = " {}[]().,:;+-%&|^!~=<>?@#'\"\\";
 			private const string FIELD_NAME = "__script_expression";
 			private const int SCROLL_HEIGHT = 100;
 

@@ -24,8 +24,8 @@ namespace StagPoint.DeveloperTools
 		#region Static variables
 
 		/// <summary>
-		/// Contains all default constants used by the script evaluation system. Can be used to 
-		/// provide an alias for any desired System.Type, or any constant values that are not 
+		/// Contains all default constants used by the script evaluation system. Can be used to
+		/// provide an alias for any desired System.Type, or any constant values that are not
 		/// defined by the script grammar.
 		/// </summary>
 		public static Dictionary<string, object> Constants = new Dictionary<string, object>()
@@ -49,23 +49,26 @@ namespace StagPoint.DeveloperTools
 			{ "Debug", typeof( UnityEngine.Debug ) },
 			{ "Application", typeof( UnityEngine.Application ) },
 			{ "EditorApplication", typeof( UnityEditor.EditorApplication ) },
+			{ "ClientScene", typeof( UnityEngine.Networking.ClientScene ) },  // ADDED
+			{ "NetworkManager", typeof( UnityEngine.Networking.NetworkManager ) },  // ADDED
+			{ "NetworkServer", typeof( UnityEngine.Networking.NetworkServer ) },  // ADDED
 		};
 
 		#endregion
 
-		#region Public properties 
+		#region Public properties
 
 		public ScriptEnvironment Environment { get { return this.environment; } }
 
-		#endregion 
+		#endregion
 
 		#region Private variables
 
 		private ScriptEnvironment environment = null;
 
-		#endregion 
+		#endregion
 
-		#region Constructor 
+		#region Constructor
 
 		static ImmediateWindowEvaluator()
 		{
@@ -140,7 +143,7 @@ namespace StagPoint.DeveloperTools
 				{
 					if( !environment.Variables.ContainsKey( member.Name ) )
 					{
-						
+
 						if( member is MethodInfo && ( (MethodInfo)member ).IsSpecialName )
 							continue;
 
@@ -153,17 +156,17 @@ namespace StagPoint.DeveloperTools
 
 		}
 
-		#endregion 
+		#endregion
 
 		#region Public methods
 
 		public VariableBase GetVariable( string name )
 		{
-			
+
 			VariableBase result = null;
-			
+
 			environment.Variables.TryGetValue( name, out result );
-			
+
 			return result;
 
 		}
@@ -192,7 +195,7 @@ namespace StagPoint.DeveloperTools
 
 		public void AddMethod( string name, System.Type type, string methodName )
 		{
-			
+
 			var method = type.GetMethod( methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic );
 			if( method == null || !method.IsStatic )
 				throw new MethodAccessException();
@@ -253,14 +256,14 @@ namespace StagPoint.DeveloperTools
 
 			if( name.StartsWith( "$" ) )
 			{
-				
+
 				var typeName = name.Substring( 1 );
 
 				var component = agent.GetComponent( typeName );
 				if( component != null )
 				{
 					variable = new Variable( name, component );
-					return true; 
+					return true;
 				}
 
 				return false;
