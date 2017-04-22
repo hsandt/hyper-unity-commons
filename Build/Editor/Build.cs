@@ -59,11 +59,12 @@ public static class Build {
 		BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
 		buildPlayerOptions.scenes = GetScenes();
 
-		// Example: "Build/Windows/Tactical Ops v3.1.7 - Windows 64.exe"
-		buildPlayerOptions.locationPathName = string.Format("Build/{0}/{1} v{2}.{3}.{4} - {5}{6}",
+		// Example: "Build/Windows/Tactical Ops v3.1.7 - Windows 64 dev.exe"
+		buildPlayerOptions.locationPathName = string.Format("Build/{0}/{1} v{2}.{3}.{4} - {5}{6}{7}",
 			buildTargetDerivedData.platformName,
 			buildData.appName, buildData.majorVersion, buildData.minorVersion, buildData.stageVersion,
 			buildTargetDerivedData.targetName,
+			developmentMode ? " dev" : "",
 			buildTargetDerivedData.extension
 			);
 
