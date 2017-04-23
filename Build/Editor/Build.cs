@@ -79,7 +79,8 @@ public static class Build {
 		string errorMessage = BuildPipeline.BuildPlayer(buildPlayerOptions);
 
 		double endTime = EditorApplication.timeSinceStartup;
-			Debug.LogFormat("Finished {0} in {1:0.00}s", errorMessage == "" ? "successfully" : "with error", endTime - startTime);
+		Debug.LogFormat("Finished building {0} {1} in {2:0.00}s", buildPlayerOptions.locationPathName,
+			errorMessage == "" ? "successfully" : "with error", endTime - startTime);
 	}
 
 	/// Build Windows 64
