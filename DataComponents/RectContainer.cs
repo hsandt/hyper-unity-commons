@@ -1,4 +1,7 @@
 ﻿using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using System.Collections;
 
 public class RectContainer : MonoBehaviour {
@@ -17,7 +20,7 @@ public class RectContainer : MonoBehaviour {
 			return Rect.MinMaxRect(wMin.x, wMin.y, wMax.x, wMax.y);
 		}
 	}
-	
+
 
 	#if UNITY_EDITOR
 
@@ -28,7 +31,9 @@ public class RectContainer : MonoBehaviour {
 	public Color drawColor = Color.white;
 
 	void OnDrawGizmos () {
-		if (alwaysShowRect) {
+		// If "always show rect" is active, draw the rect except if the object is already selected (in which case the handles draw the rectangle for us)
+		// Note: if the Component is not collapsed, the Handles won't draw it but the Gizmos are not drawing either anyway
+		if (alwaysShowRect && !Selection.activeGameObject == gameObject) {
 			GizmosUtil.DrawRect(rect, transform, drawColor);
 		}
 	}

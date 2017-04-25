@@ -5,10 +5,42 @@ using System.Collections;
 
 public class HandlesUtil {
 
-	const float handleSize = 0.2f;
+	/// Return resolution of a 2D camera in pixels per world distance unit. The camera does not need to be in 2D mode,
+	/// but has to be in orthogonal view, looking either forward or backward, otherwise return 0f.
+	/// If no camera can be found, also return 0f.
+	/// 
+	/// Since in orthographic view, the distance between the camera and the target is not relevant,
+	/// Use this function to determine if a draw target will likely be too small for details.
+	/// (inspired by HandleUtility.GetHandleSize() implementation, adapted to 2D mode)
+	static float Get2DPixelResolution() {
+		Camera camera = Camera.current;
+
+		// Non orthographic and forward/backward cameras are not supported by our calculation
+		if (camera == null || !(camera.orthographic && Mathf.Abs(camera.transform.forward.z) == 1f))
+			return 0f;
+
+		Vector3 a = camera.WorldToScreenPoint(Vector3.zero);  // point in front of camera on zero plane (on screen)
+		Vector3 b = camera.WorldToScreenPoint(Vector3.right * 1f);  // 1 unit on the right (on screen)
+		return Vector3.Distance(a, b);  // size of 1 unit on screen, pixel per meter, resolution
+	}
+
+	#region Rectangle
+
+	const float handleSize = 0.1f;
 	static readonly Handles.CapFunction defaultHandleCap = Handles.CubeHandleCap;  // Unity 5.6
 
+	/// Minimum camera resolution required to show the rectangle at all
+	const float minDrawRectCameraResolution = 35f;
+
+	/// Minimum camera resolution required to show the handles at all (bigger than minDrawRectCameraResolution)
+	const float minDrawRectHandlesCameraResolution = 60f;
+
 	public static void DrawRect (ref Rect rect, Transform owner, Color color) {
+
+		float pixelResolution = Get2DPixelResolution();
+
+		if (pixelResolution < minDrawRectCameraResolution) return;
+
 		Color oldColor = Handles.color;
 
 		// if the rectangle is reversed, change the color to notify the user
@@ -42,6 +74,12 @@ public class HandlesUtil {
 			new Vector3(rect.xMin, rect.yMin)
 		};
 		Handles.DrawPolyLine(points);
+
+		if (pixelResolution < minDrawRectHandlesCameraResolution) {
+			Handles.matrix = oldMatrix;
+			Handles.color = oldColor;
+			return;
+		}
 
 		// Prepare temporary vector for the 9 handles
 		Vector2 tempVec;
@@ -139,4 +177,50 @@ public class HandlesUtil {
 			Handles.matrix = Matrix4x4.TRS(tr.position, tr.rotation, Vector3.one);
 		}
 	}
+
+	#endregion
+
+	#region Text
+
+	/// Font size used when font factor size is 1 and camera resolution is minDrawCameraPixelsPerUnit. Also the size under which text is not drawn on screen.
+	const float BASE_FONT_SIZE = 11f;
+
+	/// Minimum camera resolution required to show text (to avoid too small characters), and also the resolution at which the BASE_FONT_SIZE * sizeFactor is used.
+	/// Also used to determine when to draw fixed size text.
+	const float minDrawTextCameraResolution = 35f;
+
+	/// Temporary text GUI style, modified on each DrawVectorText call
+	static readonly GUIStyle textGuiStyle = new GUIStyle();
+
+	/// Draw vector text on a scene camera at a given position, size and color. If fixedFontSize is false, the size is constant in world space, else it is constant in screen space.
+	public static void DrawVectorText(Vector3 position, string text, float sizeFactor = 1f, bool fixedFontSize = false, Color? color = null)
+	{
+		float pixelsPerUnit = Get2DPixelResolution();
+
+		// Do not draw text if not in orthographic view, facing world forward, nor if the camera has not been found.
+		// you can also check scene.in2DMode if you have access to the scene this camera belongs to, and you want to exclude manual orthographic view in 3D mode
+		// if you really need to, look at HandleUtility.GetHandleSize() implementation to get the general pixels per unit formula
+		if (pixelsPerUnit == 0f) return;
+
+		float resolutionFactor = fixedFontSize ? 1f : pixelsPerUnit / minDrawTextCameraResolution;
+		float finalSizeFactor = sizeFactor * resolutionFactor;
+
+		// For fixed font size, do not draw if resolution is too low
+		// For variable font size, do not draw if text is too small
+		// We can sum this up in one equivalent comparison
+		if (finalSizeFactor < 1f)
+			return;
+
+		// set color to white, or an optional overriding color
+		textGuiStyle.normal.textColor = color ?? Color.white;
+
+		// set text size depending on resolution
+		textGuiStyle.fontSize = (int) Mathf.Floor (BASE_FONT_SIZE * finalSizeFactor);
+
+		// draw label
+		Handles.Label (position, text, textGuiStyle);
+	}
+
+	#endregion
+
 }
