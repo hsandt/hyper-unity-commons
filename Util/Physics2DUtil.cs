@@ -21,12 +21,19 @@ public static class Physics2DUtil {
 	[Conditional("DEBUG")]
 	public static void DrawRaycast (Vector2 origin, Vector2 direction, float distance, RaycastHit2D hit, Color? color = null, float duration = 2f, float z = 0f)
 	{
+		// we can't draw an infinite ray so limit the draw distance
 		if (distance == Mathf.Infinity)
 			distance = maxDrawLineDistance;
-
-		// By default, draw the no hit part of the ray in green, and the hit part in red
-		DebugUtil.DrawLine2D(origin, hit.point, z, color ?? noHitColor, duration, depthTest: false);
-		DebugUtil.DrawLine2D(hit.point, origin + direction.normalized * distance, z, hitColor, duration, depthTest: false);
+		
+		if (hit.collider == null) {
+			// no hit, draw the full ray in no hit color
+			DebugUtil.DrawLine2D(origin, origin + direction.normalized * distance, z, color ?? noHitColor, duration, depthTest: false);
+		}
+		else {
+			// By default, draw the no hit part of the ray in green, and the hit part in red
+			DebugUtil.DrawLine2D(origin, hit.point, z, color ?? noHitColor, duration, depthTest: false);
+			DebugUtil.DrawLine2D(hit.point, origin + direction.normalized * distance, z, hitColor, duration, depthTest: false);
+		}
 	}
 
 	/// Raycast and draw debug at the same time. Set a color to override the no hit color.
@@ -40,6 +47,7 @@ public static class Physics2DUtil {
 	[Conditional("DEBUG")]
 	public static void DrawRaycastMulti (Vector2 origin, Vector2 direction, float distance, RaycastHit2D[] hits, Color? color = null, float duration = 2f, float z = 0f)
 	{
+			// we can't draw an infinite ray so limit the draw distance
 		if (distance == Mathf.Infinity)
 			distance = maxDrawLineDistance;
 
@@ -47,6 +55,7 @@ public static class Physics2DUtil {
 
 		if (hits.Length == 0)
 		{
+			// No hit, draw the full ray in no hit color
 			DebugUtil.DrawLine2D(origin, end, z, color ?? noHitColor, duration, depthTest: false);
 		}
 		else
