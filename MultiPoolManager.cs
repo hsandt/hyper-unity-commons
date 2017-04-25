@@ -16,7 +16,7 @@ public abstract class MultiPoolManager<TPooledObject, T> : SingletonManager<T> w
 	/* Parameters */
 
 	[Tooltip("Path of gameobject prefabs to load, starting just after Resources/")]
-	[SerializeField] protected string resourcePrefabsPath;
+	[SerializeField] protected string resourcePrefabsPath = "";
 
 	[Tooltip("Max number of objects to pool for each type (multi-pool total size is a multiple)")]
 	[SerializeField] protected int poolSize = 10;
