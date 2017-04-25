@@ -42,7 +42,7 @@ public static class Build {
 	/// Build the player for a target, with a build platform name (Windows, OSX, Android, etc.), a build target name (Windows 64, OSX 32, Android),
 	/// whether it is a development build, and extra options.
 	/// This requires to have a BuildData ScriptableObject asset in some Resources/Build folder.
-	static void BuildPlayerWithVersion (BuildTarget buildTarget, bool developmentMode, BuildOptions extraOptions) {
+	public static void BuildPlayerWithVersion (BuildTarget buildTarget, bool developmentMode, BuildOptions extraOptions) {
 		BuildTargetDerivedData buildTargetDerivedData;
 		if (!buildTargetDerivedDataDict.TryGetValue(buildTarget, out buildTargetDerivedData))
 		{
