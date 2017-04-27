@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 public static class Vector2Extensions {
 
@@ -33,14 +35,14 @@ public static class GameObjectExtensions {
 
 	/// Instantiate prefab / clone game object (helper to avoid casting to GameObject every time)
 	public static GameObject Instantiate (this GameObject model) {
-		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
+		if (model == null) throw new Exception("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
 		return gameObjectInstance;
 	}
 
 	/// Instantiate prefab / clone game object under parent (named InstantiateUnder to avoid conflict with Instantiate<Transform>(Transform))
 	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr, bool instantiateInWorldSpace = false) {
-		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
+		if (model == null) throw new Exception("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model, parentTr, instantiateInWorldSpace) as GameObject;
 		return gameObjectInstance;
 	}
@@ -57,7 +59,7 @@ public static class GameObjectExtensions {
 
 	/// Instantiate prefab / clone game object and set it at local position under parent transform on layer layer
 	public static GameObject InstantiateUnderAtOn (this GameObject model, Transform parentTr, Vector3 localPos, int layer = -1) {
-		if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
+		if (model == null) throw new Exception("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
 		gameObjectInstance.transform.SetParent(parentTr, true);  // preserve world rotation and scaling
 		gameObjectInstance.transform.localPosition = localPos;
