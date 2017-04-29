@@ -11,8 +11,8 @@ public static class Build {
 
 	struct BuildTargetDerivedData {
 
-		public string platformName;				// Raw target name, used as parent folder name: "Windows", "OSX", "Android", etc.
-		public string targetName;					// Readable target name: "Windows 64", "OSX 32", "Android", etc.
+		public string platformName;						// Raw target name, used as parent folder name: "Windows", "OSX", "Android", etc.
+		public string targetName;						// Readable target name: "Windows 64", "OSX 32", "Android", etc.
 		public string extension;						// Optional extension (empty for target folders): ".exe", "", ".apk", etc.
 		public BuildOptions platformSpecificOptions;	// Extra options added automatically for this platform
 
@@ -27,6 +27,7 @@ public static class Build {
 
 	static Dictionary<BuildTarget, BuildTargetDerivedData> buildTargetDerivedDataDict = new Dictionary<BuildTarget, BuildTargetDerivedData> {
 		{ BuildTarget.StandaloneWindows64, new BuildTargetDerivedData("Windows", "Windows 64", ".exe") },
+		{ BuildTarget.StandaloneOSXIntel64, new BuildTargetDerivedData("OSX", "OSX 64", ".app") },
 		{ BuildTarget.Android, new BuildTargetDerivedData("Android", "Android", ".apk") },
 		{ BuildTarget.iOS, new BuildTargetDerivedData("iOS", "iOS", platformSpecificOptions: BuildOptions.SymlinkLibraries) },
 	};
@@ -82,29 +83,51 @@ public static class Build {
 		Debug.LogFormat("Finished building {0} {1} in {2:0.00}s", buildPlayerOptions.locationPathName,
 			errorMessage == "" ? "successfully" : "with error", endTime - startTime);
 	}
-
+		
 	/// Build Windows 64
+# if UNITY_EDITOR_WIN
+	[MenuItem("Build/Build Windows 64 _F10")]
+#else
+	[MenuItem("Build/Build Windows 64")]
+#endif
+	static void BuildWindows64 () {
+		BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, false, BuildOptions.None);
+	}
+
+	/// Build Windows 64 development
 	[MenuItem("Build/Build Windows 64 (Development)")]
 	static void BuildWindows64Development () {
 		BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, true, BuildOptions.None);
 	}
 
-	/// Build Windows 64
-	[MenuItem("Build/Build Windows 64 _F10")]
-	static void BuildWindows64 () {
-		BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, false, BuildOptions.None);
+	/// Build OS X
+# if UNITY_EDITOR_OSX
+	[MenuItem("Build/Build OS X 64 _F10")]
+#else
+	[MenuItem("Build/Build OS X 64")]
+#endif
+	static void BuildOSX64 () {
+		BuildPlayerWithVersion(BuildTarget.StandaloneOSXIntel64, false, BuildOptions.None);
 	}
 
-	// Build Android
-	[MenuItem("Build/Build Android (Development)")]
-	static void BuildAndroidDevelopment()
-	{
-		BuildPlayerWithVersion(BuildTarget.Android, true, BuildOptions.None);
+	/// Build OS X development
+	[MenuItem("Build/Build OS X 64 (Development)")]
+	static void BuildOSX64Development () {
+		BuildPlayerWithVersion(BuildTarget.StandaloneOSXIntel64, true, BuildOptions.None);
 	}
-	// Build Android
+
+	/// Build Android
 	[MenuItem("Build/Build Android")]
 	static void BuildAndroid()
 	{
 		BuildPlayerWithVersion(BuildTarget.Android, false, BuildOptions.None);
 	}
+
+	/// Build Android development
+	[MenuItem("Build/Build Android (Development)")]
+	static void BuildAndroidDevelopment()
+	{
+		BuildPlayerWithVersion(BuildTarget.Android, true, BuildOptions.None);
+	}
+
 }
