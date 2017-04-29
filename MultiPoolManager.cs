@@ -33,7 +33,7 @@ public abstract class MultiPoolManager<TPooledObject, T> : SingletonManager<T> w
 
 	// TEMPLATE
 	// void Awake () {
-	// 	Instance = this;
+	//  SetInstanceOrSelfDestruct(this);
 
 	// 	Init();
 	// }

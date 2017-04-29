@@ -22,7 +22,7 @@ public abstract class PoolManager<TPooledObject, T> : SingletonManager<T> where 
 
 	// TEMPLATE METHOD FOR DERIVED CLASSES
 	// void Awake () {
-	// 	Instance = this;
+	//  SetInstanceOrSelfDestruct(this);
 	// 	Init();
 	// }
 
