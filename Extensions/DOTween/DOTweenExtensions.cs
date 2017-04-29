@@ -1,7 +1,6 @@
-/* DEPENDENCIES:
- * - DOTween
- *
- */
+#define COMMONS_HELPER_DOTWEEN  // uncomment to activate DOTween Extensions if you have DOTween installed
+
+#if COMMONS_HELPER_DOTWEEN
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -40,3 +39,5 @@ public static class DOTweenExtensions {
 	}
 
 }
+
+#endif
