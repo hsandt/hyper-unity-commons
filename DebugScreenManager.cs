@@ -47,7 +47,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 #if UNITY_EDITOR
 		initialized = true;  // Hot reload support
 #endif
-		Instance = this;
+		SetInstanceOrSelfDestruct(this);
 		Init();
 	}
 
@@ -187,7 +187,7 @@ public class DebugScreenManager : SingletonManager<DebugScreenManager> {
 	void OnEnable () {
 		if (!initialized) {
 			Debug.Log("[DEBUG SCREEN MANAGER] Hot Reload");
-			Instance = this;
+			SetInstanceOrSelfDestruct(this);
 			ClearAllChannels();
 		}
 	}
