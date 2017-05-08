@@ -28,6 +28,7 @@ public static class Build {
 	static Dictionary<BuildTarget, BuildTargetDerivedData> buildTargetDerivedDataDict = new Dictionary<BuildTarget, BuildTargetDerivedData> {
 		{ BuildTarget.StandaloneWindows64, new BuildTargetDerivedData("Windows", "Windows 64", ".exe") },
 		{ BuildTarget.StandaloneOSXIntel64, new BuildTargetDerivedData("OSX", "OSX 64", ".app") },
+		{ BuildTarget.StandaloneLinux64, new BuildTargetDerivedData("Linux", "Linux 64", ".x86_64") },
 		{ BuildTarget.Android, new BuildTargetDerivedData("Android", "Android", ".apk") },
 		{ BuildTarget.iOS, new BuildTargetDerivedData("iOS", "iOS", platformSpecificOptions: BuildOptions.SymlinkLibraries) },
 	};
@@ -116,6 +117,22 @@ public static class Build {
 		BuildPlayerWithVersion(BuildTarget.StandaloneOSXIntel64, true, BuildOptions.None);
 	}
 
+	/// Build Linux
+	# if UNITY_EDITOR_LINUX
+	[MenuItem("Build/Build Linux 64 _F10")]
+	#else
+	[MenuItem("Build/Build Linux 64")]
+	#endif
+	static void BuildLinux64 () {
+		BuildPlayerWithVersion(BuildTarget.StandaloneLinux64, false, BuildOptions.None);
+	}
+
+	/// Build Linux development
+	[MenuItem("Build/Build Linux 64 (Development)")]
+	static void BuildLinux64Development () {
+		BuildPlayerWithVersion(BuildTarget.StandaloneLinux64, true, BuildOptions.None);
+	}
+
 	/// Build Android
 	[MenuItem("Build/Build Android")]
 	static void BuildAndroid()
@@ -127,6 +144,7 @@ public static class Build {
 	[MenuItem("Build/Build Android (Development)")]
 	static void BuildAndroidDevelopment()
 	{
+		EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Internal;
 		BuildPlayerWithVersion(BuildTarget.Android, true, BuildOptions.None);
 	}
 
