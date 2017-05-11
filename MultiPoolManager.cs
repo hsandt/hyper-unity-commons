@@ -6,7 +6,7 @@ using System.Collections.Generic;
 /// Manager for a heterogeneous pool of game objects sharing a common script TPooledObject that implements IPooledObject
 /// Unlike PoolManager, this manager loads the prefabs by resource name (dictionary cannot be serialized directly and list of references are long to drag and drop)
 /// When inheriting from this base class, use the derived class as the T generic argument so that you can access a singleton instance of the derived class
-public abstract class MultiPoolManager<TPooledObject, T> : SingletonManager<T> where TPooledObject : MonoBehaviour, IPooledObject where T : MonoBehaviour {
+public abstract class MultiPoolManager<TPooledObject, T> : SingletonManager<T> where TPooledObject : MonoBehaviour, IPooledObject where T : SingletonManager<T> {
 
 	/* External references */
 

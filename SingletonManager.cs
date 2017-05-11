@@ -12,7 +12,8 @@ using UnityEngine;
 ///   such as `T myT = new T();`
 /// To prevent that, add `protected T () {}` to your singleton class.
 /// </summary>
-public class SingletonManager<T> : MonoBehaviour where T : MonoBehaviour {
+//public class SingletonManager<T> : MonoBehaviour where T : MonoBehaviour {
+public class SingletonManager<T> : MonoBehaviour where T : SingletonManager<T> {
 
 	// TEMPLATE
 	// protected T () {}

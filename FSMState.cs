@@ -4,40 +4,43 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// Abstract class for finite-state machine state. TStateKey can be any comparable, although we recommend using an Enum.
-public abstract class FSMState<TStateKey> {
+/// TState, the base class of all your states, must be provided, and therefore you need to create a base class
+/// that inherits from FSMState<> as an intermediary:
+/// 	public abstract class MyStateClass : FSMState<MyStateKey, MyStateClass>
+/// In any case, the default value of TStateKey should represent the None state and never be used for an actual state.
+/// Thus, for an enum, the 1st value (= 0) should always be None.
+public abstract class FSMState<TStateKey, TState> where TState : FSMState<TStateKey, TState> {
 
 	/* Parameters */
 
-	/// State key (should be unique per state machine)
-	public TStateKey Key { get; protected set; }
+	/// Unique key representing this state. Defined in child state class.
+	/// Do not return the default value of TStateKey, which is reserved by the conceptual None state.
+	public abstract TStateKey Key { get; }
 
-	/// List of previous states allowed for transitions
-	/// Fill with AddTransitionFrom
+	/// List of previous states allowed for transitions, bound the state definition. Defined in child class constructor.
 	protected HashSet<TStateKey> previousStates;
 
 
 	/* State vars */
 
 	/// FSMMachine managing this state
-	protected FSMMachine<TStateKey> machine;
+	protected FSMMachine<TStateKey, TState> machine;
 
 
-	/// Create an FSM state with a given key. In general, one FSMState class corresponds to one key,
-	/// but if two states have the same behavior, you can share the same class and differenciate them by key only.
-	/// Do not pass the default value (None state) key, or the machine will refuse to add this state.
-	public FSMState (TStateKey key) {
-		Key = key;
+	public override string ToString ()
+	{
+		return Key.ToString();
 	}
 
 	/// Return true if the state key is valid (i.e. a non-default-value key), false otherwise.
 	public static bool IsValidKey (TStateKey key) {
-		return EqualityComparer<TStateKey>.Default.Equals(key, default(TStateKey));
+		return !EqualityComparer<TStateKey>.Default.Equals(key, default(TStateKey));
 	}
 
 	/// Return true if this state has a valid key (i.e. a non-default-value key), false otherwise.
 	public bool HasValidKey () {
 		// To support generic comparison, use CompareTo
-		return EqualityComparer<TStateKey>.Default.Equals(Key, default(TStateKey));
+		return !EqualityComparer<TStateKey>.Default.Equals(Key, default(TStateKey));
 	}
 
 	/// Return true if the state is represented by key
@@ -46,35 +49,36 @@ public abstract class FSMState<TStateKey> {
 	}
 
 	/// Return true if this state and the other state have the same keys
-	public bool HasSameKey (FSMState<TStateKey> other) {
+	public bool HasSameKey (FSMState<TStateKey, TState> other) {
 		return other != null && EqualityComparer<TStateKey>.Default.Equals(Key, other.Key);
 	}
 
 	/// Return true if a transition is allowed from the previous state to this state
-	public bool CanTransitionFrom(FSMState<TStateKey> state) {
+	public bool CanTransitionFrom(FSMState<TStateKey, TState> state) {
 		return previousStates.Contains(state != null ? state.Key : default(TStateKey));
 	}
 
-	/// Set the machine
-	protected void OnAddedToMachine (FSMMachine<TStateKey> machine) {
+	/// Set the machine and call OnAddedToMachine
+	public void RegisterMachine (FSMMachine<TStateKey, TState> machine) {
 		this.machine = machine;
+		OnAddedToMachine(machine);
 	}
+
+	/// Set the machine (override to set child class fields from machine)
+	protected virtual void OnAddedToMachine (FSMMachine<TStateKey, TState> machine) {}
 
 	/// Return true if the state has been added to an FSM machine
-	protected bool HasMachine () {
-		return machine != null;
-	}
-
-	/// Transition callback
-	public virtual void OnTransitionFrom (TStateKey key) {}
+//	public bool HasMachine () {
+//		return machine != null;
+//	}
 
 	/// Enter state callback
-	public virtual void OnEnter() {}
+	public virtual void OnEnter (TState previousState) {}
 
 	/// Update state behaviour
-	public virtual void UpdateState() {}
+	public virtual void UpdateState () {}
 
 	/// Exit state callback
-	public virtual void OnExit() {}
+	public virtual void OnExit (TState nextState) {}
 
 }
