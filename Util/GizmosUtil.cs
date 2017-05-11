@@ -98,7 +98,7 @@ public static class GizmosUtil {
 		Matrix4x4 oldMatrix;
 		SetGizmosMatrix(tr, out oldMatrix);
 
-		Vector2[] corners = GetCornersFromLimits(left, right, bottom, top);
+		Vector2[] corners = Draw2DUtil.GetCornersFromLimits(left, right, bottom, top);
 
 		// draw the 4 edges by cycling between pair of corners
 		for (int i = 0; i < 4; ++i) {
@@ -119,7 +119,7 @@ public static class GizmosUtil {
 		Matrix4x4 oldMatrix;
 		SetGizmosMatrix(tr, out oldMatrix);
 
-		Vector2[] corners = GetCornersFromBox2DParams(offset, size);
+		Vector2[] corners = Draw2DUtil.GetCornersFromBox2DParams(offset, size);
 
 		// draw the 4 edges by cycling between pair of corners
 		for (int i = 0; i < 4; ++i) {
@@ -164,7 +164,7 @@ public static class GizmosUtil {
 		if (color != null)
 			Gizmos.color = (Color) color;
 
-		Vector3[] corners = GetCornersFromBounds(bounds);
+		Vector3[] corners = Draw2DUtil.GetCornersFromBounds(bounds);
 
 		// draw the 4 edges by cycling between pair of corners
 		for (int i = 0; i < 4; ++i) {
@@ -173,36 +173,6 @@ public static class GizmosUtil {
 
 		if (color != null)
 			Gizmos.color = oldColor;
-	}
-
-	public static Vector2[] GetCornersFromLimits(float left, float right, float bottom, float top) {
-		Vector2 bottomLeft = new Vector2(left, bottom);
-		Vector2 bottomRight = new Vector2(right, bottom);
-		Vector2 topRight = new Vector2(right, top);
-		Vector2 topLeft = new Vector2(left, top);
-		return new Vector2[] {bottomLeft, bottomRight, topRight, topLeft};
-	}
-
-	public static Vector2[] GetCornersFromBox2DParams(Vector2 offset, Vector2 size) {
-		Vector2 extents = size / 2;
-		Vector2 bottomLeft = offset - extents;
-		Vector2 bottomRight = offset + new Vector2(extents.x, - extents.y);
-		Vector2 topRight = offset + extents;
-		Vector2 topLeft = offset + new Vector2(- extents.x, extents.y);
-		return new Vector2[] {bottomLeft, bottomRight, topRight, topLeft};
-	}
-
-	/// Return 4 corners from bounds, in the order: bottom-left, bottom-right, top-right, top-left
-	/// Note that it only preserves Z for the bounds center
-	public static Vector3[] GetCornersFromBounds (Bounds bounds) {
-		Vector3 center = bounds.center;
-		Vector3 extents = bounds.extents;
-
-		Vector3 bottomLeft = center + new Vector3(- extents.x, - extents.y);
-		Vector3 bottomRight = center + new Vector3(extents.x, - extents.y);
-		Vector3 topRight = center + new Vector3(extents.x, extents.y);
-		Vector3 topLeft = center + new Vector3(- extents.x, extents.y);
-		return new Vector3[] {bottomLeft, bottomRight, topRight, topLeft};
 	}
 
 	/// <summary>

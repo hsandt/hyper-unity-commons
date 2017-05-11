@@ -89,13 +89,47 @@ public static class Physics2DUtil {
 		DrawRaycastMulti(origin, direction, distance, hits, color, duration, z);
 	}
 
+	/// Draw a boxcast, providing its result hit, with an optional not hit color, a draw duration and a Z depth where the boxcast should be drawn.
+	[Conditional("DEBUG")]
+	public static void DrawBoxCast (Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, RaycastHit2D hit, Color? color = null, float duration = 2f, float z = 0f)
+	{
+		// we can't draw an infinite boxcast so limit the draw distance
+		if (distance == Mathf.Infinity)
+			distance = maxDrawLineDistance;
+
+		if (hit.collider == null) {
+			// no hit, draw the full box in no hit color at the start and end point of the boxcast
+			// to simplify, we only draw one line from the start center to the end center of the moving box,
+			// but we could also draw the 4 segments connecting the 4 corners of the box (would require to define DebugUtil.DrawBoxCast)
+			DebugUtil.DrawLocalBox2D(origin, size, angle, z, color ?? noHitColor, duration, depthTest: false);
+			DebugUtil.DrawLine2D(origin, origin + direction.normalized * distance, z, color ?? noHitColor, duration, depthTest: false);
+			DebugUtil.DrawLocalBox2D(origin + direction.normalized * distance, size, angle, z, color ?? noHitColor, duration, depthTest: false);
+		}
+		else {
+			// By default, draw the no hit part of the boxcast in green, and the hit part in red
+			DebugUtil.DrawLocalBox2D(origin, size, angle, z, color ?? noHitColor, duration, depthTest: false);
+			DebugUtil.DrawLine2D(origin, hit.point, z, color ?? noHitColor, duration, depthTest: false);
+			DebugUtil.DrawLocalBox2D(hit.point, size, angle, z, hitColor, duration, depthTest: false);
+			DebugUtil.DrawLine2D(hit.point, origin + direction.normalized * distance, z, hitColor, duration, depthTest: false);
+			DebugUtil.DrawLocalBox2D(origin + direction.normalized * distance, size, angle, z, hitColor, duration, depthTest: false);
+		}
+	}
+
+	/// Boxcast and draw results for debug, with free area in green and collided area in red
+	public static RaycastHit2D BoxCastDebug(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask = Physics2D.DefaultRaycastLayers, float minDepth = -Mathf.Infinity, float maxDepth = Mathf.Infinity, Color? color = null, float duration = 0f, float z = 0f) {
+		RaycastHit2D hit = Physics2D.BoxCast(origin, size, angle, direction, distance, layerMask, minDepth, maxDepth);
+		DrawBoxCast(origin, size, angle, direction, distance, hit, color, duration, z);
+		return hit;
+	}
+
 	/// Check overlapping collider and draw area bounds for debug
 	public static Collider2D OverlapAreaDebug(Vector2 pointA, Vector2 pointB, int layerMask = Physics2D.DefaultRaycastLayers, float minDepth = -Mathf.Infinity, float maxDepth = Mathf.Infinity, Color? color = null, float duration = 0f) {
 	#if UNITY_EDITOR
 		Bounds debugBounds = new Bounds();
 		debugBounds.min = (Vector3) pointA;
 		debugBounds.max = (Vector3) pointB;
-		DebugUtil.DebugBounds2D(debugBounds, color ?? Color.red, duration, depthTest: false);
+		// IMPROVE: check results and draw in green if no collision
+		DebugUtil.DrawBounds2D(debugBounds, color ?? Color.red, duration, depthTest: false);
 	#endif
 		return Physics2D.OverlapArea(pointA, pointB, layerMask, minDepth, maxDepth);
 	}
@@ -106,7 +140,8 @@ public static class Physics2DUtil {
 		Bounds debugBounds = new Bounds();
 		debugBounds.min = (Vector3) pointA;
 		debugBounds.max = (Vector3) pointB;
-		DebugUtil.DebugBounds2D(debugBounds, color ?? Color.red, duration, depthTest: false);
+		// IMPROVE: check results and draw in green if no collision
+		DebugUtil.DrawBounds2D(debugBounds, color ?? Color.red, duration, depthTest: false);
 	#endif
 		return Physics2D.OverlapAreaNonAlloc(pointA, pointB, results, layerMask, minDepth, maxDepth);
 	}
