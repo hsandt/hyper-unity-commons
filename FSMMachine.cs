@@ -1,7 +1,8 @@
+#define DEBUG_FSM_MACHINE
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
 
 /*
 
@@ -111,7 +112,6 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 			if (states.TryGetValue(key, out state)) {
 				if (state.CanTransitionFrom(null)) {
 					defaultState = state;
-					Debug.LogFormat("[FSMMachine] Default state set for key: {0}", key);
 				}
 				else
 					Debug.LogWarningFormat("[FSMMachine] Default state cannot be set for key: {0}," +
@@ -133,7 +133,6 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 			TState state;
 			if (states.TryGetValue(key, out state)) {
 				NextState = state;
-				Debug.LogFormat("[FSMMachine] Next state set for key: {0}", key);
 			}
 			else {
 				Debug.LogWarningFormat("[FSMMachine] Tried to set next state key to {0} but no corresponding state was added, next state will not be modified.", key);
@@ -160,6 +159,9 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 						CurrentState.OnExit(NextState);
 					}
 					NextState.OnEnter(CurrentState);  // Initial state enters from None state
+					#if DEBUG_FSM_MACHINE
+					Debug.LogFormat("[FSMMachine] {0} -> {1}", CurrentState != null ? CurrentState.ToString() : "None", NextState.ToString());
+					#endif
 					CurrentState = NextState;
 				}
 				else {
