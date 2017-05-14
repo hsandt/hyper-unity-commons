@@ -102,6 +102,31 @@ public static class ComponentExtensions {
 
 }
 
+public static class AnimatorExtensions {
+
+	/// Reset all animator parameters to their default
+	public static void ResetParameters (this Animator animator) {
+		AnimatorControllerParameter[] parameters = animator.parameters;
+
+		for (int i = 0; i < parameters.Length; i++) {
+			AnimatorControllerParameter parameter = parameters[i];
+			switch (parameter.type)
+			{
+			case AnimatorControllerParameterType.Int:
+				animator.SetInteger(parameter.name, parameter.defaultInt);
+				break;
+			case AnimatorControllerParameterType.Float:
+				animator.SetFloat(parameter.name, parameter.defaultFloat);
+				break;
+			case AnimatorControllerParameterType.Bool:
+				animator.SetBool(parameter.name, parameter.defaultBool);
+				break;
+			}
+		}
+	}
+
+}
+
 // from http://answers.unity3d.com/questions/150690/using-a-bitwise-operator-with-layermask.html
 public static class LayerMaskExtensions {
 
