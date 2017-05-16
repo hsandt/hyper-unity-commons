@@ -40,7 +40,7 @@ public static class GameObjectExtensions {
 		return gameObjectInstance;
 	}
 
-	/// Instantiate prefab / clone game object under parent (named InstantiateUnder to avoid conflict with Instantiate<Transform>(Transform))
+	/// Instantiate prefab / clone game object under parent (named InstantiateUnder to avoid conflict with Instantiate<T>(Transform))
 	public static GameObject InstantiateUnder (this GameObject model, Transform parentTr, bool instantiateInWorldSpace = false) {
 		if (model == null) throw new Exception("Cannot instantiate null model.");
 		GameObject gameObjectInstance = Object.Instantiate(model, parentTr, instantiateInWorldSpace) as GameObject;
