@@ -11,6 +11,17 @@ using UnityEngine;
 /// Thus, for an enum, the 1st value (= 0) should always be None.
 public abstract class FSMState<TStateKey, TState> where TState : FSMState<TStateKey, TState> {
 
+	// TEMPLATE for child class
+	/*
+	public MyState () {
+		previousStates = new HashSet<MyStateKey> {
+			MyStateKey.None,
+			MyStateKey.Falling
+		};
+	}
+	*/
+
+
 	/* Parameters */
 
 	/// Unique key representing this state. Defined in child state class.
@@ -66,11 +77,6 @@ public abstract class FSMState<TStateKey, TState> where TState : FSMState<TState
 
 	/// Set the machine (override to set child class fields from machine)
 	protected virtual void OnAddedToMachine (FSMMachine<TStateKey, TState> machine) {}
-
-	/// Return true if the state has been added to an FSM machine
-//	public bool HasMachine () {
-//		return machine != null;
-//	}
 
 	/// Enter state callback
 	public virtual void OnEnter (TState previousState) {}
