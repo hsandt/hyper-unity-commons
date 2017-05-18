@@ -76,17 +76,19 @@ public static class Physics2DUtil {
 	}
 
 	/// Raycast all colliders with no allocation and draw debug at the same time. Set a color to override the no hit color.
-	public static void RaycastNonAllocDebug(Vector2 origin, Vector2 direction, RaycastHit2D[] hits, float distance = Mathf.Infinity, int layerMask = Physics2D.DefaultRaycastLayers, float minDepth = -Mathf.Infinity, float maxDepth = Mathf.Infinity, Color? color = null, float duration = 2f, float z = 0f)
+	public static int RaycastNonAllocDebug(Vector2 origin, Vector2 direction, RaycastHit2D[] hits, float distance = Mathf.Infinity, int layerMask = Physics2D.DefaultRaycastLayers, float minDepth = -Mathf.Infinity, float maxDepth = Mathf.Infinity, Color? color = null, float duration = 2f, float z = 0f)
 	{
-		Physics2D.RaycastNonAlloc(origin, direction, hits, distance, layerMask, minDepth, maxDepth);
+		int nbResults = Physics2D.RaycastNonAlloc(origin, direction, hits, distance, layerMask, minDepth, maxDepth);
 		DrawRaycastMulti(origin, direction, distance, hits, color, duration, z);
+        return nbResults;
 	}
 
 	/// [Unity 5.6 new overload] Raycast all colliders from origin toward direction over distance and store the result in hits. Draw with optional custom color for duration seconds at depth z.
-	public static void RaycastDebug(Vector2 origin, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] hits, float distance = Mathf.Infinity, Color? color = null, float duration = 2f, float z = 0f)
+	public static int RaycastDebug(Vector2 origin, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] hits, float distance = Mathf.Infinity, Color? color = null, float duration = 2f, float z = 0f)
 	{
-		Physics2D.Raycast(origin, direction, contactFilter, hits, distance);
+		int nbResults = Physics2D.Raycast(origin, direction, contactFilter, hits, distance);
 		DrawRaycastMulti(origin, direction, distance, hits, color, duration, z);
+		return nbResults;
 	}
 
 	/// Draw a boxcast, providing its result hit, with an optional not hit color, a draw duration and a Z depth where the boxcast should be drawn.
