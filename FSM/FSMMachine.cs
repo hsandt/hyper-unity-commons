@@ -146,7 +146,10 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 	/// Update the machine state, applying any requested transitions to a new state
 	public void UpdateMachine() {
 		ApplyTransition();
-		CurrentState.UpdateState();
+        if (CurrentState != null)
+		    CurrentState.UpdateState();
+        else
+			Debug.LogWarningFormat("[FSMMachine] UpdateMachine: CurrentState is null");
 	}
 
 	/// Apply transition to any requested next state
