@@ -4,7 +4,6 @@ using System.Collections;
 public static class ColorUtil {
 
 	public static readonly Color invisibleWhite = new Color(1f, 1f, 1f, 0f);
-	public static readonly Color invisibleBlack = new Color(0f, 0f, 0f, 0f);  // DEPRECATED: use Color.clear
 	public static readonly Color orange = new Color32(233, 85, 0, 255); // HexToColor("e95500");
 	public static readonly Color gold = new Color(1f, 0.843f, 0f);
 	public static readonly Color pink = new Color(1f, 0.753f, 0.796f);
