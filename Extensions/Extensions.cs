@@ -28,8 +28,10 @@ public static class GameObjectExtensions {
 	/// Try to get component of type T, log error if none found
 	public static T GetComponentOrFail<T>(this GameObject gameObject) {
 		T component = gameObject.GetComponent<T>();
-		if (component == null)
-			throw ExceptionsUtil.CreateExceptionFormat("No component of type {0} found on {1}.", typeof(T), gameObject);
+        if (component == null) {
+            Debug.LogErrorFormat(gameObject, "No component of type {0} found on {1}.", typeof(T), gameObject);
+            throw ExceptionsUtil.CreateExceptionFormat("GetComponentOrFail failed");
+        }
 		return component;
 	}
 
