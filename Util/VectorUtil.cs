@@ -7,7 +7,7 @@ public static class VectorUtil {
 	public static Vector2 ProjectParallel (Vector2 vector, Vector2 direction) {
 		float directionSqrMagnitude = direction.sqrMagnitude;
 
-		if (directionSqrMagnitude == 0f) {
+        if (directionSqrMagnitude < Mathf.Epsilon) {
 			throw ExceptionsUtil.CreateExceptionFormat("Cannot project on null direction");
 		}
 
