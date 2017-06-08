@@ -22,7 +22,7 @@ public static class Physics2DUtil {
 	public static void DrawRaycast (Vector2 origin, Vector2 direction, float distance, RaycastHit2D hit, Color? color = null, float duration = 2f, float z = 0f)
 	{
 		// we can't draw an infinite ray so limit the draw distance
-		if (distance == Mathf.Infinity)
+        if (float.IsPositiveInfinity(distance))
 			distance = maxDrawLineDistance;
 		
 		if (hit.collider == null) {
@@ -43,17 +43,17 @@ public static class Physics2DUtil {
 		return hit;
 	}
 
-	/// Draw a raycast all or non-alloc, providing its result hits array
+	/// Draw a raycast all or non-alloc, providing its result hits array and the number of revelant hits at the beginning of the array nbResults
 	[Conditional("DEBUG")]
-	public static void DrawRaycastMulti (Vector2 origin, Vector2 direction, float distance, RaycastHit2D[] hits, Color? color = null, float duration = 2f, float z = 0f)
+    public static void DrawRaycastMulti (Vector2 origin, Vector2 direction, float distance, RaycastHit2D[] hits, int nbResults, Color? color = null, float duration = 2f, float z = 0f)
 	{
 			// we can't draw an infinite ray so limit the draw distance
-		if (distance == Mathf.Infinity)
+        if (float.IsPositiveInfinity(distance))
 			distance = maxDrawLineDistance;
 
 		Vector2 end = origin + direction.normalized * distance;
 
-		if (hits.Length == 0)
+        if (nbResults == 0)
 		{
 			// No hit, draw the full ray in no hit color
 			DebugUtil.DrawLine2D(origin, end, z, color ?? noHitColor, duration, depthTest: false);
@@ -71,7 +71,7 @@ public static class Physics2DUtil {
 	public static RaycastHit2D[] RaycastAllDebug (Vector2 origin, Vector2 direction, float distance = Mathf.Infinity, int layerMask = Physics2D.DefaultRaycastLayers, float minDepth = -Mathf.Infinity, float maxDepth = Mathf.Infinity, Color? color = null, float duration = 2f, float z = 0f)
 	{
 		RaycastHit2D[] hits = Physics2D.RaycastAll(origin, direction, distance, layerMask, minDepth, maxDepth);
-		DrawRaycastMulti(origin, direction, distance, hits, color, duration, z);
+        DrawRaycastMulti(origin, direction, distance, hits, hits.Length, color, duration, z);
 		return hits;
 	}
 
@@ -79,15 +79,15 @@ public static class Physics2DUtil {
 	public static int RaycastNonAllocDebug(Vector2 origin, Vector2 direction, RaycastHit2D[] hits, float distance = Mathf.Infinity, int layerMask = Physics2D.DefaultRaycastLayers, float minDepth = -Mathf.Infinity, float maxDepth = Mathf.Infinity, Color? color = null, float duration = 2f, float z = 0f)
 	{
 		int nbResults = Physics2D.RaycastNonAlloc(origin, direction, hits, distance, layerMask, minDepth, maxDepth);
-		DrawRaycastMulti(origin, direction, distance, hits, color, duration, z);
+        DrawRaycastMulti(origin, direction, distance, hits, nbResults, color, duration, z);
         return nbResults;
 	}
 
-	/// [Unity 5.6 new overload] Raycast all colliders from origin toward direction over distance and store the result in hits. Draw with optional custom color for duration seconds at depth z.
+	/// [Unity 5.6 new non-alloc overload] Raycast all colliders from origin toward direction over distance and store the result in hits. Draw with optional custom color for duration seconds at depth z.
 	public static int RaycastDebug(Vector2 origin, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] hits, float distance = Mathf.Infinity, Color? color = null, float duration = 2f, float z = 0f)
 	{
 		int nbResults = Physics2D.Raycast(origin, direction, contactFilter, hits, distance);
-		DrawRaycastMulti(origin, direction, distance, hits, color, duration, z);
+        DrawRaycastMulti(origin, direction, distance, hits, nbResults, color, duration, z);
 		return nbResults;
 	}
 
@@ -96,7 +96,7 @@ public static class Physics2DUtil {
 	public static void DrawBoxCast (Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, RaycastHit2D hit, Color? color = null, float duration = 2f, float z = 0f)
 	{
 		// we can't draw an infinite boxcast so limit the draw distance
-		if (distance == Mathf.Infinity)
+        if (float.IsPositiveInfinity(distance))
 			distance = maxDrawLineDistance;
 
 		if (hit.collider == null) {
