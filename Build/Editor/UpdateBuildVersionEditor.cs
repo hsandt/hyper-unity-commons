@@ -16,26 +16,23 @@ public class UpdateBuildVersionEditor : Editor {
 		DrawDefaultInspector();
 
 		if (!Application.isPlaying) {
-			if (GUILayout.Button("Update build version in text and Player settings"))
+			if (GUILayout.Button("Update build version in text"))
 			{
-				UpdateBuildVersionTextAndSettings();
+                UpdateBuildVersionText();
 			}
 		}
 	}
 
 	/// <summary>
-	/// Update the build version in the Text component on this object, and also in the Player settings.
-	/// If no text is found, it will still update the Palyer settings.
+	/// Update the build version in the Text component on this object
 	/// </summary>
-	public void UpdateBuildVersionTextAndSettings () {
+	public void UpdateBuildVersionText () {
 		string version = BuildData.GetVersion();
 
 		Text text = script.GetComponent<Text>();
 		if (text != null) {
 			InspectorUtil.ChangeText(text, version);
 		}
-
-		PlayerSettings.bundleVersion = version;
 	}
 
 }

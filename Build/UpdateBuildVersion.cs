@@ -1,10 +1,5 @@
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using UnityEngine.UI;
-using System.Collections;
-using System.Collections.Generic;
 
 [RequireComponent(typeof(Text))]
 public class UpdateBuildVersion : MonoBehaviour {
