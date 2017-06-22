@@ -75,8 +75,13 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 	}
 
 	public void Setup () {
-		// count on the very first UpdateMachine to enter the initial state
+        // set the next state and switch to the latter immediately (required as we call ApplyTransition *after* UpdateState)
+        // since we start from the null state, this is equivalent to:
+        // if (defaultState != null && defaultState.CanTransitionFrom(null)) {
+        //   defaultState.OnEnter(null); CurrentState = defaultState;
+        // }
 		NextState = defaultState;
+        ApplyTransition();
 	}
 
 	public void Clear () {
@@ -145,9 +150,10 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 
 	/// Update the machine state, applying any requested transitions to a new state
 	public void UpdateMachine() {
-		ApplyTransition();
-        if (CurrentState != null)
+        if (CurrentState != null) {
 		    CurrentState.UpdateState();
+            ApplyTransition();  // apply transition after update so that model and animation immediately updated
+        }
         else
 			Debug.LogWarningFormat("[FSMMachine] UpdateMachine: CurrentState is null");
 	}
