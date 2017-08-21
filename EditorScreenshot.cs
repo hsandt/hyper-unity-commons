@@ -59,7 +59,6 @@ public class EditorScreenshot : EditorWindow
 		}
 
 		if (GUILayout.Button("Take screenshot")) TakeScreenshot();
-		if (GUILayout.Button("Take hires screenshot")) TakeHiresScreenshot();
 	}
 
 	void TakeScreenshot()
@@ -90,58 +89,9 @@ public class EditorScreenshot : EditorWindow
 				Directory.CreateDirectory(screenshotFolderPath);
 			}
 			string path = string.Format("{0}/{1}{2:00}.png", screenshotFolderPath, screenshotFilenamePrefix, nextScreenshotIndex);
-			Application.CaptureScreenshot(path);
+			ScreenCapture.CaptureScreenshot(path);
 
 			Debug.LogFormat("Screenshot recorded at {0} ({1})", path, UnityStats.screenRes);
-
-			++nextScreenshotIndex;
-			EditorPrefs.SetInt("EditorScreenshot.nextScreenshotIndex", nextScreenshotIndex);
-		}
-		catch (IOException ex)
-		{
-			Console.WriteLine(ex.Message);
-		}
-	}
-
-	// EXPERIMENTAL: hi-res screenshot
-	// http://answers.unity3d.com/questions/22954/how-to-save-a-picture-take-screenshot-from-a-camer.html
-	// For transparency, insert code from http://answers.unity3d.com/questions/12070/capture-rendered-scene-to-png-with-background-tran.html
-
-	public int resWidth = 2550;
-	public int resHeight = 3300;
-
-	void TakeHiresScreenshot ()
-	{
-		Camera camera = Camera.main;
-		if (camera == null) {
-			Debug.LogWarning("No main camera found");
-			return;
-		}
-
-		RenderTexture rt = new RenderTexture(resWidth, resHeight, 24);
-		camera.targetTexture = rt;
-		Texture2D screenShot = new Texture2D(resWidth, resHeight, TextureFormat.RGB24, false);
-		camera.Render();
-		RenderTexture.active = rt;
-		screenShot.ReadPixels(new Rect(0, 0, resWidth, resHeight), 0, 0);
-		camera.targetTexture = null;
-		RenderTexture.active = null; // JC: added to avoid errors
-		if (EditorApplication.isPlaying)  // ADDED
-			Destroy(rt);
-		else
-			DestroyImmediate(rt);
-		byte[] bytes = screenShot.EncodeToPNG();
-
-		try
-		{
-			if (!Directory.Exists(screenshotFolderPath))
-			{
-				Directory.CreateDirectory(screenshotFolderPath);
-			}
-			string path = string.Format("{0}/{1}{2:00} (hires).png", screenshotFolderPath, screenshotFilenamePrefix, nextScreenshotIndex);
-			System.IO.File.WriteAllBytes(path, bytes);
-
-			Debug.LogFormat("Hires Screenshot recorded at {0} ({1})", path, UnityStats.screenRes);
 
 			++nextScreenshotIndex;
 			EditorPrefs.SetInt("EditorScreenshot.nextScreenshotIndex", nextScreenshotIndex);
