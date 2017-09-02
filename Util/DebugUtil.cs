@@ -20,7 +20,7 @@ public static class DebugUtil {
 	}
 
 	/// <summary>
-	/// Draw a local 2D box at the given Z, with given color, for given duration.
+	/// Draw a 2D box at the given Z, with given color, for given duration.
 	/// </summary>
 	/// <param name="offset">Center of the box</param>
 	/// <param name="size">Box size</param>
@@ -29,7 +29,7 @@ public static class DebugUtil {
 	/// <param name="color">Color of the line.</param>
 	/// <param name="duration">How long the line should be visible (s).</param>
 	/// <param name="depthTest">Should the line be obscured by objects closer to the camera?</param>
-	public static void DrawLocalBox2D (Vector2 offset, Vector2 size, float angle, float z, Color color, float duration = 0f, bool depthTest = true) {
+	public static void DrawBox2D (Vector2 offset, Vector2 size, float angle, float z, Color color, float duration = 0f, bool depthTest = true) {
 		Vector2[] corners = Draw2DUtil.GetCornersFromBox2DParams(offset, size, angle);
 
 		// draw the 4 edges by cycling between pair of corners
@@ -37,6 +37,36 @@ public static class DebugUtil {
 			Debug.DrawLine(corners[i].ToVector3(z), corners[(i + 1) % 4].ToVector3(z), color, duration, depthTest);
 		}
 	}
+
+    /// <summary>
+    /// Draw a 2D boxcast with the start box, motion lines and optionally the end box, at the given Z, with given color, for given duration.
+    /// </summary>
+    /// <param name="offset">Center of the box</param>
+    /// <param name="size">Box size</param>
+    /// <param name="angle">Box angle</param>
+    /// <param name="z">Z at which to draw.</param>
+    /// <param name="color">Color of the line.</param>
+    /// <param name="duration">How long the line should be visible (s).</param>
+    /// <param name="depthTest">Should the line be obscured by objects closer to the camera?</param>
+    public static void DrawBoxCast2D (Vector2 offset, Vector2 size, float angle, Vector2 direction, float distance, float z, Color color, bool drawEndBox = true, float duration = 0f, bool depthTest = true) {
+        Vector2[] corners = Draw2DUtil.GetCornersFromBox2DParams(offset, size, angle);
+        Vector2 motion = direction.normalized * distance;
+
+        // draw the 4 edges by cycling between pair of corners and the 4 motion lines
+        for (int i = 0; i < 4; ++i) {
+            // edge i@start, i+1@start
+            Debug.DrawLine(corners[i].ToVector3(z), corners[(i + 1) % 4].ToVector3(z), color, duration, depthTest);
+            // motion line i@start, i@end
+            Debug.DrawLine(corners[i].ToVector3(z), (corners[i] + motion).ToVector3(z), color, duration, depthTest);
+        }
+
+        if (drawEndBox) {
+            for (int i = 0; i < 4; ++i) {
+                // edge i@end, i+1@end
+                Debug.DrawLine((corners[i] + motion).ToVector3(z), (corners[(i + 1) % 4] + motion).ToVector3(z), color, duration, depthTest);
+            }
+        }
+    }
 
 	/// <summary>
 	/// Draw the 2D part of 3D bounds at its center Z, with given color, for given duration.

@@ -28,7 +28,6 @@ public static class Draw2DUtil {
 		return new Vector2[] {bottomLeft, bottomRight, topRight, topLeft};
 	}
 
-
 	/// Return 4 corners from bounds, in the order: bottom-left, bottom-right, top-right, top-left
 	/// Note that it only preserves Z for the bounds center
 	public static Vector3[] GetCornersFromBounds (Bounds bounds) {
