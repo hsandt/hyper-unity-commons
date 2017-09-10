@@ -115,7 +115,7 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 		if (FSMState<TStateKey, TState>.IsValidKey(key)) {
 			TState state;
 			if (states.TryGetValue(key, out state)) {
-				if (state.CanTransitionFrom(null)) {
+				if (state.IsTransitionAllowedFrom(null)) {
 					defaultState = state;
 				}
 				else
@@ -163,7 +163,7 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 		// check for transitions (HasSameKey includes a check for null state)
 		if (NextState != null) {
 			if (!NextState.HasSameKey(CurrentState)) {
-				if (NextState.CanTransitionFrom(CurrentState)) {
+				if (NextState.IsTransitionAllowedFrom(CurrentState)) {
 					if (CurrentState != null) {
 						CurrentState.OnExit(NextState);
 					}
@@ -174,7 +174,7 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 					CurrentState = NextState;
 				}
 				else {
-					Debug.LogWarningFormat("[FSMMachine] Cannot transition from current state key {0} to next state key {1}", CurrentState.Key, NextState.Key);
+					Debug.LogWarningFormat("[FSMMachine] Transition from {0} to {1} is not allowed", CurrentState.Key, NextState.Key);
 				}
 			}
 			else {

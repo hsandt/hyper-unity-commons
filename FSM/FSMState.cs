@@ -65,7 +65,7 @@ public abstract class FSMState<TStateKey, TState> where TState : FSMState<TState
 	}
 
 	/// Return true if a transition is allowed from the previous state to this state
-	public bool CanTransitionFrom(FSMState<TStateKey, TState> state) {
+	public bool IsTransitionAllowedFrom(FSMState<TStateKey, TState> state) {
 		return previousStates.Contains(state != null ? state.Key : default(TStateKey));
 	}
 
