@@ -1,9 +1,25 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public static class MathUtil {
 
 	public const float SQRT2 = 1.4142f;
+
+    public static bool IsAlmostZero(this float value) {
+        return System.Math.Abs(value) < Mathf.Epsilon;
+    }
+
+    public static bool IsNotAlmostZero(this float value) {
+        return System.Math.Abs(value) > Mathf.Epsilon;
+    }
+
+    public static int ToTernary(float x) {
+        if (x < 0)
+            return -1;
+        else if (x > 0)
+            return 1;
+        else
+            return 0;
+    }
 
 	public static int Truncate (float x) {
 		return (int) (Mathf.Sign(x) * Mathf.Floor(Mathf.Abs(x)));
@@ -12,9 +28,6 @@ public static class MathUtil {
 	/// Return the positive remainder of Euclidian division
 	public static int PositiveRemainder (int dividend, int divisor) {
 		return (dividend % divisor + divisor) % divisor;
-		// int signedRemainder = dividend % divisor;
-		// if (signedRemainder >= 0) return signedRemainder;
-		// return signedRemainder + divisor;
 	}
 
 	/// Complement x on total in place

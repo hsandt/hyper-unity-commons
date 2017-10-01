@@ -23,7 +23,7 @@ public class VectorUtilTests {
 
 	[Test]
 	public void Rotate_UBy60Deg () {
-		Assert.That(VectorUtil.Rotate(u, 60f), Is.EqualTo(new Vector2(0.5f, Mathf.Sqrt(3)/2)));
+        Assert.AreEqual(VectorUtil.Rotate(u, 60f), new Vector2(0.5f, Mathf.Sqrt(3)/2));
 	}
 
 	[Test]
