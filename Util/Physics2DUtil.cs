@@ -24,7 +24,7 @@ public static class Physics2DUtil {
 		// we can't draw an infinite ray so limit the draw distance
         if (float.IsPositiveInfinity(distance))
 			distance = maxDrawLineDistance;
-		
+
 		if (hit.collider == null) {
 			// no hit, draw the full ray in no hit color
 			DebugUtil.DrawLine2D(origin, origin + direction.normalized * distance, z, color ?? noHitColor, duration, depthTest: false);
@@ -99,8 +99,6 @@ public static class Physics2DUtil {
         if (float.IsPositiveInfinity(distance))
 			distance = maxDrawLineDistance;
 
-        Vector2 end = origin + direction.normalized * distance;
-
         if (hit.collider == null) {
 			// no hit, draw the full box in no hit color at the start and end point of the boxcast
 			// to simplify, we only draw one line from the start center to the end center of the moving box,
@@ -122,8 +120,6 @@ public static class Physics2DUtil {
         // we can't draw an infinite boxcast so limit the draw distance
         if (float.IsPositiveInfinity(distance))
             distance = maxDrawLineDistance;
-
-        Vector2 end = origin + direction.normalized * distance;
 
         if (nbResults == 0) {
             // no hit, draw the full box in no hit color at the start and end point of the boxcast
