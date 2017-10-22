@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-/// When inheriting from this base class, use the derived class as the T generic argument so that you can access a singleton instance of the derived class
+/// CRTP: when inheriting from this base class, use the derived class as the T generic argument so that you can access a singleton instance of the derived class
 public abstract class PoolManager<TPooledObject, T> : SingletonManager<T> where TPooledObject : MonoBehaviour, IPooledObject where T : SingletonManager<T> {
 
 	/* external references */
