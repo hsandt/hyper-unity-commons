@@ -67,11 +67,18 @@ public static class Physics2DUtil {
 		}
 	}
 
+    [Conditional("DEBUG")]
+    public static void DrawRaycastText(string text, Vector2 origin, Vector2 direction, float distance, Color? color, float duration) {
+        Color textColor = color ?? Color.green;
+            DebugLabel.DrawText(origin, text, textColor, duration);
+    }
+
 	/// Raycast all colliders and draw debug at the same time. Set a color to override the no hit color.
 	public static RaycastHit2D[] RaycastAllDebug (Vector2 origin, Vector2 direction, float distance = Mathf.Infinity, int layerMask = Physics2D.DefaultRaycastLayers, float minDepth = -Mathf.Infinity, float maxDepth = Mathf.Infinity, Color? color = null, float duration = 0f, float z = 0f)
 	{
 		RaycastHit2D[] hits = Physics2D.RaycastAll(origin, direction, distance, layerMask, minDepth, maxDepth);
         DrawRaycastMulti(origin, direction, distance, hits, hits.Length, color, duration, z);
+
 		return hits;
 	}
 
@@ -84,10 +91,14 @@ public static class Physics2DUtil {
 	}
 
 	/// [Unity 5.6 new non-alloc overload] Raycast all colliders from origin toward direction over distance and store the result in hits. Draw with optional custom color for duration seconds at depth z.
-	public static int RaycastDebug(Vector2 origin, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] hits, float distance = Mathf.Infinity, Color? color = null, float duration = 0f, float z = 0f)
+	public static int RaycastDebug(Vector2 origin, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] hits, float distance = Mathf.Infinity, Color? color = null, float duration = 0f, float z = 0f, string text = null)
 	{
 		int nbResults = Physics2D.Raycast(origin, direction, contactFilter, hits, distance);
+        #if UNITY_EDITOR
         DrawRaycastMulti(origin, direction, distance, hits, nbResults, color, duration, z);
+        if (!string.IsNullOrWhiteSpace(text))
+            DrawRaycastText(text, origin, direction, distance, color, duration);
+        #endif
 		return nbResults;
 	}
 

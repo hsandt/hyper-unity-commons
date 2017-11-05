@@ -137,7 +137,8 @@ public static class GizmosUtil {
 		Color oldColor = Gizmos.color;
 		if (color != null) {
 			Color baseColor = (Color) color;
-			Gizmos.color = new Color(baseColor.r * 2f, baseColor.g * 2f, baseColor.b * 2f, baseColor.a);  // 3D gizmos are drawn with half color intensity, balance that
+            // 3D gizmos are drawn with half color intensity, balance by multiplying by 2
+            Gizmos.color = new Color(baseColor.r * 2f, baseColor.g * 2f, baseColor.b * 2f, baseColor.a);
 		}
 
 		Matrix4x4 oldMatrix;
