@@ -3,8 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections;
 
-[CanEditMultipleObjects()]
-[CustomEditor(typeof(RectContainer), true)]
+[CustomEditor(typeof(RectContainer), true), CanEditMultipleObjects]
 public class RectContainerEditor : Editor {
 
 	void OnSceneGUI ()
