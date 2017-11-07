@@ -7,7 +7,8 @@ public static class ColorUtil {
 	public static readonly Color orange = new Color32(233, 85, 0, 255); // HexToColor("e95500");
 	public static readonly Color gold = new Color(1f, 0.843f, 0f);
 	public static readonly Color pink = new Color(1f, 0.753f, 0.796f);
-	public static readonly Color purple = new Color(0.5f, 0f, 0.5f);
+    public static readonly Color purple = new Color(0.5f, 0f, 0.5f);
+    public static readonly Color brown = new Color32(165, 42, 42, 255);  // #A52A2A (165,42,42)
 
 	// copied from Vexe Framework file /Vexe/Runtime/Libs/Helpers/RuntimeHelper.cs
 	public static Color HexToColor(string hex)

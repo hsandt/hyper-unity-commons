@@ -19,6 +19,31 @@ public static class DebugUtil {
 		Debug.DrawLine(start.ToVector3(z), end.ToVector3(z), color, duration, depthTest);
 	}
 
+    /// <summary>
+    /// Draw a 2D ray at the given Z, with given color, for given duration.
+    /// Optionally draw a label to identify the ray.
+    /// </summary>
+    /// <param name="start">Point in world space where the line should start.</param>
+    /// <param name="dir">Direction and length of the ray.</param>
+    /// <param name="z">Z at which to draw.</param>
+    /// <param name="color">Color of the line.</param>
+    /// <param name="duration">How long the line should be visible (s).</param>
+    /// <param name="depthTest">Should the line be obscured by objects closer to the camera?</param>
+    /// <param name="text">Optional label text to identify the ray</param>
+    public static void DrawRay2D(Vector2 start, Vector2 dir, float z, Color color, float duration = 0f, bool depthTest = true, string text = null)
+    {
+        Debug.DrawRay(start.ToVector3(z), dir.ToVector3(z), color, duration, depthTest);
+        if (!string.IsNullOrEmpty(text))
+        {
+            // draw the label at a position less likely to intersect with the ray
+            // for rays with a deltaY > 0, the origin of the label should be near the middle of the ray, offset by a vector CW of the ray
+            // for rays with a deltaY < 0, the origin of the label should be near the middle of the ray, offset by a vector CCW of the ray
+            Vector2 offset = CodeTuning.GetFloat1(0.2f) * (dir.y > 0 ? VectorUtil.Rotate90CW(dir.normalized) : VectorUtil.Rotate90CCW(dir.normalized));
+            Vector2 textPosition = (start + dir / 2) + offset;
+            DebugLabel.DrawText(textPosition.ToVector3(z), text, color, duration);
+        }
+    }
+
 	/// <summary>
 	/// Draw a 2D box at the given Z, with given color, for given duration.
 	/// </summary>
@@ -48,7 +73,7 @@ public static class DebugUtil {
     /// <param name="color">Color of the line.</param>
     /// <param name="duration">How long the line should be visible (s).</param>
     /// <param name="depthTest">Should the line be obscured by objects closer to the camera?</param>
-    public static void DrawBoxCast2D (Vector2 offset, Vector2 size, float angle, Vector2 direction, float distance, float z, Color color, bool drawEndBox = true, float duration = 0f, bool depthTest = true) {
+    public static void DrawBoxWithRays2D (Vector2 offset, Vector2 size, float angle, Vector2 direction, float distance, float z, Color color, bool drawEndBox = true, float duration = 0f, bool depthTest = true) {
         Vector2[] corners = Draw2DUtil.GetCornersFromBox2DParams(offset, size, angle);
         Vector2 motion = direction.normalized * distance;
 

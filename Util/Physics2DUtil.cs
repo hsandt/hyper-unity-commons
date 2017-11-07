@@ -96,7 +96,7 @@ public static class Physics2DUtil {
 		int nbResults = Physics2D.Raycast(origin, direction, contactFilter, hits, distance);
         #if UNITY_EDITOR
         DrawRaycastMulti(origin, direction, distance, hits, nbResults, color, duration, z);
-        if (!string.IsNullOrWhiteSpace(text))
+        if (!string.IsNullOrEmpty(text))
             DrawRaycastText(text, origin, direction, distance, color, duration);
         #endif
 		return nbResults;
@@ -114,12 +114,12 @@ public static class Physics2DUtil {
 			// no hit, draw the full box in no hit color at the start and end point of the boxcast
 			// to simplify, we only draw one line from the start center to the end center of the moving box,
 			// but we could also draw the 4 segments connecting the 4 corners of the box (would require to define DebugUtil.DrawBoxCast)
-            DebugUtil.DrawBoxCast2D(origin, size, angle, direction, distance, z, color ?? noHitColor, true, duration, depthTest: false);
+            DebugUtil.DrawBoxWithRays2D(origin, size, angle, direction, distance, z, color ?? noHitColor, true, duration, depthTest: false);
 		}
 		else {
             // By default, draw the no hit part of the boxcast in green (excluding the hit position, hence drawEndBox: false), and the hit part in red
-            DebugUtil.DrawBoxCast2D(origin, size, angle, direction, hit.distance, z, color ?? noHitColor, false, duration, depthTest: false);
-            DebugUtil.DrawBoxCast2D(hit.point, size, angle, direction, distance - hit.distance, z, color ?? noHitColor, true, duration, depthTest: false);
+            DebugUtil.DrawBoxWithRays2D(origin, size, angle, direction, hit.distance, z, color ?? noHitColor, false, duration, depthTest: false);
+            DebugUtil.DrawBoxWithRays2D(hit.point, size, angle, direction, distance - hit.distance, z, color ?? noHitColor, true, duration, depthTest: false);
 		}
 	}
 
@@ -136,15 +136,15 @@ public static class Physics2DUtil {
             // no hit, draw the full box in no hit color at the start and end point of the boxcast
             // to simplify, we only draw one line from the start center to the end center of the moving box,
             // but we could also draw the 4 segments connecting the 4 corners of the box (would require to define DebugUtil.DrawBoxCast)
-            DebugUtil.DrawBoxCast2D(origin, size, angle, direction, distance, z, color ?? noHitColor, true, duration, depthTest: false);
+            DebugUtil.DrawBoxWithRays2D(origin, size, angle, direction, distance, z, color ?? noHitColor, true, duration, depthTest: false);
         }
         else {
             // For now, just start drawing red after first hit
             // IMPROVE: show each and every hit with an extra local box in the middle (iterate over i, hits[i]...)
 
             // By default, draw the no hit part of the boxcast in green, and the hit part in red
-            DebugUtil.DrawBoxCast2D(origin, size, angle, direction, hits[0].distance, z, color ?? noHitColor, false, duration, depthTest: false);
-            DebugUtil.DrawBoxCast2D(hits[0].point, size, angle, direction, distance - hits[0].distance, z, color ?? noHitColor, true, duration, depthTest: false);
+            DebugUtil.DrawBoxWithRays2D(origin, size, angle, direction, hits[0].distance, z, color ?? noHitColor, false, duration, depthTest: false);
+            DebugUtil.DrawBoxWithRays2D(hits[0].point, size, angle, direction, distance - hits[0].distance, z, color ?? noHitColor, true, duration, depthTest: false);
         }
     }
 
