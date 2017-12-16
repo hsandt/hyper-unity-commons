@@ -17,10 +17,6 @@ public class VectorUtilTests {
 		v = Vector2.up;
 	}
 
-	// [ExpectedException(typeof(ArgumentException)]
-	// public void Method_Argument_ArgumentException () {
-	// }
-
 	[Test]
 	public void Rotate_UBy60Deg () {
         Assert.AreEqual(VectorUtil.Rotate(u, 60f), new Vector2(0.5f, Mathf.Sqrt(3)/2));

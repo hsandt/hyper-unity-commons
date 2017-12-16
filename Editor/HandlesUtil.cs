@@ -10,13 +10,12 @@ public class HandlesUtil {
 	/// Return resolution of a 2D camera in pixels per world distance unit. The camera does not need to be in 2D mode,
 	/// but has to be in orthogonal view, looking either forward or backward, otherwise return 0f.
 	/// If no camera can be found, also return 0f.
-	/// 
+	///
 	/// Since in orthographic view, the distance between the camera and the target is not relevant,
 	/// Use this function to determine if a draw target will likely be too small for details.
 	/// (inspired by HandleUtility.GetHandleSize() implementation, adapted to 2D mode)
 	static float Get2DPixelResolution() {
 		Camera camera = Camera.current;
-
 		// Non orthographic and forward/backward cameras are not supported by our calculation
 		if (camera == null || !(camera.orthographic && Mathf.Abs(camera.transform.forward.z) == 1f))
 			return 0f;
@@ -25,6 +24,15 @@ public class HandlesUtil {
 		Vector3 b = camera.WorldToScreenPoint(Vector3.right * 1f);  // 1 unit on the right (on screen)
 		return Vector3.Distance(a, b);  // size of 1 unit on screen, pixel per meter, resolution
 	}
+
+    /// Return resolution of a 2D or 3D camera in pixels per world distance unit.
+    /// This is more generic as Get2DPixelResolution and supports 3D cameras with different view angles.
+    static float GetPixelResolution(Vector3 position) {
+        // GetHandleSize is basically doing the right computation, plus some tweaks, so we reverse them
+        // to get the distance between two points separated by 1m on the same Z plane as the passed position,
+        // seen from the current camera.
+        return 80f / HandleUtility.GetHandleSize(position);
+    }
 
 	#region Rectangle
 
@@ -39,7 +47,7 @@ public class HandlesUtil {
 
 	public static void DrawRect (ref Rect rect, Transform owner, Color color) {
 
-		float pixelResolution = Get2DPixelResolution();
+        float pixelResolution = GetPixelResolution(owner.position);
 
 		if (pixelResolution < minDrawRectCameraResolution) return;
 
