@@ -71,14 +71,22 @@ public abstract class MultiPoolManager<TPooledObject, T> : SingletonManager<T> w
 	/// Retrieve a released instance in the pool of objects called prefabName
 	public TPooledObject GetObject (string prefabName) {
 		// O(n), n pool size
-		for (int i = 0; i < poolSize; ++i) {
-			TPooledObject pooledObject = m_MultiPool[prefabName][i];
-			if (!pooledObject.IsInUse()) {
-				return pooledObject;
-			}
-		}
+        List<TPooledObject> pooledObjects;
+        if (m_MultiPool.TryGetValue(prefabName, out pooledObjects)) {
+            Debug.AssertFormat(poolSize == pooledObjects.Count, this, "[CODE] Pool list of {0} in multipool has {1} elements but pool size is {2}.", prefabName, pooledObjects.Count, poolSize);
+			for (int i = 0; i < poolSize; ++i) {
+                TPooledObject pooledObject = pooledObjects[i];
+				if (!pooledObject.IsInUse()) {
+					return pooledObject;
+				}
+            }
+        }
+        else {
+            Debug.LogWarningFormat(this, "Prefab {0} not found in multi pool dictionary", prefabName);
+            return null;
+        }
 		// starvation
-		Debug.LogWarningFormat("Multi-pool starvation, cannot get a released instance of object {0}", prefabName);
+		Debug.LogWarningFormat(this, "Multi-pool starvation, cannot get a released instance of object {0}", prefabName);
 		return null;
 	}
 

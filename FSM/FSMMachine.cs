@@ -101,10 +101,10 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 				state.RegisterMachine(this);
 			}
 			else
-				Debug.LogWarning("[FSMMachine] Cannot add state for None state key.");
+                Debug.LogError("[FSMMachine] Cannot add state for None state key.");
 		}
 		else {
-			Debug.LogWarning("[FSMMachine] Cannot add null state.");
+            Debug.LogError("[FSMMachine] Cannot add null state.");
 		}
 	}
 
@@ -119,11 +119,11 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 					defaultState = state;
 				}
 				else
-					Debug.LogWarningFormat("[FSMMachine] Default state cannot be set for key: {0}," +
+                    Debug.LogErrorFormat("[FSMMachine] Default state cannot be set for key: {0}," +
 						"as it cannot transition from the None state.", key);
 			}
 			else {
-				Debug.LogWarningFormat("[FSMMachine] Tried to set default state key to {0} but no corresponding state was added, default state will not be modified.", key);
+                Debug.LogErrorFormat("[FSMMachine] Tried to set default state key to {0} but no corresponding state was added, default state will not be modified.", key);
 			}
 		}
 		else {
@@ -140,11 +140,11 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 				NextState = state;
 			}
 			else {
-				Debug.LogWarningFormat("[FSMMachine] Tried to set next state key to {0} but no corresponding state was added, next state will not be modified.", key);
+				Debug.LogErrorFormat("[FSMMachine] Tried to set next state key to {0} but no corresponding state was added, next state will not be modified.", key);
 			}
 		}
 		else {
-			Debug.LogWarningFormat("[FSMMachine] Cannot set next state to None state.");
+            Debug.LogError("[FSMMachine] Cannot set next state to None state.");
 		}
 	}
 
@@ -155,7 +155,7 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
             ApplyTransition();  // apply transition after update so that model and animation immediately updated
         }
         else
-			Debug.LogWarningFormat("[FSMMachine] UpdateMachine: CurrentState is null");
+            Debug.LogError("[FSMMachine] UpdateMachine: CurrentState is null");
 	}
 
 	/// Apply transition to any requested next state
@@ -174,11 +174,11 @@ public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TS
 					CurrentState = NextState;
 				}
 				else {
-					Debug.LogWarningFormat("[FSMMachine] Transition from {0} to {1} is not allowed", CurrentState.Key, NextState.Key);
+                    Debug.LogErrorFormat("[FSMMachine] Transition from {0} to {1} is not allowed", CurrentState.Key, NextState.Key);
 				}
 			}
 			else {
-				Debug.LogWarningFormat("[FSMMachine] Next state key is the same as current state key {0}, ignoring transition", CurrentState.Key);
+                Debug.LogErrorFormat("[FSMMachine] Next state key is the same as current state key {0}, ignoring transition", CurrentState.Key);
 			}
 			NextState = null;
 		}
