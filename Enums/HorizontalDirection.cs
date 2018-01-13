@@ -7,13 +7,22 @@ public enum HorizontalDirection
 
 public static partial class DirectionUtil {
     
-    public static HorizontalDirection ToHorizontalDirection(float value) {
-        if (value < 0)
+    public static HorizontalDirection ToHorizontalDirection(float x) {
+        if (x < 0)
             return HorizontalDirection.Left;
-        else if (value > 0)
+        else if (x > 0)
             return HorizontalDirection.Right;
         else
             return HorizontalDirection.None;
+    }
+
+    public static float ToSignX(HorizontalDirection horizontalDirection) {
+        if (horizontalDirection == HorizontalDirection.Left)
+            return -1f;
+        else if (horizontalDirection == HorizontalDirection.Right)
+            return 1f;
+        else
+            return 0f;
     }
 
 }
