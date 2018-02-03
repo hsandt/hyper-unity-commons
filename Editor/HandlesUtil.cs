@@ -34,7 +34,14 @@ public class HandlesUtil {
         return 80f / HandleUtility.GetHandleSize(position);
     }
 
-	#region Rectangle
+    public static void DrawLine (Vector3 p1, Vector3 p2, Color color) {
+        Color oldColor = Handles.color;
+        Handles.color = color;
+        Handles.DrawLine(p1, p2);
+        Handles.color = oldColor;
+    }
+
+	#region Handle
 
 	const float handleSize = 0.1f;
 	static readonly Handles.CapFunction defaultHandleCap = Handles.CubeHandleCap;  // Unity 5.6
@@ -164,7 +171,7 @@ public class HandlesUtil {
 		Handles.color = oldColor;
 	}
 
-	public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2 snap = default(Vector2), Handles.CapFunction capFunction = null) {
+    public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2 snap = default(Vector2), Handles.CapFunction capFunction = null) {
 		return (Vector2) Handles.FreeMoveHandle ((Vector3) pos, Quaternion.identity,
 			HandleUtility.GetHandleSize ((Vector3) pos) * handleSize, (Vector3) snap, capFunction ?? defaultHandleCap);
 	}
@@ -173,6 +180,22 @@ public class HandlesUtil {
 		return Handles.FreeMoveHandle (pos, Quaternion.identity,
 			HandleUtility.GetHandleSize (pos) * handleSize, snap, capFunction ?? defaultHandleCap);
 	}
+
+    public static Vector2 DrawFreeMoveHandle (Vector2 pos, Color color, Vector2 snap = default(Vector2), Handles.CapFunction capFunction = null) {
+        Color oldColor = Handles.color;
+        Handles.color = color;
+        Vector2 result = DrawFreeMoveHandle(pos, snap, capFunction);
+        Handles.color = oldColor;
+        return result;
+    }
+
+    public static Vector3 DrawFreeMoveHandle (Vector3 pos, Color color, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null) {
+        Color oldColor = Handles.color;
+        Handles.color = color;
+        Vector3 result = DrawFreeMoveHandle(pos, snap, capFunction);
+        Handles.color = oldColor;
+        return result;
+    }
 
 	/// Store the current Handles matrix to oldMatrix reference, and set the Handles matrix to the local matrix
 	// of the passed transform, ignoring scale if it has null components
@@ -188,7 +211,7 @@ public class HandlesUtil {
 		}
 	}
 
-	#endregion
+    #endregion
 
 	#region Text
 
