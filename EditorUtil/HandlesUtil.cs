@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -5,7 +6,7 @@ using System.Collections;
 
 /// Utility functions for handles. As this script is located in an Editor folder, it can only be used within Editor scripts (scripts inside an Editor
 /// folder), not even for normal scripts with #if UNITY_EDITOR conditional macros.
-public class HandlesUtil {
+public static class HandlesUtil {
 
 	/// Return resolution of a 2D camera in pixels per world distance unit. The camera does not need to be in 2D mode,
 	/// but has to be in orthogonal view, looking either forward or backward, otherwise return 0f.
@@ -257,3 +258,4 @@ public class HandlesUtil {
 	#endregion
 
 }
+#endif  // UNITY_EDITOR
