@@ -4,22 +4,6 @@ public static class MathUtil {
 
 	public const float SQRT2 = 1.4142f;
 
-    public static bool IsAlmostZero(this float value) {
-        return System.Math.Abs(value) < Mathf.Epsilon;
-    }
-
-    public static bool IsNotAlmostZero(this float value) {
-        return System.Math.Abs(value) >= Mathf.Epsilon;
-    }
-
-    public static bool IsAlmost(this float value, float other) {
-        return System.Math.Abs(value - other) < Mathf.Epsilon;
-    }
-
-    public static bool IsNotAlmost(this float value, float other) {
-        return System.Math.Abs(value - other) >= Mathf.Epsilon;
-    }
-
     public static int ToTernary(float x) {
         if (x < 0)
             return -1;

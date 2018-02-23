@@ -43,7 +43,7 @@ public static class VectorUtil {
 		Vector2 segmentDelta = segmentEnd - segmentStart;
 		float segmentSqrMagnitude = segmentDelta.sqrMagnitude;
 
-        if (segmentSqrMagnitude.IsAlmostZero()) {
+        if (Mathf.Approximately(segmentSqrMagnitude, 0f)) {
 			// Segment is reduced to a point, closest point is trivial
 			return segmentStart;
 		}
@@ -64,7 +64,7 @@ public static class VectorUtil {
 		Vector2 segmentDelta = segmentEnd - segmentStart;
 		float segmentMagnitude = segmentDelta.magnitude;
 
-        if (segmentMagnitude.IsAlmostZero()) {
+        if (Mathf.Approximately(segmentMagnitude, 0f)) {
 			// Segment is reduced to a point, distance is trivial
 			paramDistance = 0f;  // or any number between 0 and 1, they all correspond to the same point
 			return Vector2.Distance(point, segmentStart);
