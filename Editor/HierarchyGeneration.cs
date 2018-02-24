@@ -1,7 +1,7 @@
 /// From HierarchyGeneration.cs found online, but removed the last 2 methods that were added natively to Unity
 
 using UnityEngine;
-using UnityEditor;    
+using UnityEditor;
 
 public class HierarchyGeneration : MonoBehaviour {
 
