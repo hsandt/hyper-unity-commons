@@ -2,49 +2,53 @@ using UnityEngine;
 using System;
 using System.Collections;
 
-/// Internal clock counting down and triggering some callback when over
-class Timer {
+/// Internal clock counting down and triggering some optional callback when over
+public class Timer {
 
-	private Action callback; // delegate with no parameters and no return value
+    /* Parameters */
 
-	private float time; // current time on the internal clock
+    /// Function to call when the timer has counted down to 0. Default to null so there is no callback.
+	Action callback;
+
+
+    /* State vars */
+
+    /// Remaining time of the timer counting down. When time <=0, the timer is stopped. Default to 0 so the timer starts stopped.
+	float time;
+
 
 	// TODO: add looping boolean parameter for auto-loop
-	public Timer (Action _callback, float _time = 0) {
+    public Timer (float _time = 0, Action _callback = null) {
 		callback = _callback;
-		time = _time; // default value 0 to start with a stopped timer
+		time = _time;
 	}
 
 	/// Set the current time of the Timer
-	/// null or negative value: stop the timer
-	/// positive value: relaunch the timer until it reaches 0 and triggers callback
+	/// if _timer <= 0: stop the timer
+    /// if _timer > 0: restart the timer until it reaches 0 and triggers callback
 	public void SetTime (float _time) {
 		time = _time;
 	}
 
-	/// Reset timer to 0 without calling the callback
+    /// Reset timer to 0 without calling the callback (shortcut for SetTime(0))
 	public void Stop () {
 		time = 0;
 	}
 
-	// alternative: use Timer : MonoBehavior + FixedUpdate
-	// alternative 2: use a TimerManager that knows each Timer object and updates them
-	/// Countdown called by each script containing a timer, in its Update or FixedUpdate
+	/// Countdown the time of deltaTime. Must be called by each script containing a timer in its Update or FixedUpdate
 	public bool CountDown (float deltaTime) {
 		// if time is positive, decrease time of deltaTime
-		// (if time already 0, leave it so)
 		if (time > 0) {
 			time -= deltaTime;
-			// if the countdown has reached 0 (or less), callback
 			if (time <= 0) {
-				time = 0; // optional
-				callback();
+				time = 0; // clean-up
+                if (callback != null)
+    				callback();
 				return true;
 			}
 		}
+        // timer was stopped or counted down but didn't reach 0
 		return false;
 	}
 
 }
-
-// TODO: looped countdown (repeat event); basicaller a Timer with a maxTime and time = maxTime when it reaches 0
