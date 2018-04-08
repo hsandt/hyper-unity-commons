@@ -42,6 +42,17 @@ public static class HandlesUtil {
         Handles.color = oldColor;
     }
 
+    public static void DrawArrow2D (Vector2 p1, Vector2 p2, Color color) {
+        Color oldColor = Handles.color;
+        Handles.color = color;
+        Handles.DrawLine(p1, p2);
+        Vector2 forward = (p2 - p1).normalized;
+        Vector2 right = VectorUtil.Rotate90CW(forward);
+        Handles.DrawLine(p2, p2 - 0.2f * forward - 0.2f * right);
+        Handles.DrawLine(p2, p2 - 0.2f * forward + 0.2f * right);
+        Handles.color = oldColor;
+    }
+
 	#region Handle
 
 	const float handleSize = 0.1f;
