@@ -193,24 +193,31 @@ public static class HandlesUtil {
 			HandleUtility.GetHandleSize (pos) * handleSize, snap, capFunction ?? defaultHandleCap);
 	}
 
-    public static Vector2 DrawFreeMoveHandle (Vector2 pos, Color color, Vector2 snap = default(Vector2), Handles.CapFunction capFunction = null) {
+    public static void DrawFreeMoveHandle (ref Vector2 pos, Color color, Vector2 snap = default(Vector2), Handles.CapFunction capFunction = null) {
         Color oldColor = Handles.color;
         Handles.color = color;
-        Vector2 result = DrawFreeMoveHandle(pos, snap, capFunction);
+        pos = DrawFreeMoveHandle(pos, snap, capFunction);
         Handles.color = oldColor;
-        return result;
     }
 
-    public static Vector3 DrawFreeMoveHandle (Vector3 pos, Color color, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null) {
+    public static void DrawFreeMoveHandle (ref Vector3 pos, Color color, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null) {
         Color oldColor = Handles.color;
         Handles.color = color;
-        Vector3 result = DrawFreeMoveHandle(pos, snap, capFunction);
+        pos = DrawFreeMoveHandle(pos, snap, capFunction);
         Handles.color = oldColor;
-        return result;
+    }
+
+    public static void DrawCircleHandles (ref Vector2 center, ref float radius, Color color, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null) {
+        Color oldColor = Handles.color;
+        Handles.color = color;
+        DrawFreeMoveHandle(ref center, color, snap, capFunction);           // center
+        Handles.DrawWireDisc((Vector3)center, Vector3.forward, radius);     // circle
+        radius = Handles.RadiusHandle(Quaternion.identity, center, radius); // radius
+        Handles.color = oldColor;
     }
 
 	/// Store the current Handles matrix to oldMatrix reference, and set the Handles matrix to the local matrix
-	// of the passed transform, ignoring scale if it has null components
+	/// of the passed transform, ignoring scale if it has null components
 	public static void SetHandlesMatrix(Transform tr, out Matrix4x4 oldMatrix) {
 		oldMatrix = Handles.matrix;
 
