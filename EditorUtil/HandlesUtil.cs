@@ -183,24 +183,24 @@ public static class HandlesUtil {
 		Handles.color = oldColor;
 	}
 
-    public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2 snap = default(Vector2), Handles.CapFunction capFunction = null) {
+    public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2? snap = null, Handles.CapFunction capFunction = null) {
 		return (Vector2) Handles.FreeMoveHandle ((Vector3) pos, Quaternion.identity,
-			HandleUtility.GetHandleSize ((Vector3) pos) * handleSize, (Vector3) snap, capFunction ?? defaultHandleCap);
+            HandleUtility.GetHandleSize ((Vector3) pos) * handleSize, snap ?? Vector3.one, capFunction ?? defaultHandleCap);
 	}
 
-	public static Vector3 DrawFreeMoveHandle (Vector3 pos, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null) {
+	public static Vector3 DrawFreeMoveHandle (Vector3 pos, Vector3? snap = null, Handles.CapFunction capFunction = null) {
 		return Handles.FreeMoveHandle (pos, Quaternion.identity,
-			HandleUtility.GetHandleSize (pos) * handleSize, snap, capFunction ?? defaultHandleCap);
+           HandleUtility.GetHandleSize (pos) * handleSize, snap ?? Vector3.one, capFunction ?? defaultHandleCap);
 	}
 
-    public static void DrawFreeMoveHandle (ref Vector2 pos, Color color, Vector2 snap = default(Vector2), Handles.CapFunction capFunction = null) {
+    public static void DrawFreeMoveHandle (ref Vector2 pos, Color color, Vector2? snap = null, Handles.CapFunction capFunction = null) {
         Color oldColor = Handles.color;
         Handles.color = color;
         pos = DrawFreeMoveHandle(pos, snap, capFunction);
         Handles.color = oldColor;
     }
 
-    public static void DrawFreeMoveHandle (ref Vector3 pos, Color color, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null) {
+    public static void DrawFreeMoveHandle (ref Vector3 pos, Color color, Vector3? snap = null, Handles.CapFunction capFunction = null) {
         Color oldColor = Handles.color;
         Handles.color = color;
         pos = DrawFreeMoveHandle(pos, snap, capFunction);
