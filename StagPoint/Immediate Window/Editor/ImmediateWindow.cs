@@ -704,12 +704,12 @@ You can also use the following built-in helper functions:
 			}
 
 			var evt = Event.current;
-			if( evt.type == EventType.scrollWheel && ( evt.control || evt.command ) )
+			if( evt.type == EventType.ScrollWheel && ( evt.control || evt.command ) )
 			{
 				this.fontSize -= (int)Mathf.Sign( evt.delta.y );
 				this.fontSize = Mathf.Clamp( fontSize, 10, 22 );
 			}
-			else if( evt.type == EventType.keyDown && evt.keyCode == KeyCode.Alpha0 && evt.control )
+			else if( evt.type == EventType.KeyDown && evt.keyCode == KeyCode.Alpha0 && evt.control )
 			{
 				this.fontSize = 0;
 			}
@@ -865,7 +865,7 @@ You can also use the following built-in helper functions:
 				}
 
 				// Clicking in the text field with the mouse automatically cancels the autocomplete list
-				if( eventType == EventType.mouseDown && editor.position.Contains( evt.mousePosition ) )
+				if( eventType == EventType.MouseDown && editor.position.Contains( evt.mousePosition ) )
 				{
 					clearAutoComplete();
 					return text;
@@ -982,7 +982,7 @@ You can also use the following built-in helper functions:
 
 				}
 
-				if( evt.type != EventType.keyDown )
+				if( evt.type != EventType.KeyDown )
 					return;
 
 				if( showCompletion )
@@ -1133,12 +1133,12 @@ You can also use the following built-in helper functions:
 					else if( evt.keyCode == KeyCode.Space )
 					{
 
-						if( evt.type == EventType.keyDown && showCompletion && filteredOptions.Count > 0 )
+						if( evt.type == EventType.KeyDown && showCompletion && filteredOptions.Count > 0 )
 						{
 							handleCompletionCharacter( ref text, evt, evaluator );
 						}
 
-						if( evt.type == EventType.keyUp && tokenIndex > 0 )
+						if( evt.type == EventType.KeyUp && tokenIndex > 0 )
 						{
 
 							currentToken = tokens[ --tokenIndex ];
@@ -1700,7 +1700,7 @@ You can also use the following built-in helper functions:
 
 						var style = itemStyle;
 
-						if( evt.type == EventType.mouseMove && itemRect.Contains( mousePosition ) )
+						if( evt.type == EventType.MouseMove && itemRect.Contains( mousePosition ) )
 							selectedIndex = i;
 
 						if( i == selectedIndex )
