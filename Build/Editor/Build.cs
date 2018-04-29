@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using Reporting = UnityEditor.Build.Reporting;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ public static class Build {
 	struct BuildTargetDerivedData {
 
 		public string platformName;						// Raw target name, used as parent folder name: "Windows", "OSX", "Android", etc.
-		public string targetName;						// Readable target name: "Windows 64", "OSX 32", "Android", etc.
+		public string targetName;						// Readable target name: "Windows 64", "OSX", "Android", etc.
 		public string extension;						// Optional extension (empty for target folders): ".exe", "", ".apk", etc.
 		public BuildOptions platformSpecificOptions;	// Extra options added automatically for this platform
 
@@ -27,7 +28,7 @@ public static class Build {
 
 	static Dictionary<BuildTarget, BuildTargetDerivedData> buildTargetDerivedDataDict = new Dictionary<BuildTarget, BuildTargetDerivedData> {
 		{ BuildTarget.StandaloneWindows64, new BuildTargetDerivedData("Windows", "Windows 64", ".exe") },
-		{ BuildTarget.StandaloneOSXIntel64, new BuildTargetDerivedData("OSX", "OSX 64", ".app") },
+		{ BuildTarget.StandaloneOSX, new BuildTargetDerivedData("OSX", "OSX", ".app") },
 		{ BuildTarget.StandaloneLinux64, new BuildTargetDerivedData("Linux", "Linux 64", ".x86_64") },
 		{ BuildTarget.Android, new BuildTargetDerivedData("Android", "Android", ".apk") },
 		{ BuildTarget.iOS, new BuildTargetDerivedData("iOS", "iOS", platformSpecificOptions: BuildOptions.SymlinkLibraries) },
@@ -41,7 +42,7 @@ public static class Build {
 		return EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
 	}
 
-	/// Build the player for a target, with a build platform name (Windows, OSX, Android, etc.), a build target name (Windows 64, OSX 32, Android),
+	/// Build the player for a target, with a build platform name (Windows, OSX, Android, etc.), a build target name (Windows 64, OSX, Android),
 	/// whether it is a development build, and extra options.
 	/// This requires to have a BuildData ScriptableObject asset in some Resources/Build folder.
 	public static void BuildPlayerWithVersion (BuildTarget buildTarget, bool developmentMode, BuildOptions extraOptions) {
@@ -76,13 +77,15 @@ public static class Build {
 			buildPlayerOptions.options |= developmentOptions;
 
 		Debug.LogFormat("Building {0}...", buildPlayerOptions.locationPathName);
+
 		double startTime = EditorApplication.timeSinceStartup;
-
-		string errorMessage = BuildPipeline.BuildPlayer(buildPlayerOptions);
-
+		Reporting.BuildReport buildReport = BuildPipeline.BuildPlayer(buildPlayerOptions);
 		double endTime = EditorApplication.timeSinceStartup;
-		Debug.LogFormat("Finished building {0} {1} in {2:0.00}s", buildPlayerOptions.locationPathName,
-			errorMessage == "" ? "successfully" : "with error", endTime - startTime);
+
+		Reporting.BuildSummary buildSummary = buildReport.summary;
+
+		Debug.LogFormat("Build result: {0} ({3:0.00} from {1} to {2})", buildSummary.result,
+			buildSummary.buildStartedAt, buildSummary.buildEndedAt, (buildSummary.buildEndedAt - buildSummary.buildStartedAt));
 	}
 		
 	/// Build Windows 64
@@ -103,18 +106,18 @@ public static class Build {
 
 	/// Build OS X
 # if UNITY_EDITOR_OSX
-	[MenuItem("Build/Build OS X 64 _F10")]
+	[MenuItem("Build/Build OS X _F10")]
 #else
-	[MenuItem("Build/Build OS X 64")]
+	[MenuItem("Build/Build OS X")]
 #endif
-	static void BuildOSX64 () {
-		BuildPlayerWithVersion(BuildTarget.StandaloneOSXIntel64, false, BuildOptions.None);
+	static void BuildOSX () {
+		BuildPlayerWithVersion(BuildTarget.StandaloneOSX, false, BuildOptions.None);
 	}
 
 	/// Build OS X development
-	[MenuItem("Build/Build OS X 64 (Development)")]
-	static void BuildOSX64Development () {
-		BuildPlayerWithVersion(BuildTarget.StandaloneOSXIntel64, true, BuildOptions.None);
+	[MenuItem("Build/Build OS X (Development)")]
+	static void BuildOSXDevelopment () {
+		BuildPlayerWithVersion(BuildTarget.StandaloneOSX, true, BuildOptions.None);
 	}
 
 	/// Build Linux
