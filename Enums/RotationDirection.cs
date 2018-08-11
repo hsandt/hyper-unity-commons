@@ -1,4 +1,10 @@
-﻿public enum RotationDirection {
-	CW,
-    CCW
+namespace Commons.Helper
+{
+
+	﻿public enum RotationDirection {
+		CW,
+	    CCW
+	}
+
 }
+

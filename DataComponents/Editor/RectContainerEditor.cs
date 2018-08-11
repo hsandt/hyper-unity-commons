@@ -3,15 +3,21 @@ using UnityEditor;
 using System;
 using System.Collections;
 
-[CustomEditor(typeof(RectContainer), true), CanEditMultipleObjects]
-public class RectContainerEditor : Editor {
+namespace Commons.Helper
+{
 
-	void OnSceneGUI ()
-	{
-		RectContainer rectContainer = (RectContainer) target;
+	[CustomEditor(typeof(RectContainer), true), CanEditMultipleObjects]
+	public class RectContainerEditor : Editor {
 
-		Undo.RecordObject(rectContainer, "Resized Rect");
-		HandlesUtil.DrawRect(ref rectContainer.rect, rectContainer.transform, rectContainer.drawColor);
+		void OnSceneGUI ()
+		{
+			RectContainer rectContainer = (RectContainer) target;
+
+			Undo.RecordObject(rectContainer, "Resized Rect");
+			HandlesUtil.DrawRect(ref rectContainer.rect, rectContainer.transform, rectContainer.drawColor);
+		}
+
 	}
 
 }
+

@@ -1,0 +1,10 @@
+{
+    "name": "Helper",
+    "references": [
+        "Debug"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

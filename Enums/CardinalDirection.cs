@@ -1,7 +1,13 @@
-public enum CardinalDirection
+namespace Commons.Helper
 {
-	Down = 0,
-	Left = 1,
-	Up = 2,
-	Right = 3
+
+	public enum CardinalDirection
+	{
+		Down = 0,
+		Left = 1,
+		Up = 2,
+		Right = 3
+	}
+
 }
+

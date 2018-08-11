@@ -1,10 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class DeactivateOnStart : MonoBehaviour {
+namespace Commons.Helper
+{
 
-	void Awake () {
-		gameObject.SetActive(false);
+	public class DeactivateOnStart : MonoBehaviour {
+
+		void Awake () {
+			gameObject.SetActive(false);
+		}
+
 	}
 
 }

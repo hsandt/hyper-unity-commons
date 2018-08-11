@@ -3,33 +3,39 @@
 using UnityEngine;
 using UnityEditor;
 
-public class HierarchyGeneration : MonoBehaviour {
+namespace Commons.Helper
+{
 
-    [MenuItem("GameObject/Create Empty Parent #&e")]
-    static void CreateEmptyParent() {
+	public class HierarchyGeneration : MonoBehaviour {
 
-        GameObject go = new GameObject("GameObject");
+	    [MenuItem("GameObject/Create Empty Parent #&e")]
+	    static void CreateEmptyParent() {
 
-        if (Selection.activeTransform != null)
-        {
-            go.transform.parent = Selection.activeTransform.parent;
-            go.transform.Translate(Selection.activeTransform.position);
-            Selection.activeTransform.parent = go.transform;
-        }
+	        GameObject go = new GameObject("GameObject");
 
-    }
+	        if (Selection.activeTransform != null)
+	        {
+	            go.transform.parent = Selection.activeTransform.parent;
+	            go.transform.Translate(Selection.activeTransform.position);
+	            Selection.activeTransform.parent = go.transform;
+	        }
 
-    [MenuItem("GameObject/Create Empty Duplicate #&d")]
-    static void CreateEmptySibling() {
+	    }
 
-        GameObject go = new GameObject("GameObject");
+	    [MenuItem("GameObject/Create Empty Duplicate #&d")]
+	    static void CreateEmptySibling() {
 
-        if (Selection.activeTransform != null)
-        {
-            go.transform.parent = Selection.activeTransform.parent;
-            go.transform.Translate(Selection.activeTransform.position);
-        }
+	        GameObject go = new GameObject("GameObject");
 
-    }
+	        if (Selection.activeTransform != null)
+	        {
+	            go.transform.parent = Selection.activeTransform.parent;
+	            go.transform.Translate(Selection.activeTransform.position);
+	        }
+
+	    }
+
+	}
 
 }
+

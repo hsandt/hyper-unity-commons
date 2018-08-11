@@ -2,14 +2,20 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-public static class ResourcesUtil {
+namespace Commons.Helper
+{
 
-	public static T LoadOrFail<T>(string path) where T : UnityEngine.Object {
-		T resource = Resources.Load<T>(path);
-		if (resource == null) {
-			throw new ResourceNotFoundException(path);
+	public static class ResourcesUtil {
+
+		public static T LoadOrFail<T>(string path) where T : UnityEngine.Object {
+			T resource = Resources.Load<T>(path);
+			if (resource == null) {
+				throw new ResourceNotFoundException(path);
+			}
+			return resource;
 		}
-		return resource;
+
 	}
 
 }
+

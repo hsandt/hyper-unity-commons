@@ -1,22 +1,28 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Text))]
-public class UpdateBuildVersion : MonoBehaviour {
+namespace Commons.Helper
+{
 
-	Text text;
+	[RequireComponent(typeof(Text))]
+	public class UpdateBuildVersion : MonoBehaviour {
 
-	void Awake () {
-		text = this.GetComponentOrFail<Text>();
-	}
+		Text text;
 
-	void Start () {
-		UpdateText();
-	}
+		void Awake () {
+			text = this.GetComponentOrFail<Text>();
+		}
 
-	void UpdateText () {
-		string version = BuildData.GetVersion();
-		text.text = version;
+		void Start () {
+			UpdateText();
+		}
+
+		void UpdateText () {
+			string version = BuildData.GetVersion();
+			text.text = version;
+		}
+
 	}
 
 }
+

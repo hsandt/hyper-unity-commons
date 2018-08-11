@@ -1,6 +1,12 @@
-public enum VerticalDirection
+namespace Commons.Helper
 {
-	Down = -1,
-	None = 0,
-	Up = 1
+
+	public enum VerticalDirection
+	{
+		Down = -1,
+		None = 0,
+		Up = 1
+	}
+
 }
+

@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ReadOnlyAttribute : PropertyAttribute
+namespace Commons.Helper
 {
 
+	public class ReadOnlyAttribute : PropertyAttribute
+	{
+
+	}
+
 }
-	

@@ -1,10 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class SelfDestructOnStart : MonoBehaviour {
+namespace Commons.Helper
+{
 
-	void Start () {
-		Destroy(gameObject);
+	public class SelfDestructOnStart : MonoBehaviour {
+
+		void Start () {
+			Destroy(gameObject);
+		}
+
 	}
 
 }

@@ -1,15 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-/// Keep a transform at a target position
-public class TrackPosition : MonoBehaviour {
+namespace Commons.Helper
+{
 
-	public Transform target;
+	/// Keep a transform at a target position
+	public class TrackPosition : MonoBehaviour {
 
-	[SerializeField] Vector3 offset = Vector3.zero;
+		public Transform target;
 
-	void FixedUpdate () {
-		transform.position = target.position + offset;
+		[SerializeField] Vector3 offset = Vector3.zero;
+
+		void FixedUpdate () {
+			transform.position = target.position + offset;
+		}
+
 	}
 
 }
