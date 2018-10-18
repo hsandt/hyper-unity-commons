@@ -3,79 +3,84 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
-public class SceneViewObjectWindow : EditorWindow
+namespace Commons.Editor
 {
-	static GameObject m_LastObject;
-	static List<GameObject> m_Stack = new List<GameObject>();
 
-	static bool m_UseStack = false;
-	static float m_MaxStackSize = 5;
-
-	[MenuItem("Tools/Open SceneView Object Selector")]
-	public static void OpenWindow()
+	public class SceneViewObjectWindow : EditorWindow
 	{
-		EditorWindow.GetWindow<SceneViewObjectWindow>();
-	}
+		static GameObject m_LastObject;
+		static List<GameObject> m_Stack = new List<GameObject>();
 
-	[MenuItem("Tools/Select Scene Object &s")]
-	public static void SelectObject()
-	{
-		if (m_LastObject != null)
+		static bool m_UseStack = false;
+		static float m_MaxStackSize = 5;
+
+		[MenuItem("Tools/Open SceneView Object Selector")]
+		public static void OpenWindow()
 		{
-			if (!m_UseStack)
-				m_Stack.Clear();
-			m_Stack.Add(m_LastObject);
+			EditorWindow.GetWindow<SceneViewObjectWindow>();
 		}
-		EditorWindow.GetWindow<SceneViewObjectWindow>().Repaint();
-	}
 
-	void OnGUI()
-	{
-		Event e = Event.current;
-		m_UseStack = GUILayout.Toggle(m_UseStack, "Use Stack");
-		if (m_UseStack)
-			m_MaxStackSize = GUILayout.HorizontalSlider(m_MaxStackSize,1,20);
-
-		for(int i = m_Stack.Count-1;i>=0;i--)
+		[MenuItem("Tools/Select Scene Object &s")]
+		public static void SelectObject()
 		{
-			GUILayout.BeginHorizontal();
-			EditorGUILayout.ObjectField(m_Stack[i], typeof(GameObject), true);
-			if (GUILayoutUtility.GetLastRect().Contains(e.mousePosition) && e.type == EventType.MouseDrag)
+			if (m_LastObject != null)
 			{
-				DragAndDrop.PrepareStartDrag ();
-				DragAndDrop.objectReferences = new UnityEngine.Object[] {m_Stack[i]};
-				DragAndDrop.StartDrag ("drag");
-				Event.current.Use();
+				if (!m_UseStack)
+					m_Stack.Clear();
+				m_Stack.Add(m_LastObject);
 			}
-			if(GUILayout.Button("X",GUILayout.Width(20)))
+			EditorWindow.GetWindow<SceneViewObjectWindow>().Repaint();
+		}
+
+		void OnGUI()
+		{
+			Event e = Event.current;
+			m_UseStack = GUILayout.Toggle(m_UseStack, "Use Stack");
+			if (m_UseStack)
+				m_MaxStackSize = GUILayout.HorizontalSlider(m_MaxStackSize,1,20);
+
+			for(int i = m_Stack.Count-1;i>=0;i--)
 			{
-				m_Stack.RemoveAt(i);
-				Repaint();
+				GUILayout.BeginHorizontal();
+				EditorGUILayout.ObjectField(m_Stack[i], typeof(GameObject), true);
+				if (GUILayoutUtility.GetLastRect().Contains(e.mousePosition) && e.type == EventType.MouseDrag)
+				{
+					DragAndDrop.PrepareStartDrag ();
+					DragAndDrop.objectReferences = new UnityEngine.Object[] {m_Stack[i]};
+					DragAndDrop.StartDrag ("drag");
+					Event.current.Use();
+				}
+				if(GUILayout.Button("X",GUILayout.Width(20)))
+				{
+					m_Stack.RemoveAt(i);
+					Repaint();
+				}
+				GUILayout.EndHorizontal();
+				if (e.type == EventType.Repaint && m_Stack[i] == null)
+				{
+					m_Stack.RemoveAt(i);
+					Repaint();
+				}
 			}
-			GUILayout.EndHorizontal();
-			if (e.type == EventType.Repaint && m_Stack[i] == null)
+			if (m_UseStack && e.type == EventType.Repaint)
 			{
-				m_Stack.RemoveAt(i);
-				Repaint();
+				while(m_Stack.Count > m_MaxStackSize)
+					m_Stack.RemoveAt(0);
 			}
 		}
-		if (m_UseStack && e.type == EventType.Repaint)
+
+		[DrawGizmo(GizmoType.NotInSelectionHierarchy)]
+		static void RenderCustomGizmo(Transform objectTransform, GizmoType gizmoType)
 		{
-			while(m_Stack.Count > m_MaxStackSize)
-				m_Stack.RemoveAt(0);
+			if (Event.current == null)
+				return;
+			Ray ray = HandleUtility.GUIPointToWorldRay (Event.current.mousePosition);
+			RaycastHit hit;
+			if (Physics.Raycast (ray, out hit))
+			{
+				m_LastObject = hit.transform.gameObject;
+			}
 		}
 	}
 
-	[DrawGizmo(GizmoType.NotInSelectionHierarchy)]
-	static void RenderCustomGizmo(Transform objectTransform, GizmoType gizmoType)
-	{
-		if (Event.current == null)
-			return;
-		Ray ray = HandleUtility.GUIPointToWorldRay (Event.current.mousePosition);
-		RaycastHit hit;
-		if (Physics.Raycast (ray, out hit))
-		{
-			m_LastObject = hit.transform.gameObject;
-		}
-	}
 }
