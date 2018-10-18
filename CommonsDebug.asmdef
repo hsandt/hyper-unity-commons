@@ -1,0 +1,10 @@
+{
+    "name": "CommonsDebug",
+    "references": [
+        "CommonsPattern"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

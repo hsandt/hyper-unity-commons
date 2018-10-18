@@ -1,22 +1,27 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class KeyDebugger : MonoBehaviour {
+namespace Commons.Debug
+{
 
-	void OnGUI()
-	{
-		if (Event.current != null) {
-			KeyCode keyCode = GetKeyCode(Event.current);
-			if (keyCode != KeyCode.None) { Debug.Log("You pressed/released: " + keyCode); }
-		}
-	}
+	public class KeyDebugger : MonoBehaviour {
 
-	public KeyCode GetKeyCode(Event e)
-	{
-		if (e.isKey && e.keyCode != KeyCode.None) {
-			return e.keyCode;
+		void OnGUI()
+		{
+			if (Event.current != null) {
+				KeyCode keyCode = GetKeyCode(Event.current);
+				if (keyCode != KeyCode.None) { Debug.Log("You pressed/released: " + keyCode); }
+			}
 		}
-		return KeyCode.None;
+
+		public KeyCode GetKeyCode(Event e)
+		{
+			if (e.isKey && e.keyCode != KeyCode.None) {
+				return e.keyCode;
+			}
+			return KeyCode.None;
+		}
+
 	}
 
 }

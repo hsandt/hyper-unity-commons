@@ -1,67 +1,72 @@
 using System;
 using UnityEngine;
 
-/// Code Tuning GUI
-/// NETWORK: make it a NetworkBehaviour and synchronize the tuned values
-/// so that tuned values at the same everywhere.
-/// Currently, you need to change the values on the Host to affect Command functions
-public class CodeTuningGUI : MonoBehaviour
+namespace Commons.Debug
 {
 
-	void OnGUI () {
-		GUILayout.BeginArea(new Rect(500, 50, 500, 200));
+	/// Code Tuning GUI
+	/// NETWORK: make it a NetworkBehaviour and synchronize the tuned values
+	/// so that tuned values at the same everywhere.
+	/// Currently, you need to change the values on the Host to affect Command functions
+	public class CodeTuningGUI : MonoBehaviour
+	{
 
-		GUILayout.BeginVertical();
+		void OnGUI () {
+			GUILayout.BeginArea(new Rect(500, 50, 500, 200));
 
-		ToggleEntry("active", ref CodeTuning.Instance.active);
+			GUILayout.BeginVertical();
 
-		if (CodeTuning.Instance.active)
-		{
-			IntEntry("branch index", ref CodeTuning.Instance.branchIndex);
-			ToggleEntry("bool 1", ref CodeTuning.Instance.bool1);
-			ToggleEntry("bool 2", ref CodeTuning.Instance.bool2);
-			FloatEntry("float 1", ref CodeTuning.Instance.float1);
-			FloatEntry("float 2", ref CodeTuning.Instance.float2);
+			ToggleEntry("active", ref CodeTuning.Instance.active);
+
+			if (CodeTuning.Instance.active)
+			{
+				IntEntry("branch index", ref CodeTuning.Instance.branchIndex);
+				ToggleEntry("bool 1", ref CodeTuning.Instance.bool1);
+				ToggleEntry("bool 2", ref CodeTuning.Instance.bool2);
+				FloatEntry("float 1", ref CodeTuning.Instance.float1);
+				FloatEntry("float 2", ref CodeTuning.Instance.float2);
+			}
+
+			GUILayout.EndVertical();
+
+			GUILayout.EndArea();
 		}
 
-		GUILayout.EndVertical();
+		void ToggleEntry (string name, ref bool value)
+		{
+	 		GUILayout.BeginHorizontal();
 
-		GUILayout.EndArea();
-	}
+			GUILayout.Label(name, GUILayout.Width(120f));
+			// we leave the label on the right as empty as we already add a label on the left
+			value = GUILayout.Toggle(value, "");
 
-	void ToggleEntry (string name, ref bool value)
-	{
- 		GUILayout.BeginHorizontal();
+			GUILayout.EndHorizontal();
+		}
 
-		GUILayout.Label(name, GUILayout.Width(120f));
-		// we leave the label on the right as empty as we already add a label on the left
-		value = GUILayout.Toggle(value, "");
+		void IntEntry (string name, ref int value)
+		{
+			GUILayout.BeginHorizontal();
 
-		GUILayout.EndHorizontal();
-	}
+			GUILayout.Label (name, GUILayout.Width(120f));
+			value = (int) Mathf.Floor(GUILayout.HorizontalSlider ((float) value, 0.0f, 10.0f, GUILayout.Width(120f)));
+			GUILayout.Space(10f);
+			GUILayout.Label (value.ToString());
 
-	void IntEntry (string name, ref int value)
-	{
-		GUILayout.BeginHorizontal();
+			GUILayout.EndHorizontal();
+		}
 
-		GUILayout.Label (name, GUILayout.Width(120f));
-		value = (int) Mathf.Floor(GUILayout.HorizontalSlider ((float) value, 0.0f, 10.0f, GUILayout.Width(120f)));
-		GUILayout.Space(10f);
-		GUILayout.Label (value.ToString());
+		void FloatEntry (string name, ref float value)
+		{
+			GUILayout.BeginHorizontal();
 
-		GUILayout.EndHorizontal();
-	}
+			GUILayout.Label (name, GUILayout.Width(120f));
+			value = GUILayout.HorizontalSlider (value, 0.0f, 10.0f, GUILayout.Width(120f));
+			GUILayout.Space(10f);
+			GUILayout.Label(value.ToString());
 
-	void FloatEntry (string name, ref float value)
-	{
-		GUILayout.BeginHorizontal();
+			GUILayout.EndHorizontal();
+		}
 
-		GUILayout.Label (name, GUILayout.Width(120f));
-		value = GUILayout.HorizontalSlider (value, 0.0f, 10.0f, GUILayout.Width(120f));
-		GUILayout.Space(10f);
-		GUILayout.Label(value.ToString());
-
-		GUILayout.EndHorizontal();
 	}
 
 }
