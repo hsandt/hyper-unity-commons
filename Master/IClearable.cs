@@ -1,19 +1,24 @@
 using UnityEngine;
 using System.Collections;
 
-/// Base class for behaviours that can be cleared and restarted from their initial states. Recommended for all MonoBehaviours with state variables.
-public abstract class ClearableBehaviour : MonoBehaviour {
+namespace Commons.Pattern
+{
 
-	/// Setup the object's state vars so that it reaches its initial state. This should be called on Start.
-	public virtual void Setup () {}
+	/// Base class for behaviours that can be cleared and restarted from their initial states. Recommended for all MonoBehaviours with state variables.
+	public abstract class ClearableBehaviour : MonoBehaviour {
 
-	/// Clear object's state vars such as lists and remaining particles.
-	public virtual void Clear () {}
+		/// Setup the object's state vars so that it reaches its initial state. This should be called on Start.
+		public virtual void Setup () {}
 
-	/// Restart the object's state.
-	public virtual void Restart () {
-		Clear();
-		Setup();
+		/// Clear object's state vars such as lists and remaining particles.
+		public virtual void Clear () {}
+
+		/// Restart the object's state.
+		public virtual void Restart () {
+			Clear();
+			Setup();
+		}
+
 	}
 
 }

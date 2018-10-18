@@ -1,0 +1,10 @@
+{
+    "name": "CommonsPattern",
+    "references": [
+        "CommonsHelper"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

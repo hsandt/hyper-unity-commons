@@ -1,62 +1,65 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-/// CRTP: when inheriting from this base class, use the derived class as the T generic argument so that you can access a singleton instance of the derived class
-public abstract class PoolManager<TPooledObject, T> : SingletonManager<T> where TPooledObject : MonoBehaviour, IPooledObject where T : SingletonManager<T> {
+namespace Commons.Pattern
+{
 
-	/* external references */
-	[SerializeField]
-	protected Transform poolTransform;
+	/// CRTP: when inheriting from this base class, use the derived class as the T generic argument so that you can access a singleton instance of the derived class
+	public abstract class PoolManager<TPooledObject, T> : SingletonManager<T> where TPooledObject : MonoBehaviour, IPooledObject where T : SingletonManager<T> {
 
-	/* resource prefabs */
-	[SerializeField]
-	protected GameObject pooledObjectPrefab;
+		/* external references */
+		[SerializeField]
+		protected Transform poolTransform;
 
-	/* parameters */
-	[SerializeField]
-	protected int poolSize = 20;
+		/* resource prefabs */
+		[SerializeField]
+		protected GameObject pooledObjectPrefab;
 
-	/* state variables */
-	List<TPooledObject> m_Pool = new List<TPooledObject>();
+		/* parameters */
+		[SerializeField]
+		protected int poolSize = 20;
 
-	// TEMPLATE METHOD FOR DERIVED CLASSES
-	// void Awake () {
-	//  SetInstanceOrSelfDestruct(this);
-	// 	Init();
-	// }
+		/* state variables */
+		List<TPooledObject> m_Pool = new List<TPooledObject>();
 
-	/// <summary>
-	/// Initialize pool by creating [poolSize] copies of the pooled object
-	/// </summary>
-	protected void Init () {
-		// Debug.LogFormat("Setup with poolSize: {0}", poolSize);
-		// prepare pool with enough bullets
-		for (int i = 0; i < poolSize; ++i) {
-			GameObject pooledGameObject = pooledObjectPrefab.InstantiateUnder(poolTransform);
-			TPooledObject pooledObject = pooledGameObject.GetComponentOrFail<TPooledObject>();
-			pooledObject.Release();
-			m_Pool.Add(pooledObject);
-		}
+		// TEMPLATE METHOD FOR DERIVED CLASSES
+		// void Awake () {
+		//  SetInstanceOrSelfDestruct(this);
+		// 	Init();
+		// }
 
-		// in case prefab reference is a scene instance, deactivate it (no effect if prefab is an asset since runtime)
-		pooledObjectPrefab.SetActive(false);
-	}
-
-	public TPooledObject GetObject () {
-		// O(n)
-		for (int i = 0; i < poolSize; ++i) {
-			TPooledObject pooledObject = m_Pool[i];
-			if (!pooledObject.IsInUse()) {
-				return pooledObject;
+		/// <summary>
+		/// Initialize pool by creating [poolSize] copies of the pooled object
+		/// </summary>
+		protected void Init () {
+			// Debug.LogFormat("Setup with poolSize: {0}", poolSize);
+			// prepare pool with enough bullets
+			for (int i = 0; i < poolSize; ++i) {
+				GameObject pooledGameObject = pooledObjectPrefab.InstantiateUnder(poolTransform);
+				TPooledObject pooledObject = pooledGameObject.GetComponentOrFail<TPooledObject>();
+				pooledObject.Release();
+				m_Pool.Add(pooledObject);
 			}
+			// in case prefab reference is a scene instance, deactivate it (no effect if prefab is an asset since runtime)
+			pooledObjectPrefab.SetActive(false);
 		}
-		// starvation
-		return null;
-	}
 
-	public void ReleaseObject (TPooledObject pooledObject) {
-		pooledObject.Release();
+		public TPooledObject GetObject () {
+			// O(n)
+			for (int i = 0; i < poolSize; ++i) {
+				TPooledObject pooledObject = m_Pool[i];
+				if (!pooledObject.IsInUse()) {
+					return pooledObject;
+				}
+			}
+			// starvation
+			return null;
+		}
+
+		public void ReleaseObject (TPooledObject pooledObject) {
+			pooledObject.Release();
+		}
+
 	}
 
 }
