@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace Commons.Pattern
+namespace CommonsPattern
 {
 
 	/// Interface for scripts that should Pause behaviour but not be disabled as MonoBehaviours (e.g. because we still need the Update to check

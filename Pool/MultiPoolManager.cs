@@ -3,9 +3,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-using Commons.Helper;
+using CommonsHelper;
 
-namespace Commons.Pattern
+namespace CommonsPattern
 {
 
 	/// Manager for a heterogeneous pool of game objects sharing a common script TPooledObject that implements IPooledObject

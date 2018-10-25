@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-namespace Commons.Pattern
+namespace CommonsPattern
 {
 
 	/// <summary>

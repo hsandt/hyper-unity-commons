@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Commons.Pattern
+using CommonsHelper;
+
+namespace CommonsPattern
 {
 
 	/// CRTP: when inheriting from this base class, use the derived class as the T generic argument so that you can access a singleton instance of the derived class

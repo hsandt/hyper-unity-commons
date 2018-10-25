@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Commons.Pattern
+namespace CommonsPattern
 {
 
 	public class MasterBehaviour : ClearableBehaviour, IPausable {

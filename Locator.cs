@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Commons.Pattern
+namespace CommonsPattern
 {
 
 	/// Static class that memoizes objects by tag
