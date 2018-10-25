@@ -3,9 +3,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-using Commons.Pattern;
+using CommonsHelper;
+using CommonsPattern;
 
-namespace Commons.Debug
+namespace CommonsDebug
 {
 	// IMPROVE: when variable has not been updated for several frames, darken the label
 

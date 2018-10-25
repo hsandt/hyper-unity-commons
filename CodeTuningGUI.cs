@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Commons.Debug
+namespace CommonsDebug
 {
 
 	/// Code Tuning GUI

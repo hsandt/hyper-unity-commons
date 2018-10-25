@@ -4,7 +4,9 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Commons.Debug
+using CommonsHelper;
+
+namespace CommonsDebug
 {
     
 	// SEO: before DebugScreenManager because the pool of initial messages is created in its Awake

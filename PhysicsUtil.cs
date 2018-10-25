@@ -9,7 +9,7 @@ using System.Diagnostics;
  *
  */
 
-namespace Commons.Debug
+namespace CommonsDebug
 {
 
     public static class PhysicsUtil {
@@ -45,7 +45,7 @@ namespace Commons.Debug
 		{
 			if (hitInfo.collider == null)
 			{
-				Debug.LogWarning("Do not call Physics3DUtil.DrawRaycast with the 'RaycastHit hitInfo' parameter if there was no hit, pass 'bool result' instead.");
+			    Debug.LogWarning("Do not call Physics3DUtil.DrawRaycast with the 'RaycastHit hitInfo' parameter if there was no hit, pass 'bool result' instead.");
 				return;
 			}
 
@@ -53,8 +53,8 @@ namespace Commons.Debug
 				distance = maxDrawLineDistance;
 
 			// By default, draw the no hit part of the ray in green, and the hit part in red
-			Debug.DrawLine(origin, hitInfo.point, color ?? noHitColor, duration, depthTest: false);
-			Debug.DrawLine(hitInfo.point, origin + direction.normalized * distance, hitColor, duration, depthTest: false);
+		    Debug.DrawLine(origin, hitInfo.point, color ?? noHitColor, duration, depthTest: false);
+		    Debug.DrawLine(hitInfo.point, origin + direction.normalized * distance, hitColor, duration, depthTest: false);
 		}
 
 		/// Raycast and draw debug at the same time. Set a color to override the no hit color.

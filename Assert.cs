@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Commons.Debug
+namespace CommonsDebug
 {
 
 	public static class AssertUtil {

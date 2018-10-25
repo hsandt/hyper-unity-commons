@@ -57,7 +57,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Commons.Debug
+namespace CommonsDebug
 {
 
 	public class DebugConsole : MonoBehaviour

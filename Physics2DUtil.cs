@@ -9,7 +9,7 @@ using Debug = UnityEngine.Debug;
 using System.Collections;
 using System.Diagnostics;
 
-namespace Commons.Debug
+namespace CommonsDebug
 {
 
 	public static class Physics2DUtil {

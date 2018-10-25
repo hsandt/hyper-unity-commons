@@ -1,6 +1,8 @@
 using UnityEngine;
 
-namespace Commons.Debug
+using CommonsHelper;
+
+namespace CommonsDebug
 {
 
 	public static class DebugUtil {

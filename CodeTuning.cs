@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Commons.Debug
+namespace CommonsDebug
 {
 
 	/// Code Tuning runtime class (required to run the game without knowing editor stuff)

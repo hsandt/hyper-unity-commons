@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
-namespace Commons.Debug
+namespace CommonsDebug
 {
 
 	[CanEditMultipleObjects]

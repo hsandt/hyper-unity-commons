@@ -6,9 +6,10 @@
  */
 
 using UnityEngine;
-using System.Collections;
 
-namespace Commons.Debug
+using CommonsHelper;
+
+namespace CommonsDebug
 {
             
 	[ExecuteInEditMode]

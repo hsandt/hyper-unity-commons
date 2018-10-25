@@ -8,7 +8,7 @@ using UnityEditor;
 using System.Collections;
 using System.Linq;
 
-namespace Commons.Debug
+namespace CommonsDebug
 {
     
 	[CanEditMultipleObjects]

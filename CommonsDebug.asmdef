@@ -1,7 +1,8 @@
 {
     "name": "CommonsDebug",
     "references": [
-        "CommonsPattern"
+        "CommonsPattern",
+        "CommonsHelper"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
