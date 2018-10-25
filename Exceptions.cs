@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 #endif
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public class ResourceNotFoundException : Exception {

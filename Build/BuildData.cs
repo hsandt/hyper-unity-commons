@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	/// Build version data. Create one asset in Resources/Build.

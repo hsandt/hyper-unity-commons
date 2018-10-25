@@ -5,7 +5,7 @@ using UnityEditor;
 using System;
 using System.Collections;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	/// Utility functions for handles. As this script is located in an Editor folder, it can only be used within Editor scripts (scripts inside an Editor

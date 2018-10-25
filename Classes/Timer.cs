@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	/// Internal clock counting down and triggering some optional callback when over

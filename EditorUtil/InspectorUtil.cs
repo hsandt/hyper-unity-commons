@@ -1,6 +1,6 @@
 #if UNITY_EDITOR
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	using System.Collections;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public class ReadOnlyAttribute : PropertyAttribute

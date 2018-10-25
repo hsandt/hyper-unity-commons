@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public static class AnimationCurveUtil {

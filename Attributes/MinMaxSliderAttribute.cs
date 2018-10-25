@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public class MinMaxSliderAttribute : PropertyAttribute {

@@ -1,4 +1,4 @@
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	﻿public enum RotationDirection {

@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	[CustomPropertyDrawer (typeof (MinMaxSliderAttribute))]

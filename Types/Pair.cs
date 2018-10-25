@@ -1,4 +1,4 @@
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	﻿/// Tuple class for 2 elements of arbitrary types

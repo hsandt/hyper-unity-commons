@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public static class GizmosUtil {

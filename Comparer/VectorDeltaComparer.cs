@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public class VectorDeltaEqualityComparer : IEqualityComparer<Vector2>

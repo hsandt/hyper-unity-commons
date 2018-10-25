@@ -3,7 +3,7 @@
 using UnityEditor;
 #endif
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public class RectContainer : MonoBehaviour {

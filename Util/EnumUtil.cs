@@ -1,6 +1,6 @@
 using System;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public static class EnumUtil {

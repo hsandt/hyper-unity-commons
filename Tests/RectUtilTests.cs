@@ -4,7 +4,7 @@ using System.Collections;
 
 using NUnit.Framework;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	[TestFixture]

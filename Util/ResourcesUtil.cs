@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public static class ResourcesUtil {

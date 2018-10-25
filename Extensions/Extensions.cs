@@ -2,7 +2,7 @@
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public static class Vector2Extensions {

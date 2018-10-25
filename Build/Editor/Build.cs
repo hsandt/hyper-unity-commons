@@ -8,7 +8,7 @@ using System.Linq;
 
 // TODO: add pre-build and post-build hooks via callback methods (create another non-static class to override)
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public static class Build {

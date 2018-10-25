@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public static class MathUtil {

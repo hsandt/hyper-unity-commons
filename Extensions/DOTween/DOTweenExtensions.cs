@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 using DG.Tweening;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	public static class DOTweenExtensions {

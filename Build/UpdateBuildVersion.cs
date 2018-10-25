@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Commons.Helper
+namespace CommonsHelper
 {
 
 	[RequireComponent(typeof(Text))]
