@@ -3,7 +3,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-namespace Commons.Editor
+namespace CommonsEditor
 {
 
 	public static class AssetsUtil {

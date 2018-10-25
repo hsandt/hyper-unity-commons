@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
-namespace Commons.Editor
+namespace CommonsEditor
 {
 
 	public static class EditorAssets

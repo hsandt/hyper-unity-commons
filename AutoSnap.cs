@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 // using System.Reflection;
 
-namespace Commons.Editor
+namespace CommonsEditor
 {
 
 	public class AutoSnap : EditorWindow

@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Commons.Editor
+namespace CommonsEditor
 {
 
 	public class EditorScreenshot : EditorWindow
