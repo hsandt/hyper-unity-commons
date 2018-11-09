@@ -68,6 +68,7 @@ namespace CommonsPattern
 			for (int i = 0; i < poolSize; ++i) {
 				GameObject sourceObject = Instantiate(prefab, poolTransform) as GameObject;
 				TPooledObject pooledObject = sourceObject.GetComponentOrFail<TPooledObject>();
+			    pooledObject.InitPooled();
 				pooledObject.Release();
 				m_MultiPool[prefabName].Add(pooledObject);
 			}
