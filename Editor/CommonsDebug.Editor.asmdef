@@ -1,0 +1,12 @@
+{
+    "name": "CommonsDebug.Editor",
+    "references": [
+        "CommonsDebug"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}
