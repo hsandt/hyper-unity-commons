@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿//#define DEBUG_MULTI_POOL_MANAGER
+
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -56,14 +58,18 @@ namespace CommonsPattern
 		void LoadAllPrefabs () {
 			GameObject[] prefabs = Resources.LoadAll<GameObject>(resourcePrefabsPath);
 			for (int i = 0; i < prefabs.Length; ++i) {
+#if DEBUG_MULTI_POOL_MANAGER
 				Debug.LogFormat("[MultiPoolManager] Adding {0}/{1} to prefab library", resourcePrefabsPath, prefabs[i].name);
+#endif
 				prefabLibrary.Add(prefabs[i].name, prefabs[i]);
 			}
 		}
 
 		/// Initialize and fill pool [prefabName] with [poolSize] prefab instances
 		void GeneratePool (string prefabName, GameObject prefab) {
+#if DEBUG_MULTI_POOL_MANAGER
 			Debug.LogFormat("[MultiPoolManager] Setup prefab pool of size {0} for {1}", poolSize, prefab.name);
+#endif
 			m_MultiPool.Add(prefabName, new List<TPooledObject>());
 			for (int i = 0; i < poolSize; ++i) {
 				GameObject sourceObject = Instantiate(prefab, poolTransform) as GameObject;
