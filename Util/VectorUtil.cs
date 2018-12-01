@@ -30,19 +30,19 @@ namespace CommonsHelper
 			// return (Vector2) Vector3.ProjectOnPlane((Vector3) vector, (Vector3) normal);
 		}
 
-		/// Return vector rotated by 90 clockwise
+		/// Return vector rotated by angle degrees
 		public static Vector2 Rotate(Vector2 vector, float angle)
 		{
 			return (Vector2) (Quaternion.AngleAxis(angle, Vector3.forward) * vector);
 		}
 
-		/// Return vector rotated by 90 clockwise
+		/// Return vector rotated by 90 degrees clockwise
 		public static Vector2 Rotate90CW(Vector2 vector)
 		{
 			return new Vector2(vector.y, -vector.x);
 		}
 
-		/// Return vector rotated by 90 counter-clockwise
+		/// Return vector rotated by 90 degrees counter-clockwise (same as Vector2.Perpendicular but clearer name)
 		public static Vector2 Rotate90CCW(Vector2 vector)
 		{
 			return new Vector2(-vector.y, vector.x);
