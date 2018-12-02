@@ -8,12 +8,12 @@ using UnityEditor;
 using System.Collections;
 using System.Linq;
 
-namespace CommonsDebug
+namespace CommonsDebug.Editor
 {
     
 	[CanEditMultipleObjects]
 	[CustomEditor(typeof(EditEdgeCollider2D))]
-	public class EditEdgeCollider2DEditor : Editor {
+	public class EditEdgeCollider2DEditor : UnityEditor.Editor {
 	
 		EdgeCollider2D collider;
 

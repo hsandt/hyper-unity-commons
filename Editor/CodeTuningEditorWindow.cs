@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace CommonsDebug
+namespace CommonsDebug.Editor
 {
 
     /// Code tuning editor window

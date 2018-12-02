@@ -6,12 +6,12 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
-namespace CommonsDebug
+namespace CommonsDebug.Editor
 {
 
 	[CanEditMultipleObjects]
 	[CustomEditor(typeof(EditPolygonCollider2D))]
-	public class EditPolygonCollider2DEditor : Editor {
+	public class EditPolygonCollider2DEditor : UnityEditor.Editor {
 	
 		public override void OnInspectorGUI() {
 			DrawDefaultInspector();

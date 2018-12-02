@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsDebug
+namespace CommonsDebug.Editor
 {
 
 	public class ShowWorldPosition {
