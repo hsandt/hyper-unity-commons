@@ -3,11 +3,11 @@ using UnityEngine.UI;
 using UnityEditor;
 using System.Collections;
 
-namespace CommonsHelper
+namespace CommonsHelper.Editor
 {
 
 	[CustomEditor(typeof(UpdateBuildVersion))]
-	public class UpdateBuildVersionEditor : Editor {
+	public class UpdateBuildVersionEditor : UnityEditor.Editor {
 
 		UpdateBuildVersion script;
 

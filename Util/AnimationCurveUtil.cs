@@ -51,14 +51,14 @@ namespace CommonsHelper
 	        // This is a fallback in case I need to generate a curve in Standalone, but this implementation
 	        // does not set the tangent flags, so in the editor, as soon as you start modifying the curve, tangents would revert.
 	        // (code inspired by AnimationUtility.Internal_UpdateTangents)
-	        for (int i = 0; i < curve.Length; ++i) {
+	        for (int i = 0; i < curve.length; ++i) {
 	            if (i >= 1) {
 	                Keyframe key = curve[i];
 	                Keyframe previousKey = curve[i - 1];
 	                key.inTangent = CalculateLinearTangent(previousKey, key);
 	                curve.MoveKey(i, key);
 	            }
-	        if (i + 1 < curve.Length) {
+	        if (i + 1 < curve.length) {
 	                Keyframe key = curve[i];
 	                Keyframe nextKey = curve[i + 1];
 	                key.outTangent = CalculateLinearTangent(key, nextKey);

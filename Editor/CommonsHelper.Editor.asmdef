@@ -1,0 +1,12 @@
+{
+    "name": "CommonsHelper.Editor",
+    "references": [
+        "CommonsHelper"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

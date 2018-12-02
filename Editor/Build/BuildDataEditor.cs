@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsHelper
+namespace CommonsHelper.Editor
 {
 
 	[CustomEditor(typeof(BuildData))]
-	public class BuildDataEditor : Editor {
+	public class BuildDataEditor : UnityEditor.Editor {
 
 		public override void OnInspectorGUI() {
 			DrawDefaultInspector();

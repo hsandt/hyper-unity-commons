@@ -3,11 +3,11 @@ using UnityEditor;
 using System;
 using System.Collections;
 
-namespace CommonsHelper
+namespace CommonsHelper.Editor
 {
 
 	[CustomEditor(typeof(RectContainer), true), CanEditMultipleObjects]
-	public class RectContainerEditor : Editor {
+	public class RectContainerEditor : UnityEditor.Editor {
 
 		void OnSceneGUI ()
 		{
