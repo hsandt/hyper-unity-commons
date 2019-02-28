@@ -7,7 +7,7 @@ namespace CommonsHelper
 	public static class VectorUtil
 	{
 
-		/// Return vector projected on direction vector
+		/// Return vector projected on direction vector (automatically normalized)
 		public static Vector2 ProjectParallel(Vector2 vector, Vector2 direction)
 		{
 			float directionSqrMagnitude = direction.sqrMagnitude;
@@ -21,13 +21,20 @@ namespace CommonsHelper
 			return Vector2.Dot(vector, direction) / directionSqrMagnitude * direction;
 		}
 
-		/// Return vector projected orthogonally to normal
+		/// Return vector projected orthogonally to normal (automatically normalized)
 		public static Vector2 ProjectOrthogonal(Vector2 vector, Vector2 normal)
 		{
 			// q = v - p
 			return vector - ProjectParallel(vector, normal);
-			// alternative using Unity method:
+			// alternative using Unity method, but normal not guaranteed to be normalized:
 			// return (Vector2) Vector3.ProjectOnPlane((Vector3) vector, (Vector3) normal);
+		}
+
+		/// Return vector mirror about axis (automatically normalized) (opposite of Vector2.Reflect if axis is a unit vector)
+		public static Vector2 Mirror(Vector2 vector, Vector2 axis)
+		{
+			// s = p - q = v - 2q
+			return vector - 2 * ProjectOrthogonal(vector, axis);
 		}
 
 		/// Return vector rotated by angle degrees

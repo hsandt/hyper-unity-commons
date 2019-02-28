@@ -21,6 +21,21 @@ namespace CommonsHelper.Tests
         }
 
         [Test]
+        public void ProjectParallel_OnDiagonal () {
+            Assert.AreEqual(new Vector2(-0.5f, -0.5f), VectorUtil.ProjectParallel(-v, u + v));
+        }
+
+        [Test]
+        public void ProjectOrthogonal_OnDiagonal () {
+            Assert.AreEqual(new Vector2(0.5f, -0.5f), VectorUtil.ProjectOrthogonal(-v, u + v));
+        }
+
+        [Test]
+        public void Mirror_OnDiagonal () {
+            Assert.AreEqual(-u, VectorUtil.Mirror(-v, u + v));
+        }
+
+        [Test]
         public void Rotate_UBy60Deg () {
             Assert.AreEqual(new Vector2(0.5f, Mathf.Sqrt(3)/2), VectorUtil.Rotate(u, 60f));
         }
