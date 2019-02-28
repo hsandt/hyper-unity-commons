@@ -1,5 +1,6 @@
-using UnityEngine;
+using System;
 using System.Collections;
+using UnityEngine;
 
 namespace CommonsHelper
 {
@@ -84,13 +85,31 @@ namespace CommonsHelper
 		}
 
 		/// <summary>
+		/// Draw an open polyline from an array of 2D points, using the current gizmos parameter
+		/// </summary>
+		/// <param name="points">Array of 2D points of the polyline.</param>
+		/// <param name="color">Optional draw color. Current gizmos color if not set.</param>
+		public static void DrawPolyLine2D (Vector2[] points2D, Color? color = null)
+		{
+		    Vector3[] points = Array.ConvertAll(points2D, p2D => (Vector3) p2D);
+		    DrawPolyLine(points, color);
+		}
+
+		/// <summary>
 		/// Draw a closed polyline from an array of points, using the current gizmos parameter
 		/// </summary>
 		/// <param name="points">Array of points of the polyline not duplicating the 1st point as the last.</param>
-		public static void DrawClosedPolyLine (Vector3[] points) {
-			for (int i = 0; i < points.Length; ++i) {
+		public static void DrawClosedPolyLine (Vector3[] points, Color? color = null) {
+            Color oldColor = Gizmos.color;
+            if (color != null)
+                Gizmos.color = (Color) color;
+
+		    for (int i = 0; i < points.Length; ++i) {
 				Gizmos.DrawLine(points[i], points[(i + 1) % points.Length]);
 			}
+		    
+            if (color != null)
+                Gizmos.color = oldColor;
 		}
 
 		public static void DrawLocalBox2D (float left, float right, float bottom, float top, Transform tr, Color? color = null) {

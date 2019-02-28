@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Collections;
+using UnityEditor.Graphs;
 
 namespace CommonsHelper
 {
@@ -45,6 +46,35 @@ namespace CommonsHelper
 	        Handles.color = color;
 	        Handles.DrawLine(p1, p2);
 	        Handles.color = oldColor;
+	    }
+	    
+	    /// <summary>
+	    /// Draw an open polyline from an array of points, using the current gizmos parameter
+	    /// </summary>
+	    /// <param name="points">Array of points of the polyline.</param>
+	    /// <param name="color">Optional draw color. Current gizmos color if not set.</param>
+	    public static void DrawPolyLine (Vector3[] points, Color? color = null) {
+	        Color oldColor = Handles.color;
+	        if (color != null)
+	            Handles.color = (Color) color;
+		
+	        for (int i = 0; i < points.Length - 1; ++i) {
+	            Handles.DrawLine(points[i], points[i + 1]);
+	        }
+
+	        if (color != null)
+	            Handles.color = oldColor;
+	    }
+	    
+	    /// <summary>
+	    /// Draw an open polyline from an array of 2D points, using the current gizmos parameter
+	    /// </summary>
+	    /// <param name="points">Array of 2D points of the polyline.</param>
+	    /// <param name="color">Optional draw color. Current gizmos color if not set.</param>
+	    public static void DrawPolyLine2D (Vector2[] points2D, Color? color = null)
+	    {
+	        Vector3[] points = Array.ConvertAll(points2D, p2D => (Vector3) p2D);
+	        DrawPolyLine(points, color);
 	    }
 
 	    public static void DrawArrow2D (Vector2 p1, Vector2 p2, Color color) {
