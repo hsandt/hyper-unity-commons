@@ -94,14 +94,27 @@ namespace CommonsHelper
             Vector2 previousControlPointB = controlPoints[controlPoints.Count - 2];
             Vector2 previousKeyPoint = controlPoints[controlPoints.Count - 1];
             Vector2 startTangent = previousKeyPoint - previousControlPointB;
-                
+            if (startTangent.sqrMagnitude < Mathf.Epsilon)
+            {
+                // fallback to keep control point visible
+                startTangent = Vector2.up;
+            }
+            
             // mirror the position of the control point before the current last key point
             Vector2 newControlPointA = previousKeyPoint + startTangent;
             
             // mirror the first new control point to get a second one that makes the curve come back smoothly to the added key point
             // (note that if the new key point is on the opposite direction of the last tangent, it may produce a spiral pattern)
             // reflecting off a normal is the same as reflecting off a tangent and opposing
-            Vector2 endTangent = VectorUtil.Mirror(startTangent, newKeyPoint - previousKeyPoint);
+
+            Vector2 previousEndTangent = newKeyPoint - previousKeyPoint;
+            if (previousEndTangent.sqrMagnitude < Mathf.Epsilon)
+            {
+                // fallback to allow mirroring
+                previousEndTangent = Vector2.right;
+            }
+            
+            Vector2 endTangent = VectorUtil.Mirror(startTangent, previousEndTangent);
             Vector2 newControlPointB = newKeyPoint - endTangent;
             controlPoints.AddRange(new[] {newControlPointA, newControlPointB, newKeyPoint});
         }

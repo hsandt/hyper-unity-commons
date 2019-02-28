@@ -8,6 +8,7 @@ namespace CommonsHelper
 	{
 
 		/// Return vector projected on direction vector (automatically normalized)
+		/// UB unless direction is not close to Zero vector
 		public static Vector2 ProjectParallel(Vector2 vector, Vector2 direction)
 		{
 			float directionSqrMagnitude = direction.sqrMagnitude;
@@ -22,6 +23,7 @@ namespace CommonsHelper
 		}
 
 		/// Return vector projected orthogonally to normal (automatically normalized)
+		/// UB unless normal is not close to Zero vector
 		public static Vector2 ProjectOrthogonal(Vector2 vector, Vector2 normal)
 		{
 			// q = v - p
@@ -31,6 +33,7 @@ namespace CommonsHelper
 		}
 
 		/// Return vector mirror about axis (automatically normalized) (opposite of Vector2.Reflect if axis is a unit vector)
+		/// UB unless axis is not close to Zero vector
 		public static Vector2 Mirror(Vector2 vector, Vector2 axis)
 		{
 			// s = p - q = v - 2q
