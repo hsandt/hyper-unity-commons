@@ -73,7 +73,7 @@ namespace CommonsHelper.Tests
 	        // placing the control points at 1/3 along the X axis, and converting t coordinate
 	        // to x coordinate for the integral with the formula integral(0,1)(g_2(t)g_1'(t)dt)
 	        // where g_1(t) is the X coord of the Bezier curve and g_2(t) its Y coord
-	        Assert.That(1.5f + 4f / 3f - 1f / 3f, Is.EqualTo(AnimationCurveUtil.Integral(bezierMixedCurve)).Within(3e-7f));
+	        Assert.That(1.5f + 4f / 3f - 1f / 3f, Is.EqualTo(AnimationCurveUtil.Integral(bezierMixedCurve)).Within(5e-7f));
 	    }
 
 	}
