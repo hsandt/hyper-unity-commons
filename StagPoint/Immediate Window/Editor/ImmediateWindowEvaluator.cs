@@ -49,9 +49,9 @@ namespace StagPoint.DeveloperTools
 			{ "Debug", typeof( UnityEngine.Debug ) },
 			{ "Application", typeof( UnityEngine.Application ) },
 			{ "EditorApplication", typeof( UnityEditor.EditorApplication ) },
-			{ "ClientScene", typeof( UnityEngine.Networking.ClientScene ) },  // ADDED
-			{ "NetworkManager", typeof( UnityEngine.Networking.NetworkManager ) },  // ADDED
-			{ "NetworkServer", typeof( UnityEngine.Networking.NetworkServer ) },  // ADDED
+//			{ "ClientScene", typeof( UnityEngine.Networking.ClientScene ) },  // ADDED, but now causes Deprecation message
+//			{ "NetworkManager", typeof( UnityEngine.Networking.NetworkManager ) },  // ADDED, but now causes Deprecation message
+//			{ "NetworkServer", typeof( UnityEngine.Networking.NetworkServer ) },  // ADDED, but now causes Deprecation message
 		};
 
 		#endregion
