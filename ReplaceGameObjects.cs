@@ -21,7 +21,7 @@ namespace CommonsEditor
 		bool keepRotation = false;
 		bool keepScale = false;
 
-		[MenuItem ("Tools/ReplaceGameObjects %g")]
+		[MenuItem ("Tools/Replace Game Objects %g")]
 		public static void Init () {
 			EditorWindow.GetWindow<ReplaceGameObjects> (false, "Replace Game Objects", true);
 		}
@@ -31,6 +31,8 @@ namespace CommonsEditor
 
 			GUILayout.Label ("Use Object", EditorStyles.boldLabel);
 
+			// Expose Replacing Object
+			// note that it will be cleared to null when leaving the scene/stage containing it
 			replacingObject = EditorGUILayout.ObjectField (replacingObject, typeof(GameObject), true) as GameObject;
 
 			keepName = EditorGUILayout.ToggleLeft ("Keep Name", keepName);
@@ -53,20 +55,43 @@ namespace CommonsEditor
 
 				foreach (Transform t in Selection.transforms) {
 
-					GameObject o = null;
-					o = PrefabUtility.GetCorrespondingObjectFromSource(replacingObject) as GameObject;
+					GameObject o;
 
-					if (PrefabUtility.GetPrefabType(replacingObject).ToString() == "PrefabInstance") {
-						o = (GameObject)PrefabUtility.InstantiatePrefab(o);
+					// check if object is an actual prefab instance root in the Scene (from model, regular or variant prefab)
+					// use IsAnyPrefabInstanceRoot to make sure it is a prefab root (including a prefab instance root parented to
+					// another prefab instance), and not a non-prefab object parented to a prefab instance
+					if (PrefabUtility.GetPrefabInstanceStatus(replacingObject) == PrefabInstanceStatus.Connected &&
+					    PrefabUtility.IsAnyPrefabInstanceRoot(replacingObject)) {
+						// instantiate it from the prefab to keep the link, but also keep properties 
+						// overriden at instance level
+						
+						// GetCorrespondingObjectFromSource seems to sometimes return the object instance instead of the prefab
+						// GameObject prefab = PrefabUtility.GetCorrespondingObjectFromSource(replacingObject);
+
+						// as a workaround, we find the path of the prefab asset and load it
+						// to avoid this back-and-forth query, you can also use PrefabUtility.GetOriginalSourceOrVariantRoot
+						// but you'll need reflection as it is internal
+						string prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(replacingObject);
+						GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+	
+						// FIXME: it seems that even with this workaround, SetParent below will cause an Error in some cases
+						// because it considers you are reparenting a prefab directly
+						o = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
 						PrefabUtility.SetPropertyModifications(o, PrefabUtility.GetPropertyModifications(replacingObject));
 					}
 
-					else if (PrefabUtility.GetPrefabType(replacingObject).ToString() == "Prefab") {
+					// check if object is an actual prefab asset from Project view
+					// note: we don't check PrefabUtility.GetPrefabAssetType(replacingObject) since a GameObject that
+					// is an asset is always a prefab, never PrefabAssetType.NotAPrefab or PrefabAssetType.MissingAsset
+					else if (AssetDatabase.Contains(replacingObject)) {
+						// instantiate it with default values
 						o = (GameObject)PrefabUtility.InstantiatePrefab(replacingObject);
 					}
 
 					else {
-						o = Instantiate(replacingObject) as GameObject;
+						// replacing object is a non-prefab (not even an instance) or prefab is missing
+						// this includes a non-prefab object located under a prefab root
+						o = Instantiate(replacingObject);
 					}
 
 					Undo.RegisterCreatedObjectUndo(o, "created prefab");
