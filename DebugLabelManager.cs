@@ -1,6 +1,7 @@
-﻿// Spatial labels are based on Xelnath's answer on https://answers.unity.com/questions/44848/how-to-draw-debug-text-into-scene.html
+// Spatial labels are based on Xelnath's answer on https://answers.unity.com/questions/44848/how-to-draw-debug-text-into-scene.html
 // UI labels are inspired by UE4's visual logging system, and replace DebugScreenManager which is using the expensive Unity UI Text
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,6 +15,34 @@ namespace CommonsDebug
 	/// The UI labels are visible in standalone builds, so the gameobject should not be EditorOnly
 	/// unless you make sure you've stripped all DebugLabelManager.Instance. calls and want to micro-optimize build size
 	public class DebugLabelManager : SingletonManager<DebugLabelManager> {
+
+		#region ProxyMethods
+
+		public static void Print (string text, Color? color = null, float duration = 2f, int channel = -1)
+		{
+			if (Instance != null)
+			{
+				Instance.DrawUIText(text, color ?? Color.white, duration, channel);
+			}
+		}
+		
+		public static void Print (FormattableString formattableText, Color? color = null, float duration = 2f, int channel = -1)
+		{
+			if (Instance != null)
+			{
+				Instance.DrawUIText(FormattableString.Invariant(formattableText), color ?? Color.white, duration, channel);
+			}
+		}
+		
+		public static void Print3D (Vector3 position, string text, Color? color = null, float duration = 2f)
+		{
+			if (Instance != null)
+			{
+				Instance.DrawText(position, text, color ?? Color.white, duration);
+			}
+		}
+		
+		#endregion
 
 	    enum PooledTimedObjectState {
 	        ShouldStart,
