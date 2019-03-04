@@ -1,4 +1,5 @@
-﻿// Xelnath on https://answers.unity.com/questions/44848/how-to-draw-debug-text-into-scene.html
+﻿// Spatial labels are based on Xelnath's answer on https://answers.unity.com/questions/44848/how-to-draw-debug-text-into-scene.html
+// UI labels are inspired by UE4's visual logging system, and replace DebugScreenManager which is using the expensive Unity UI Text
 
 using System.Collections;
 using System.Collections.Generic;
@@ -10,54 +11,82 @@ namespace CommonsDebug
 {
 
 	/// Manager to display debug labels
-	/// Tag as EditorOnly
+	/// The UI labels are visible in standalone builds, so the gameobject should not be EditorOnly
+	/// unless you make sure you've stripped all DebugLabelManager.Instance. calls and want to micro-optimize build size
 	public class DebugLabelManager : SingletonManager<DebugLabelManager> {
-	#if UNITY_EDITOR
-
-	    // REFACTOR: create a PureObjectPoolDataManager similar to PoolManager, and the corresponding PooledPureObject<T>
 
 	    enum PooledTimedObjectState {
 	        ShouldStart,
 	        Active,
 	        Inactive
 	    }
+	    
+	    /// UI debug label, displayed on screen
+	    private class LabelData
+	    {
+		    public string text;
+		    public Color color;
+		    public float duration;
+		    
+		    public void SetParams (string text, Color color, float duration) {
+			    this.text = text;
+			    this.color = color;
+			    this.duration = duration;
+		    }
+	    }
+	    
+#if UNITY_EDITOR
+	    /// Handle debug label, displayed in space
+	    private class SpatialLabelData : LabelData {
+	        public Vector3 position;
 
-	    class PooledLabel {
+	        public void SetParams (Vector3 position, string text, Color color, float duration)
+	        {
+		        base.SetParams(text, color, duration);
+	            this.position = position;
+	        }
+	    }
+#endif
+		
+	    private class PooledLabel<TLabelData> where TLabelData : LabelData, new() {
 	        /// Is the pooled object used?
 	        public PooledTimedObjectState state = PooledTimedObjectState.Inactive;
 	        public float endTime;
 
-	        public LabelData pooledObject;
-	    }
-
-	    struct LabelData {
-	        public Vector3 position;
-	        public string text;
-	        public Color color;
-	        public float duration;
-
-	        public LabelData (Vector3 position, string text, Color color, float duration) {
-	            this.position = position;
-	            this.text = text;
-	            this.color = color;
-	            this.duration = duration;
-	        }
+	        public TLabelData pooledObject = new TLabelData();
 	    }
 
 
 	    /* Parameters */
+		
+	    [Header("UI Labels")]
+	    
+	    [SerializeField]
+	    private int uiLabelPoolSize = 10;
 
 	    [SerializeField]
-	    int poolSize = 5;
+	    private int uiLabelFontSize = 24;
+	    
+	    [Header("Spatial Labels")]
 
+#if UNITY_EDITOR
+		[SerializeField]
+	    private int spatialLabelPoolSize = 5;
+#endif
 
 	    /* State vars */
 
 		private readonly GUIStyle guiStyle = new GUIStyle();
 
-	    /// Pool of label data (LabelData is a pure object, so we don't use PoolManager)
-	    List<PooledLabel> m_LabelDataPool = new List<PooledLabel>();
+		// REFACTOR: create an ObjectPool for non-MonoBehaviour pooled objects (not even a SingletonManager)
 
+	    /// Pool of label data (LabelData is a pure object, so we don't use PoolManager)
+	    List<PooledLabel<LabelData>> m_UILabelDataPool = new List<PooledLabel<LabelData>>();
+	    
+#if UNITY_EDITOR
+	    /// Pool of spatial label data (LabelData is a pure object, so we don't use PoolManager)
+	    List<PooledLabel<SpatialLabelData>> m_SpatialLabelDataPool = new List<PooledLabel<SpatialLabelData>>();
+#endif
 
 	    void Awake () {
 	        SetInstanceOrSelfDestruct(this);
@@ -65,72 +94,130 @@ namespace CommonsDebug
 	    }
 
 	    void Init () {
-	        for (int i = 0; i < poolSize; i++) {
-	            m_LabelDataPool.Add(new PooledLabel());
+	        for (int i = 0; i < uiLabelPoolSize; i++) {
+	            m_UILabelDataPool.Add(new PooledLabel<LabelData>());
 	        }
+#if UNITY_EDITOR
+	        for (int i = 0; i < spatialLabelPoolSize; i++) {
+		        m_SpatialLabelDataPool.Add(new PooledLabel<SpatialLabelData>());
+	        }
+#endif
 	    }
 
-	    PooledLabel GetObject () {
+	    /// Get first free pooled label. Guaranteed to return non-null reference.
+	    PooledLabel<TLabelData> GetObject<TLabelData> (List<PooledLabel<TLabelData>> pool)
+		    where TLabelData : LabelData, new() {
 	        // O(n)
-	        for (int i = 0; i < poolSize; ++i) {
-	            PooledLabel pooledLabelData = m_LabelDataPool[i];
+	        for (int i = 0; i < uiLabelPoolSize; ++i) {
+	            PooledLabel<TLabelData> pooledLabelData = pool[i];
 	            if (pooledLabelData.state == PooledTimedObjectState.Inactive) {
 	                return pooledLabelData;
 	            }
 	        }
 
-	        // check for old objects here?
-
-	        // starvation
-	        PooledLabel newLabelData = new PooledLabel();
-	        m_LabelDataPool.Add(newLabelData);
+	        // starvation -> there is no max, so create new label at will
+	        PooledLabel<TLabelData> newLabelData = new PooledLabel<TLabelData>();
+	        pool.Add(newLabelData);
 	        return newLabelData;
 	    }
 
+	    private void OnGUI()
+	    {
+		    foreach (PooledLabel<LabelData> pooledUILabelData in m_UILabelDataPool)
+		    {
+			    // 2-state FSM
+			    if (pooledUILabelData.state == PooledTimedObjectState.Inactive)
+				    continue;
+			    
+			    // always draw before checking time, so that labels drawn with time 0
+			    // are displayed at least 1 frame (else they would be ignored when drawn in FixedUpdate)
+			    LabelData uiLabelData = pooledUILabelData.pooledObject;
+			    guiStyle.normal.textColor = uiLabelData.color;
+			    guiStyle.fontSize = uiLabelFontSize;
+			    
+			    GUILayout.Label(uiLabelData.text, guiStyle);
+
+			    if (pooledUILabelData.endTime < Time.time)
+			    {
+				    pooledUILabelData.state = PooledTimedObjectState.Inactive;
+			    }
+		    }
+	    }
+	    
+	    
+	    #region UIlabels
+
+	    public void DrawUIText(string text, Color color, float duration = 2f, int channel = -1)
+	    {
+		    PooledLabel<LabelData> pooledlabelData;
+		    if (channel == -1)
+		    {
+			    pooledlabelData = GetObject(m_UILabelDataPool);
+		    }
+		    else
+		    {
+			    Debug.AssertFormat(channel >= 0 && channel < m_UILabelDataPool.Count,
+				    "channel {0} is an invalid index for m_UILabelDataPool of size {1}", channel, m_UILabelDataPool.Count);
+			    pooledlabelData = m_UILabelDataPool[channel];
+		    }
+		    // for UI label, we experiment a more simple 2-state FSM: skip ShouldStart and set endTime now
+		    pooledlabelData.pooledObject.SetParams(text, color, duration);
+		    pooledlabelData.state = PooledTimedObjectState.Active;
+		    pooledlabelData.endTime = Time.time + duration;
+	    }
+	    
+	    #endregion
+
+
+	    #region SpatialLabels
+
+#if UNITY_EDITOR
 	    void OnDrawGizmos()
 	    {
 	        // byref locals and returns not available in C# 4, so use for instead of foreach(ref ...) as LabelData is a struct
 	        // REFACTOR: track active objects
-	        foreach (PooledLabel pooledLabelData in m_LabelDataPool)
+	        foreach (PooledLabel<SpatialLabelData> pooledSpatialLabelData in m_SpatialLabelDataPool)
 	        {
-	            if (pooledLabelData.state == PooledTimedObjectState.Inactive)
+		        // Spatial labels use a 3-state FSM, but we'll probably switch to a 2-state FSM like UI labels
+	            if (pooledSpatialLabelData.state == PooledTimedObjectState.Inactive)
 	                continue;
 
-	            if (pooledLabelData.state == PooledTimedObjectState.Active)
+	            if (pooledSpatialLabelData.state == PooledTimedObjectState.Active)
 	            {
-	                if (pooledLabelData.endTime < Time.time) {
-	                    pooledLabelData.state = PooledTimedObjectState.Inactive;
+	                if (pooledSpatialLabelData.endTime < Time.time) {
+	                    pooledSpatialLabelData.state = PooledTimedObjectState.Inactive;
 	                    continue;
 	                }
 	            }
 
-	            LabelData labelData = pooledLabelData.pooledObject;
+	            SpatialLabelData spatialLabelData = pooledSpatialLabelData.pooledObject;
 
-	            if (pooledLabelData.state == PooledTimedObjectState.ShouldStart)
+	            if (pooledSpatialLabelData.state == PooledTimedObjectState.ShouldStart)
 	            {
 	                // Start drawing the label and compute the end time from this frame (the 1st Update since DrawText,
 	                // including Editor Update).
 	                // This allows us not to rely on the time at which DrawText is called, which may be
 	                // inside FixedUpdate and therefore before the next Update, causing 0 duration labels
 	                // to immediately disappear.
-	                pooledLabelData.state = PooledTimedObjectState.Active;
-	                pooledLabelData.endTime = Time.time + labelData.duration;
+	                pooledSpatialLabelData.state = PooledTimedObjectState.Active;
+	                pooledSpatialLabelData.endTime = Time.time + spatialLabelData.duration;
 	            }
 
-	            guiStyle.normal.textColor = labelData.color;
-	            UnityEditor.Handles.Label(labelData.position, labelData.text, guiStyle);
+	            guiStyle.normal.textColor = spatialLabelData.color;
+	            UnityEditor.Handles.Label(spatialLabelData.position, spatialLabelData.text, guiStyle);
 	        }
 	    }
 
 	    public void DrawText(Vector3 position, string text, Color color, float duration)
 	    {
 	        // Prepare label data and set up pooled label to start
-	        PooledLabel freeLabelData = GetObject();
-	        freeLabelData.pooledObject = new LabelData(position, text, color, duration);
+	        PooledLabel<SpatialLabelData> freeLabelData = GetObject(m_SpatialLabelDataPool);
+	        freeLabelData.pooledObject.SetParams(position, text, color, duration);
 	        freeLabelData.state = PooledTimedObjectState.ShouldStart;
 	    }
-
-	#endif
+#endif
+	    
+	    #endregion
 	}
 
 }
