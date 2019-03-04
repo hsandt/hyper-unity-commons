@@ -30,10 +30,13 @@ namespace CommonsDebug
 		{
 			if (Instance != null)
 			{
+				// Invariant allows to avoid ',' instead of '.' depending on system language (unfortunately, doesn't work with Vectors, consider custom ToString)
 				Instance.DrawUIText(FormattableString.Invariant(formattableText), color ?? Color.white, duration, channel);
 			}
 		}
 		
+#if UNITY_EDITOR
+
 		public static void Print3D (Vector3 position, string text, Color? color = null, float duration = 2f)
 		{
 			if (Instance != null)
@@ -41,6 +44,16 @@ namespace CommonsDebug
 				Instance.DrawText(position, text, color ?? Color.white, duration);
 			}
 		}
+		public static void Print3D (Vector3 position, FormattableString formattableText, Color? color = null, float duration = 2f)
+		{
+			if (Instance != null)
+			{
+				// Invariant allows to avoid ',' instead of '.' depending on system language (unfortunately, doesn't work with Vectors, consider custom ToString)
+				Instance.DrawText(position, FormattableString.Invariant(formattableText), color ?? Color.white, duration);
+			}
+		}
+		
+#endif
 		
 		#endregion
 
