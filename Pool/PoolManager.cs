@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 using CommonsHelper;
@@ -59,6 +60,7 @@ namespace CommonsPattern
 			return null;
 		}
 
+		[Obsolete("Use pooledObject.Release() instead.")]
 		public void ReleaseObject (TPooledObject pooledObject) {
 			pooledObject.Release();
 		}
