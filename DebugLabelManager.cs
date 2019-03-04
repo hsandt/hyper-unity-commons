@@ -156,6 +156,10 @@ namespace CommonsDebug
 		    }
 		    else
 		    {
+			    // Limitation: does not support manual channel if not created previously
+			    // whereas -1 will effectively add new channels and increase the pool, which is inconsistent
+			    // We could add channels until reaching the passed index, but that would create 100 channels
+			    // when we pass 100, which UE4 can do without any problem. Prefer a mapping that supports "holes".
 			    Debug.AssertFormat(channel >= 0 && channel < m_UILabelDataPool.Count,
 				    "channel {0} is an invalid index for m_UILabelDataPool of size {1}", channel, m_UILabelDataPool.Count);
 			    pooledlabelData = m_UILabelDataPool[channel];
