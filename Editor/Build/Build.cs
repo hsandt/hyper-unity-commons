@@ -83,7 +83,7 @@ namespace CommonsHelper.Editor
 			Reporting.BuildReport buildReport = BuildPipeline.BuildPlayer(buildPlayerOptions);
 			Reporting.BuildSummary buildSummary = buildReport.summary;
 			
-			Debug.LogFormat("Build result: {0} ({3:g} from {1} to {2})", buildSummary.result,
+			Debug.LogFormat("Build result: {0} ({3:c} from {1} to {2})", buildSummary.result,
 				buildSummary.buildStartedAt, buildSummary.buildEndedAt, (buildSummary.buildEndedAt - buildSummary.buildStartedAt));
 		}
 		
