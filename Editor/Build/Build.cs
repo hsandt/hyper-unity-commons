@@ -62,32 +62,28 @@ namespace CommonsHelper.Editor
 				return;
 			}
 
-			BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
-			buildPlayerOptions.scenes = GetScenes();
+			BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
+			{
+				scenes = GetScenes(),
+				// Example: "Build/Windows/Tactical Ops v3.1.7 - Windows 64 dev.exe"
+				locationPathName =
+					$"Build/{buildTargetDerivedData.platformName}/" +
+					$"{buildData.appName} v{buildData.majorVersion}.{buildData.minorVersion}.{buildData.stageVersion} - " +
+					$"{buildTargetDerivedData.targetName}{(developmentMode ? " dev" : "")}{buildTargetDerivedData.extension}",
+				target = buildTarget,
+				options = autoRunOption | buildTargetDerivedData.platformSpecificOptions | extraOptions
+			};
 
-			// Example: "Build/Windows/Tactical Ops v3.1.7 - Windows 64 dev.exe"
-			buildPlayerOptions.locationPathName = string.Format("Build/{0}/{1} v{2}.{3}.{4} - {5}{6}{7}",
-				buildTargetDerivedData.platformName,
-				buildData.appName, buildData.majorVersion, buildData.minorVersion, buildData.stageVersion,
-				buildTargetDerivedData.targetName,
-				developmentMode ? " dev" : "",
-				buildTargetDerivedData.extension
-				);
 
-			buildPlayerOptions.target = buildTarget;
-			buildPlayerOptions.options = autoRunOption | extraOptions;
 			if (developmentMode)
 				buildPlayerOptions.options |= developmentOptions;
 
 			Debug.LogFormat("Building {0}...", buildPlayerOptions.locationPathName);
 
-			double startTime = EditorApplication.timeSinceStartup;
 			Reporting.BuildReport buildReport = BuildPipeline.BuildPlayer(buildPlayerOptions);
-			double endTime = EditorApplication.timeSinceStartup;
-
 			Reporting.BuildSummary buildSummary = buildReport.summary;
-
-			Debug.LogFormat("Build result: {0} ({3:0.00} from {1} to {2})", buildSummary.result,
+			
+			Debug.LogFormat("Build result: {0} ({3:g} from {1} to {2})", buildSummary.result,
 				buildSummary.buildStartedAt, buildSummary.buildEndedAt, (buildSummary.buildEndedAt - buildSummary.buildStartedAt));
 		}
 		
@@ -150,7 +146,7 @@ namespace CommonsHelper.Editor
 		[MenuItem("Build/Build Android (Development)")]
 		static void BuildAndroidDevelopment()
 		{
-			EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Internal;
+			EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Gradle;
 			BuildPlayerWithVersion(BuildTarget.Android, true, BuildOptions.None);
 		}
 
