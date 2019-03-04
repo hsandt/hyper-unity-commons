@@ -1,13 +1,9 @@
-#define COMMONS_HELPER_DOTWEEN  // uncomment to activate DOTween Extensions if you have DOTween installed
-
-#if COMMONS_HELPER_DOTWEEN
-
 using UnityEngine;
 using UnityEngine.UI;
 
 using DG.Tweening;
 
-namespace CommonsHelper
+namespace CommonsHelper.DOTween
 {
 
 	public static class DOTweenExtensions {
@@ -44,5 +40,3 @@ namespace CommonsHelper
 	}
 
 }
-
-#endif
