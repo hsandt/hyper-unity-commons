@@ -2,7 +2,7 @@
     "name": "CommonsHelper.DOTween",
     "references": [
         "CommonsHelper",
-        "DOTweenAssembly"
+        "DOTween"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
