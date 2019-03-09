@@ -4,7 +4,7 @@ using UnityEditor;
 namespace CommonsDebug.Editor
 {
 
-	public class ShowWorldPosition {
+	public static class ShowWorldPosition {
 
 		[DrawGizmo(GizmoType.Selected)]
 		static void DrawTransformWorldPosition(Transform transform, GizmoType gizmoType)
