@@ -6,6 +6,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine.SceneManagement;
 
 namespace CommonsEditor
 {
@@ -74,9 +75,9 @@ namespace CommonsEditor
 						string prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(replacingObject);
 						GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
 	
-						// FIXME: it seems that even with this workaround, SetParent below will cause an Error in some cases
-						// because it considers you are reparenting a prefab directly
-						o = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+						// instantiate prefab in same scene as replaced object (this is only needed if object had no
+						// parent, since SetParent below would move the replacing object to the correct scene anyway)
+						o = (GameObject)PrefabUtility.InstantiatePrefab(prefab, t.gameObject.scene);
 						PrefabUtility.SetPropertyModifications(o, PrefabUtility.GetPropertyModifications(replacingObject));
 					}
 
@@ -84,14 +85,17 @@ namespace CommonsEditor
 					// note: we don't check PrefabUtility.GetPrefabAssetType(replacingObject) since a GameObject that
 					// is an asset is always a prefab, never PrefabAssetType.NotAPrefab or PrefabAssetType.MissingAsset
 					else if (AssetDatabase.Contains(replacingObject)) {
-						// instantiate it with default values
-						o = (GameObject)PrefabUtility.InstantiatePrefab(replacingObject);
+						// instantiate it with default values, in the same scene as replaced object
+						o = (GameObject)PrefabUtility.InstantiatePrefab(replacingObject, t.gameObject.scene);
 					}
 
 					else {
 						// replacing object is a non-prefab (not even an instance) or prefab is missing
 						// this includes a non-prefab object located under a prefab root
 						o = Instantiate(replacingObject);
+						// the normal Instantiate takes no Scene parameter like InstantiatePrefab, so just move
+						// the replacing object to the right scene manuallt
+						SceneManager.MoveGameObjectToScene(o, t.gameObject.scene);
 					}
 
 					Undo.RegisterCreatedObjectUndo(o, "created prefab");
@@ -105,6 +109,9 @@ namespace CommonsEditor
 						if (keepIcon)
 							SetIcon (newT.gameObject, GetIcon (t.gameObject));
 
+						// Note that this will fail if object is child of a prefab and was part of the original prefab,
+						// due to prefab hierarchy locking policy. You can check that this object is part of a prefab,
+						// and not the root (see conditions above) if you want to cleanly handle this case.
 						newT.SetParent(t.parent, false);
 						newT.localPosition = t.localPosition;
 
