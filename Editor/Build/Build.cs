@@ -35,6 +35,7 @@ namespace CommonsHelper.Editor
 			{ BuildTarget.StandaloneLinux64, new BuildTargetDerivedData("Linux", "Linux 64", ".x86_64") },
 			{ BuildTarget.Android, new BuildTargetDerivedData("Android", "Android", ".apk") },
 			{ BuildTarget.iOS, new BuildTargetDerivedData("iOS", "iOS", platformSpecificOptions: BuildOptions.SymlinkLibraries) },
+			{ BuildTarget.WebGL, new BuildTargetDerivedData("WebGL", "WebGL") },
 		};
 
 		const BuildOptions autoRunOption = BuildOptions.AutoRunPlayer;
@@ -46,9 +47,9 @@ namespace CommonsHelper.Editor
 		}
 
 		/// Build the player for a target, with a build platform name (Windows, OSX, Android, etc.), a build target name (Windows 64, OSX, Android),
-		/// whether it is a development build, and extra options.
+		/// whether it is a development build, and extra options (not used in this script, but useful for command line scripts using Unity headless mode)
 		/// This requires to have a BuildData ScriptableObject asset in some Resources/Build folder.
-		public static void BuildPlayerWithVersion (BuildTarget buildTarget, bool developmentMode, BuildOptions extraOptions) {
+		public static void BuildPlayerWithVersion (BuildTarget buildTarget, bool developmentMode, BuildOptions extraOptions = BuildOptions.None) {
 			BuildTargetDerivedData buildTargetDerivedData;
 			if (!buildTargetDerivedDataDict.TryGetValue(buildTarget, out buildTargetDerivedData))
 			{
@@ -94,13 +95,13 @@ namespace CommonsHelper.Editor
 		[MenuItem("Build/Build Windows 64")]
 	#endif
 		static void BuildWindows64 () {
-			BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, false, BuildOptions.None);
+			BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, false);
 		}
 
 		/// Build Windows 64 development
 		[MenuItem("Build/Build Windows 64 (Development)")]
 		static void BuildWindows64Development () {
-			BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, true, BuildOptions.None);
+			BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, true);
 		}
 
 		/// Build OS X
@@ -110,13 +111,13 @@ namespace CommonsHelper.Editor
 		[MenuItem("Build/Build OS X")]
 	#endif
 		static void BuildOSX () {
-			BuildPlayerWithVersion(BuildTarget.StandaloneOSX, false, BuildOptions.None);
+			BuildPlayerWithVersion(BuildTarget.StandaloneOSX, false);
 		}
 
 		/// Build OS X development
 		[MenuItem("Build/Build OS X (Development)")]
 		static void BuildOSXDevelopment () {
-			BuildPlayerWithVersion(BuildTarget.StandaloneOSX, true, BuildOptions.None);
+			BuildPlayerWithVersion(BuildTarget.StandaloneOSX, true);
 		}
 
 		/// Build Linux
@@ -126,20 +127,20 @@ namespace CommonsHelper.Editor
 		[MenuItem("Build/Build Linux 64")]
 		#endif
 		static void BuildLinux64 () {
-			BuildPlayerWithVersion(BuildTarget.StandaloneLinux64, false, BuildOptions.None);
+			BuildPlayerWithVersion(BuildTarget.StandaloneLinux64, false);
 		}
 
 		/// Build Linux development
 		[MenuItem("Build/Build Linux 64 (Development)")]
 		static void BuildLinux64Development () {
-			BuildPlayerWithVersion(BuildTarget.StandaloneLinux64, true, BuildOptions.None);
+			BuildPlayerWithVersion(BuildTarget.StandaloneLinux64, true);
 		}
 
 		/// Build Android
 		[MenuItem("Build/Build Android")]
 		static void BuildAndroid()
 		{
-			BuildPlayerWithVersion(BuildTarget.Android, false, BuildOptions.None);
+			BuildPlayerWithVersion(BuildTarget.Android, false);
 		}
 
 		/// Build Android development
@@ -147,7 +148,21 @@ namespace CommonsHelper.Editor
 		static void BuildAndroidDevelopment()
 		{
 			EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Gradle;
-			BuildPlayerWithVersion(BuildTarget.Android, true, BuildOptions.None);
+			BuildPlayerWithVersion(BuildTarget.Android, true);
+		}
+
+		/// Build WebGL
+		[MenuItem("Build/Build WebGL")]
+		static void BuildWebGL()
+		{
+			BuildPlayerWithVersion(BuildTarget.WebGL, false);
+		}
+
+		/// Build WebGL development
+		[MenuItem("Build/Build WebGL (Development)")]
+		static void BuildWebGLDevelopment()
+		{
+			BuildPlayerWithVersion(BuildTarget.WebGL, true);
 		}
 
 	}
