@@ -73,7 +73,9 @@ namespace CommonsDebug
 	    [Conditional("DEBUG")]
 	    public static void DrawRaycastText(string text, Vector2 origin, Vector2 direction, float distance, Color? color, float duration) {
 	        Color textColor = color ?? Color.green;
-	            DebugLabel.DrawText(origin, text, textColor, duration);
+#if UNITY_EDITOR
+		    DebugLabelManager.Print3D(origin, text, textColor, duration);
+#endif
 	    }
 
 		/// Raycast all colliders and draw debug at the same time. Set a color to override the no hit color.

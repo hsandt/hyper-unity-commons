@@ -42,7 +42,9 @@ namespace CommonsDebug
 	            // for rays with a deltaY < 0, the origin of the label should be near the middle of the ray, offset by a vector CCW of the ray
 	            Vector2 offset = 0.2f * (dir.y > 0 ? VectorUtil.Rotate90CW(dir.normalized) : VectorUtil.Rotate90CCW(dir.normalized));
 	            Vector2 textPosition = (start + dir / 2) + offset;
-	            DebugLabel.DrawText(textPosition.ToVector3(z), text, color, duration);
+#if UNITY_EDITOR
+	            DebugLabelManager.Print3D(textPosition.ToVector3(z), text, color, duration);
+#endif
 	        }
 	    }
 
