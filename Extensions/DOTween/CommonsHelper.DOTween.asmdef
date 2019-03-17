@@ -1,8 +1,7 @@
 {
     "name": "CommonsHelper.DOTween",
     "references": [
-        "CommonsHelper",
-        "DOTween"
+        "CommonsHelper"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
