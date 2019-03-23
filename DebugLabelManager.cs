@@ -13,8 +13,8 @@ namespace CommonsDebug
 
 	/// Manager to display debug labels
 	
-	/// UI labels are visible in standalone builds, so the gameobject should not be EditorOnly
-	/// unless you make sure you've stripped all DebugLabelManager.Instance. calls and want to micro-optimize build size
+	/// UI labels are visible in standalone builds, but if you want to remove them from the build,
+	/// just make the the DebugLabelManager game object tagged EditorOnly (UI label code will not be stripped though)
 
 	/// Spatial labels rely on Handles, so they are Editor only. However, Handles.Label ultimately uses GUI.Label with
 	/// WorldToScreenPoint, so you we could put them in standalone Build too by decompiling an inlining Handles.Label
