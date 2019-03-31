@@ -10,9 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4712687934756458}
   - component: {fileID: 114542800778278412}
+  - component: {fileID: 214393965}
   m_Layer: 0
   m_Name: DebugLabelManager
-  m_TagString: EditorOnly
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -44,5 +45,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uiLabelPoolSize: 10
-  uiLabelFontSize: 24
+  uiLabelFontSize: 28
+  uiLabelOutlineWidth: 1
   spatialLabelPoolSize: 5
+--- !u!114 &214393965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1735873714677992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dc7772dda4e4b4408962a47cab87eb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DeactivateInEditor: 0
+  m_DeactivateInPlayer: 1
