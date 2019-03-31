@@ -15,9 +15,13 @@ namespace CommonsHelper
 		public int minorVersion = 0;
 		public int stageVersion = 1;
 
-		public static string GetVersion() {
+		public string GetVersionString() {
+			return $"v{majorVersion}.{minorVersion}.{stageVersion}";
+		}
+
+		public static string GetVersionStringFromResource() {
 			BuildData buildData = ResourcesUtil.LoadOrFail<BuildData>("Build/BuildData");
-			return string.Format("v{0}.{1}.{2}", buildData.majorVersion, buildData.minorVersion, buildData.stageVersion);
+			return buildData.GetVersionString();
 		}
 
 	}

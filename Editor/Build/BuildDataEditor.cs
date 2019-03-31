@@ -15,7 +15,7 @@ namespace CommonsHelper.Editor
 			BuildData data = (BuildData) target;
 			if (GUILayout.Button("Update version in Player settings"))
 			{
-				string version = string.Format("v{0}.{1}.{2}", data.majorVersion, data.minorVersion, data.stageVersion);
+				string version = data.GetVersionString();
 				PlayerSettings.bundleVersion = version;
 			}
 		}

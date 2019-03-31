@@ -30,10 +30,9 @@ namespace CommonsHelper.Editor
 		/// Update the build version in the Text component on this object
 		/// </summary>
 		public void UpdateBuildVersionText () {
-			string version = BuildData.GetVersion();
-
 			Text text = script.GetComponent<Text>();
 			if (text != null) {
+				string version = BuildData.GetVersionStringFromResource();
 				InspectorUtil.ChangeText(text, version);
 			}
 		}
