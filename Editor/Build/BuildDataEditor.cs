@@ -18,6 +18,15 @@ namespace CommonsHelper.Editor
 				string version = data.GetVersionString();
 				PlayerSettings.bundleVersion = version;
 			}
+
+			if (GUILayout.Button("Update version for all UpdateBuildVersion scripts found in active scenes"))
+			{
+				var scripts = FindObjectsOfType<UpdateBuildVersion>();
+				foreach (UpdateBuildVersion script in scripts)
+				{
+					UpdateBuildVersionEditor.UpdateBuildVersionTextSiblingOf(script);
+				}
+			}
 		}
 
 	}

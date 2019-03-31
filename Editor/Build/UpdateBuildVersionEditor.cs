@@ -26,10 +26,13 @@ namespace CommonsHelper.Editor
 			}
 		}
 
-		/// <summary>
 		/// Update the build version in the Text component on this object
-		/// </summary>
-		public void UpdateBuildVersionText () {
+		private void UpdateBuildVersionText () {
+			UpdateBuildVersionTextSiblingOf(script);
+		}
+
+		/// Update the build version in the Text component on this object
+		public static void UpdateBuildVersionTextSiblingOf (UpdateBuildVersion script) {
 			Text text = script.GetComponent<Text>();
 			if (text != null) {
 				string version = BuildData.GetVersionStringFromResource();
