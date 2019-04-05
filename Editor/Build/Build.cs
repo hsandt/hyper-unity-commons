@@ -63,14 +63,24 @@ namespace CommonsHelper.Editor
 				return;
 			}
 
+			// Example: "Tactical Ops v3.1.7 - Windows 64 dev"
+			string baseName = $"{buildData.appName} v{buildData.majorVersion}.{buildData.minorVersion}.{buildData.stageVersion} - " +
+				$"{buildTargetDerivedData.targetName}{(developmentMode ? " dev" : "")}";
+			
+			// For build configs generating an executable file (and exceptionally an .app folder on OSX),
+			// build inside a directory with the same name as the executable basename.
+			// This allows better build isolation and facilitates correct folder/zip uploading (e.g. on Windows, we need to upload UnityPlayer.dll).
+			// Example of locationPathName: "Build/Windows/Tactical Ops v3.1.7 - Windows 64 dev/Tactical Ops v3.1.7 - Windows 64 dev.exe"
+			
+			// For build configs generating a whole folder, do not add an extra level of directory.
+			// Example of locationPathName: "Build/WebGL/Tactical Ops v3.1.7 - WebGL"
+			
+			string extraParentDir = string.IsNullOrEmpty(buildTargetDerivedData.extension) ? "" : $"{baseName}/";
+			
 			BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
 			{
 				scenes = GetScenes(),
-				// Example: "Build/Windows/Tactical Ops v3.1.7 - Windows 64 dev.exe"
-				locationPathName =
-					$"Build/{buildTargetDerivedData.platformName}/" +
-					$"{buildData.appName} v{buildData.majorVersion}.{buildData.minorVersion}.{buildData.stageVersion} - " +
-					$"{buildTargetDerivedData.targetName}{(developmentMode ? " dev" : "")}{buildTargetDerivedData.extension}",
+				locationPathName = $"Build/{buildTargetDerivedData.platformName}/{extraParentDir}{baseName}{buildTargetDerivedData.extension}",
 				target = buildTarget,
 				options = autoRunOption | buildTargetDerivedData.platformSpecificOptions | extraOptions
 			};
