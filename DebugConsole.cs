@@ -23,7 +23,7 @@
  *
  * Modification by Long Nguyen Huu to register the DebugConsole logging to the UnityEngine.Debug.LogXXX methods.
  *
- * This is a ompatibility-breaking change that replaces log type name strings with LogType enum values,
+ * This is a compatibility-breaking change that replaces log type name strings with LogType enum values,
  * besides calling the custom log methods each time the Unity log methods are called,
  * and therefore not shared on Unify community.
  *
@@ -148,8 +148,8 @@ namespace CommonsDebug
 
 			InitGuis();
 		}
-
-		#if DEVELOPMENT_BUILD
+		
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
 		// ADDED
 		void OnEnable()
 		{
@@ -170,7 +170,7 @@ namespace CommonsDebug
 			if (!(type == LogType.Error))
 				Log(message, type);
 		}
-		#endif
+#endif
 
 		protected bool guisCreated = false;
 		protected float screenHeight =-1;

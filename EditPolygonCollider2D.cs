@@ -22,7 +22,7 @@ namespace CommonsDebug
 		/// <summary>
 		/// Should the collider be visible even when the game object is not selected? (experimental: requires no rotation in the hierarchy and local scale only)
 		/// </summary>
-		[SerializeField] bool alwaysShowCollider;
+		[SerializeField] bool alwaysShowCollider = false;
 
 		/// <summary>
 		/// Color used to always show collider
