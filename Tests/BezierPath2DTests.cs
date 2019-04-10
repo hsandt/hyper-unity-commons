@@ -5,6 +5,45 @@ using UnityEngine.TestTools;
 
 namespace CommonsHelper.Tests
 {
+    public class BezierPath2DStaticTests
+    {
+        private static readonly Vector2 o = Vector2.zero;
+        private static readonly Vector2 u = Vector2.right;
+        private static readonly Vector2 v = Vector2.up;
+        private static readonly Vector2 w = u + v;
+        
+        [Test]
+        
+        public void InterpolateBezier_Start()
+        {
+            Assert.AreEqual(o, BezierPath2D.InterpolateBezier(o, v, w, u, 0f));
+        }
+        
+        [Test]
+        public void InterpolateBezier_End()
+        {
+            Assert.AreEqual(u, BezierPath2D.InterpolateBezier(o, v, w, u, 1f));
+        }
+        
+        [Test]
+        public void InterpolateBezier_Quarter()
+        {
+            Assert.AreEqual(new Vector2(0.15625f, 0.5625f), BezierPath2D.InterpolateBezier(o, v, w, u, 0.25f));
+        }
+        [Test]
+        
+        public void InterpolateBezier_Half()
+        {
+            Assert.AreEqual(new Vector2(0.5f, 0.75f), BezierPath2D.InterpolateBezier(o, v, w, u, 0.5f));
+        }
+        
+        [Test]
+        public void InterpolateBezier_ThreeQuarter()
+        {
+            Assert.AreEqual(new Vector2(1f-0.15625f, 0.5625f), BezierPath2D.InterpolateBezier(o, v, w, u, 0.75f));
+        }
+    }
+
     [TestFixture]
     public class BezierPath2DTests {
 

@@ -10,6 +10,11 @@ namespace CommonsHelper
     [Serializable]
     public class BezierPath2D
     {
+        /// Compute point on 2D Bezier curve of control points p0, p1, p2, p3 at ratio t
+        public static Vector2 InterpolateBezier(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
+        {
+            return (1-t) * (1-t) * (1-t) * p0 + 3 * (1-t) * (1-t) * t * p1 + 3 * (1-t) * t * t * p2 + t * t * t * p3;
+        }
         
         /// List of control points of each successive Bezier curve, concatenated.
         /// The end of one Bezier curve is the start of the next one, so to reduce the size of the list,
@@ -59,7 +64,7 @@ namespace CommonsHelper
             return (controlPoints.Count - 1 ) / 3;
         }
 
-        // Return curve at given index. A Bezier curve is a part of a Bezier path, compounded of 4 control points.
+        /// Return curve at given index. A Bezier curve is a part of a Bezier path, compounded of 4 control points.
         public Vector2[] GetCurve(int index)
         {
             return new[]
@@ -71,7 +76,7 @@ namespace CommonsHelper
             };
         }
 
-        // Yield each curve of 4 control points compounding the path, from start to end.
+        /// Yield each curve of 4 control points compounding the path, from start to end.
         public IEnumerable<Vector2[]> GetCurves()
         {
             for (int i = 0; i < GetCurvesCount(); i++)
