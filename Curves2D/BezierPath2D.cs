@@ -123,6 +123,15 @@ namespace CommonsHelper
             Vector2 newControlPointB = newKeyPoint - endTangent;
             controlPoints.AddRange(new[] {newControlPointA, newControlPointB, newKeyPoint});
         }
+
+        /// Return the position of an interpolated point of curve of index i at ratio t
+        public Vector2 InterpolateCurve(int index, float t)
+        {
+            Debug.AssertFormat(index >= 0 && index < controlPoints.Count, "Invalid index: {0}. Expected index between 0 and {1}", index, controlPoints.Count - 1);
+            
+            Vector2[] curve = GetCurve(index);
+            return InterpolateBezier(curve[0], curve[1], curve[2], curve[3], t);
+        }
     
     }
 
