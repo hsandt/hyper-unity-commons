@@ -1,57 +1,117 @@
-﻿using System;
+﻿// References
+// https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/ColliderEditorBase.cs
+// https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/EditMode.cs
+// https://answers.unity.com/questions/1396922/ugui-align-icons-in-the-inspector-how-to-recreate.html
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Rewired;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Graphs;
+using UnityEngine.Experimental.UIElements;
 
 namespace CommonsHelper
 {
 
+    // Styles can only be statically constructed in non ScriptableObject class
+    public class GUIData
+    {
+        public static class Styles
+        {
+            public static readonly GUIStyle singleButtonStyle = "EditModeSingleButton";
+        }
+    }
+
     [CustomEditor(typeof(BezierPath2DComponent))]
     public class BezierPath2DComponentEditor : UnityEditor.Editor
     {
+        /// Session State key for toggle that is true when editing a Bezier Path 2D with custom editor input
+        private const string kBezierPath2DEditActiveKey = "BezierPath2DEditActive";
+
+        /// Padding around edit icon in toggle button
+        private const float toggleButtonPaddingX = 10f;
+        private const float toggleButtonPaddingY = 10f;
+
+        /// Cached reference to Bezier path component and model
+        BezierPath2DComponent script;
+        BezierPath2D path;
+
+        private void OnEnable()
+        {
+            script = (BezierPath2DComponent) target;
+            path = script.Path;
+        }
+
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
             
-            var script = (BezierPath2DComponent) target;
-            BezierPath2D path = script.Path;
-
-            if (path == null)
-            {
-                // this can only happen just when adding the component, as it seems not to have been serialized yet
-                return;
-            }
+            // Draw toggle button using the same Edit icon as Unity's native collider components
+            GUIContent iconContent = EditorGUIUtility.IconContent("EditCollider");
             
+            // retrieve icon dimensions and compute wanted button size
+            float buttonWidth = iconContent.image.width + toggleButtonPaddingX * 2;
+            float buttonHeight = iconContent.image.height + toggleButtonPaddingY * 2;
+            
+            // retrieve last edit state from Editor Session State
+            bool editActive = SessionState.GetBool(kBezierPath2DEditActiveKey, false);
+            
+            EditorGUI.BeginChangeCheck();
+
+            // Draw toggle button and label
+            editActive = GUILayout.Toggle(editActive, EditorGUIUtility.IconContent("EditCollider"),
+                GUIData.Styles.singleButtonStyle, GUILayout.Width(buttonWidth), GUILayout.Height(buttonHeight));
+            GUILayout.Label("Edit Bezier Path");
+            
+            if (EditorGUI.EndChangeCheck())
+            {
+                SessionState.SetBool(kBezierPath2DEditActiveKey, editActive);
+            }
+
             if (GUILayout.Button("Add New Key Point at Origin"))
             {
+                Undo.RecordObject(script, "Add Key Point");
                 path.AddKeyPoint(Vector2.zero);
             }
         }
 
         void OnSceneGUI()
         {
-            var script = (BezierPath2DComponent) target;
-            BezierPath2D path = script.Path;
+            Undo.RecordObject(script, "Change Bezier Path");
 
-            if (path == null)
+            bool editActive = SessionState.GetBool(kBezierPath2DEditActiveKey, false);
+            if (editActive)
             {
-                // this can only happen just when adding the component, as it seems not to have been serialized yet
-                return;
+                HandleEditInput();
             }
-
+            
             // Phase 1: draw the interpolated path to have a smooth visualization
             DrawInterpolatedPath(path);
             
             // Phase 2: draw control points to allow the user to edit them
             
-            Undo.RecordObject(script, "Changed Bezier Path");
             EditorGUI.BeginChangeCheck ();
 
             DrawControlPoints(path);
 
             if (EditorGUI.EndChangeCheck())
             {
+            }
+        }
+
+        private void HandleEditInput()
+        {
+            Event guiEvent = Event.current;
+            if (guiEvent.shift && guiEvent.type == EventType.MouseDown && guiEvent.button == 0)
+            {
+                // add new key point at the end at mouse position
+                Vector2 newKeyPoint = (Vector2)HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin;
+                path.AddKeyPoint(newKeyPoint);
+                
+                // consume event (doesn't seem to work, I still select the object under the cursor)
+                guiEvent.Use();
             }
         }
 
@@ -72,13 +132,15 @@ namespace CommonsHelper
             {
                 // TODO: camera pixel size
                 const float maxSegmentLength = 0.1f;  // in world units
+                const int maxSegmentCount = 30;  // to avoid freezing when interpolating a curve between points very far from each other
+                
                 // compute number of segments required to get appropriate resolution if the curve was linear
                 // we know that a Bezier curve has a curviline abscissa with higher derivative, but that will be enough
                 // for curves that are not too crazy i.e. control points are not too far
                 Vector2[] curve = path.GetCurve(i);
 
                 Vector2 startToEnd = curve[3] - curve[0];
-                int segmentCount = Mathf.CeilToInt(startToEnd.magnitude / maxSegmentLength);
+                int segmentCount = Mathf.Min(Mathf.CeilToInt(startToEnd.magnitude / maxSegmentLength), maxSegmentCount);
                 for (int j = 0; j < segmentCount; ++j)
                 {
                     float t = (float)j / (float)segmentCount;

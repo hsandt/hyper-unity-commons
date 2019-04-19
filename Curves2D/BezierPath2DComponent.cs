@@ -10,12 +10,8 @@ namespace CommonsHelper
     {
         
         [SerializeField, ReadOnly]
-        private BezierPath2D path = null;
-        public BezierPath2D Path
-        {
-            get { return path; }
-        }
-        
+        private BezierPath2D path = new BezierPath2D();
+        public BezierPath2D Path => path;
     }
 
 }
