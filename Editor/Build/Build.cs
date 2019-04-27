@@ -13,6 +13,13 @@ namespace CommonsHelper.Editor
 
 	public static class Build {
 
+		/// Path to expected BuildData asset inside some Resources folder
+		/// AssetDatabase.CreateAsset needs extension .asset to create the correct file name, although Resources.Load works without too
+		private const string buildDataPathInResources = "Build/BuildData.asset";
+		
+		/// Path to Resources folder where new BuildData will be created if no BuildData is found
+		private const string defaultResourcesDirectoryPath = "Game/Resources";
+
 		struct BuildTargetDerivedData {
 
 			public string platformName;						// Raw target name, used as parent folder name: "Windows", "OSX", "Android", etc.
@@ -57,10 +64,23 @@ namespace CommonsHelper.Editor
 				return;
 			}
 
-			BuildData buildData = Resources.Load<BuildData>("Build/BuildData");
-			if (buildData == null) {
-				Debug.LogWarning("[Build] No BuildData found at Resources/Build/BuildData. Stop.");
-				return;
+			BuildData buildData = Resources.Load<BuildData>(buildDataPathInResources);
+			if (buildData == null)
+			{
+				string fullBuildDataPath = Path.Combine("Assets", defaultResourcesDirectoryPath, buildDataPathInResources);
+				Debug.Log($"[Build] No BuildData found at any Resources/{buildDataPathInResources}. Creating one at {fullBuildDataPath}.");
+				
+				// create directory recursively if it doesn't exist yet
+				string buildDataDirectory = Path.GetDirectoryName(fullBuildDataPath);
+				if (!Directory.Exists(buildDataDirectory))
+				{
+					Directory.CreateDirectory(buildDataDirectory);
+				}
+				
+				// create missing BuildData asset
+				buildData = ScriptableObject.CreateInstance<BuildData>();
+				buildData.appName = PlayerSettings.productName;
+				AssetDatabase.CreateAsset(buildData, fullBuildDataPath);
 			}
 
 			// Example: "Tactical Ops v3.1.7 - Windows 64 dev"
@@ -97,7 +117,7 @@ namespace CommonsHelper.Editor
 			Debug.LogFormat("Build result: {0} ({3:c} from {1} to {2})", buildSummary.result,
 				buildSummary.buildStartedAt, buildSummary.buildEndedAt, (buildSummary.buildEndedAt - buildSummary.buildStartedAt));
 		}
-		
+
 		/// Build Windows 64
 	# if UNITY_EDITOR_WIN
 		[MenuItem("Build/Build Windows 64 _F10")]
