@@ -84,6 +84,12 @@ namespace CommonsEditor
 
 		void TakeScreenshot()
 		{
+			if (string.IsNullOrWhiteSpace(screenshotFolderPath))
+			{
+				Debug.LogWarning("Screenshot Folder Path is empty, cannot take screenshot.");
+				return;
+			}
+			
 			// get name of current focused window, which should be "  (UnityEditor.GameView)" if it is a Game view
 			string focusedWindowName = EditorWindow.focusedWindow.ToString();
 			if (!focusedWindowName.Contains("UnityEditor.GameView")) {
