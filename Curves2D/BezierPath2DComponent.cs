@@ -9,7 +9,7 @@ namespace CommonsHelper
     public class BezierPath2DComponent : MonoBehaviour
     {
         
-        [SerializeField, ReadOnly]
+        [SerializeField, ReadOnlyField]
         private BezierPath2D path = new BezierPath2D();
         public BezierPath2D Path => path;
     }

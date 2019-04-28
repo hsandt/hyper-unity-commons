@@ -6,8 +6,8 @@ using UnityEditor;
 namespace CommonsHelper.Editor
 {
 
-[CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
-public class ReadOnlyDrawer : PropertyDrawer
+[CustomPropertyDrawer(typeof(ReadOnlyFieldAttribute))]
+public class ReadOnlyFieldDrawer : PropertyDrawer
     {
         public override float GetPropertyHeight(SerializedProperty property,
             GUIContent label)

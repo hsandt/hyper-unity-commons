@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CommonsHelper
 {
 
-	public class ReadOnlyAttribute : PropertyAttribute
+	public class ReadOnlyFieldAttribute : PropertyAttribute
 	{
 
 	}
