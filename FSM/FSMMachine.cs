@@ -134,7 +134,7 @@ namespace CommonsPattern
 						defaultState = state;
 					}
 					else
-	                    Debug.LogErrorFormat("[FSMMachine] Default state cannot be set for key: {0}," +
+	                    Debug.LogErrorFormat("[FSMMachine] Default state cannot be set for key: {0}, " +
 							"as it cannot transition from the None state.", key);
 				}
 				else {
@@ -169,8 +169,9 @@ namespace CommonsPattern
 			    CurrentState.UpdateState();
 	            ApplyTransition();  // apply transition after update so that model and animation immediately updated
 	        }
-	        else
+	        else {
 	            Debug.LogError("[FSMMachine] UpdateMachine: CurrentState is null");
+	        }
 		}
 
 		/// Apply transition to any requested next state

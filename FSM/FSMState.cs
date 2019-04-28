@@ -18,7 +18,7 @@ namespace CommonsPattern
 		/*
 		public MyState () {
 			previousStates = new HashSet<MyStateKey> {
-				MyStateKey.None,
+				MyStateKey.None,	// for possible initial states
 				MyStateKey.Falling
 			};
 		}
@@ -31,8 +31,8 @@ namespace CommonsPattern
 		/// Do not return the default value of TStateKey, which is reserved by the conceptual None state.
 		public abstract TStateKey Key { get; }
 
-		/// List of previous states allowed for transitions, bound the state definition. Defined in child class constructor.
-		protected HashSet<TStateKey> previousStates;
+		/// List of previous states allowed for transitions, bound the state definition. Should be defined in child class constructor.
+		protected HashSet<TStateKey> allowedPreviousStates = null;
 
 
 		/* State vars */
@@ -69,7 +69,16 @@ namespace CommonsPattern
 
 		/// Return true if a transition is allowed from the previous state to this state
 		public bool IsTransitionAllowedFrom(FSMState<TStateKey, TState> state) {
-			return previousStates.Contains(state != null ? state.Key : default(TStateKey));
+			if (allowedPreviousStates != null)
+			{
+				return allowedPreviousStates.Contains(state != null ? state.Key : default);
+			}
+			else
+			{
+				Debug.LogWarningFormat("[FSMState] allowedPreviousStates on state: '{0}' is null. " +
+				                       "You should at least define it with an empty HashSet (see template comment in FSMState).", this);
+				return false;
+			}
 		}
 
 		/// Set the machine and call OnAddedToMachine
