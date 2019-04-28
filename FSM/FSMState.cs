@@ -82,13 +82,13 @@ namespace CommonsPattern
 		protected virtual void OnAddedToMachine (FSMMachine<TStateKey, TState> machine) {}
 
 		/// Enter state callback
-		public virtual void OnEnter (TState previousState) {}
+		public virtual void OnEnterFrom (TState previousState) {}
 
 		/// Update state behaviour
 		public virtual void UpdateState () {}
 
 		/// Exit state callback
-		public virtual void OnExit (TState nextState) {}
+		public virtual void OnExitTo (TState nextState) {}
 
 	}
 

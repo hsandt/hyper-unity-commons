@@ -1,6 +1,5 @@
 #define DEBUG_FSM_MACHINE
 
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -51,7 +50,7 @@ namespace CommonsPattern
 	/// We recommended to use an Enum which EnumType.None = 0
 	/// This FSM uses the "next pattern", where the next state is explicitly set by key, without using transition signals.
 	/// The null -> initial state transition is also applied with the next pattern.
-	/// It also supports custom transition effects by adding the method OnTransitionFrom() besides OnEnter() and OnExit().
+	/// It also supports custom transitions between specific states by checking the previous/next state argument in OnEnterFrom() and OnExitTo().
 	public class FSMMachine<TStateKey, TState> where TState : FSMState<TStateKey, TState> {
 
 		/* Parameters */
@@ -80,8 +79,8 @@ namespace CommonsPattern
 		public void Setup () {
 	        // set the next state and switch to the latter immediately (required as we call ApplyTransition *after* UpdateState)
 	        // since we start from the null state, this is equivalent to:
-	        // if (defaultState != null && defaultState.CanTransitionFrom(null)) {
-	        //   defaultState.OnEnter(null); CurrentState = defaultState;
+	        // if (defaultState != null && defaultState.IsTransitionAllowedFrom(null)) {
+	        //   defaultState.OnEnterFrom(null); CurrentState = defaultState;
 	        // }
 			NextState = defaultState;
 	        ApplyTransition();
@@ -89,7 +88,7 @@ namespace CommonsPattern
 
 		public void Clear () {
 			if (CurrentState != null) {
-				CurrentState.OnExit(null);
+				CurrentState.OnExitTo(null);
 				CurrentState = null;
 			}
 		}
@@ -168,9 +167,9 @@ namespace CommonsPattern
 				if (!NextState.HasSameKey(CurrentState)) {
 					if (NextState.IsTransitionAllowedFrom(CurrentState)) {
 						if (CurrentState != null) {
-							CurrentState.OnExit(NextState);
+							CurrentState.OnExitTo(NextState);
 						}
-						NextState.OnEnter(CurrentState);  // Initial state enters from None state
+						NextState.OnEnterFrom(CurrentState);  // Initial state enters from None state
 						#if DEBUG_FSM_MACHINE
 						Debug.LogFormat("[FSMMachine] {0} -> {1}", CurrentState != null ? CurrentState.ToString() : "None", NextState.ToString());
 						#endif
