@@ -7,9 +7,7 @@
 // hsandt: added toggle to enable sticking anchors to rect only when wanted, and button to immediately stick anchors
 
 using UnityEngine;
-using System.Collections;
 using UnityEditor;
-using UnityEngine;
 
 [InitializeOnLoad]
 public class AnchorToolsEditor : EditorWindow
@@ -19,6 +17,7 @@ public class AnchorToolsEditor : EditorWindow
         
     AnchorToolsEditor()
     {
+        Debug.Log("[AnchorToolsEditor] Registering for anchors update On Scene GUI");
         SceneView.onSceneGUIDelegate += OnScene;
     }
     
@@ -56,20 +55,21 @@ public class AnchorToolsEditor : EditorWindow
 
     public void OnDestroy()
     {
+        Debug.Log("[AnchorToolsEditor] Unregistering for anchors update On Scene GUI");
         SceneView.onSceneGUIDelegate -= OnScene;
     }
 
     static public Rect anchorRect;
     static public Vector2 anchorVector;
-    static private Rect anchorRectOld;
-    static private Vector2 anchorVectorOld;
-    static private RectTransform currentRectTransform;
-    static private RectTransform parentRectTransform;
-    static private Vector2 pivotOld;
-    static private Vector2 offsetMinOld;
-    static private Vector2 offsetMaxOld;
+    private static Rect anchorRectOld;
+    private static Vector2 anchorVectorOld;
+    private static RectTransform currentRectTransform;
+    private static RectTransform parentRectTransform;
+    private static Vector2 pivotOld;
+    private static Vector2 offsetMinOld;
+    private static Vector2 offsetMaxOld;
 
-    static public void UpdateAnchors()
+    private static void UpdateAnchors()
     {
         TryToGetRectTransform();
         if (currentRectTransform != null && parentRectTransform != null && ShouldStick())
@@ -78,7 +78,7 @@ public class AnchorToolsEditor : EditorWindow
         }
     }
 
-    static private bool ShouldStick()
+    private static bool ShouldStick()
     {
         return (
             currentRectTransform.offsetMin != offsetMinOld ||
@@ -89,7 +89,7 @@ public class AnchorToolsEditor : EditorWindow
             );
     }
 
-    static private void Stick()
+    private static void Stick()
     {
         CalculateCurrentWH();
         CalculateCurrentXY();
@@ -101,10 +101,10 @@ public class AnchorToolsEditor : EditorWindow
         AnchorsToCorners();
         anchorRectOld = anchorRect;
 
-        UnityEditor.EditorUtility.SetDirty(currentRectTransform.gameObject);
+        EditorUtility.SetDirty(currentRectTransform.gameObject);
     }
 
-    static private void TryToGetRectTransform()
+    private static void TryToGetRectTransform()
     {
         if (Selection.activeGameObject != null)
         {
@@ -125,7 +125,7 @@ public class AnchorToolsEditor : EditorWindow
         }
     }
 
-    static private void CalculateCurrentXY()
+    private static void CalculateCurrentXY()
     {
         float pivotX = anchorRect.width * currentRectTransform.pivot.x;
         float pivotY = anchorRect.height * (1 - currentRectTransform.pivot.y);
@@ -136,14 +136,14 @@ public class AnchorToolsEditor : EditorWindow
         anchorRectOld = anchorRect;
     }
 
-    static private void CalculateCurrentWH()
+    private static void CalculateCurrentWH()
     {
         anchorRect.width = currentRectTransform.rect.width;
         anchorRect.height = currentRectTransform.rect.height;
         anchorRectOld = anchorRect;
     }
 
-    static private void AnchorsToCorners()
+    private static void AnchorsToCorners()
     {
         float pivotX = anchorRect.width * currentRectTransform.pivot.x;
         float pivotY = anchorRect.height * (1 - currentRectTransform.pivot.y);
