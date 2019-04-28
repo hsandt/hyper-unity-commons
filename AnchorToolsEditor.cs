@@ -4,7 +4,11 @@
 // Credits
 // Phedg1: original script
 // stephane.lallee: combined component and editor tool into one script
-// hsandt: added toggle to enable sticking anchors to rect only when wanted, and button to immediately stick anchors
+// hsandt:
+// - added toggle to enable sticking anchors to rect only when wanted
+// - added button to immediately stick anchors
+// - fixed Undo stick anchors
+// - log on callback (un)registration
 
 using UnityEngine;
 using UnityEditor;
