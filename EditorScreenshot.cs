@@ -5,19 +5,18 @@
 using UnityEngine;
 using UnityEditor;
 using System;
-using System.Collections;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace CommonsEditor
 {
 
 	public class EditorScreenshot : EditorWindow
 	{
+		const string defaultScreenshotFolderPath = "Screenshots";
+		const string defaultScreenshotFilenamePrefix = "screenshot_";
 
-		string screenshotFolderPath = "Screenshots";
-		string screenshotFilenamePrefix = "screenshot_";
+		string screenshotFolderPath = defaultScreenshotFolderPath;
+		string screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
 		int nextScreenshotIndex = 0;
 
 		[MenuItem("Window/Editor Screenshot")]
@@ -37,11 +36,29 @@ namespace CommonsEditor
 			EditorScreenshot editorScreenshot = GetWindow<EditorScreenshot>(title: "Screenshot");
 
 			if (EditorPrefs.HasKey("EditorScreenshot.screenshotFolderPath"))
-				editorScreenshot.screenshotFolderPath = EditorPrefs.GetString("EditorScreenshot.screenshotFolderPath");
+			{
+				editorScreenshot.screenshotFolderPath = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath");
+			}
+			
+			// if empty, revert to default
+			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFolderPath))
+			{
+				editorScreenshot.screenshotFolderPath = defaultScreenshotFolderPath;
+				EditorPrefs.SetString("EditorScreenshot.{Application.productName}.screenshotFolderPath", editorScreenshot.screenshotFolderPath);
+			}
+			
 			if (EditorPrefs.HasKey("EditorScreenshot.screenshotFilenamePrefix"))
-				editorScreenshot.screenshotFilenamePrefix = EditorPrefs.GetString("EditorScreenshot.screenshotFilenamePrefix");
+				editorScreenshot.screenshotFilenamePrefix = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix");
+			
+			// if empty, revert to default
+			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFilenamePrefix))
+			{
+				editorScreenshot.screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
+				EditorPrefs.SetString("EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", editorScreenshot.screenshotFilenamePrefix);
+			}
+			
 			if (EditorPrefs.HasKey("EditorScreenshot.nextScreenshotIndex"))
-				editorScreenshot.nextScreenshotIndex = EditorPrefs.GetInt("EditorScreenshot.nextScreenshotIndex");
+				editorScreenshot.nextScreenshotIndex = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex");
 
 			return editorScreenshot;
 		}
@@ -56,9 +73,9 @@ namespace CommonsEditor
 			nextScreenshotIndex = EditorGUILayout.IntField("Next screenshot index", nextScreenshotIndex);
 
 			if (EditorGUI.EndChangeCheck()) {
-				EditorPrefs.SetString("EditorScreenshot.screenshotFolderPath", screenshotFolderPath);
-				EditorPrefs.SetString("EditorScreenshot.screenshotFilenamePrefix", screenshotFilenamePrefix);
-				EditorPrefs.SetInt("EditorScreenshot.nextScreenshotIndex", nextScreenshotIndex);
+				EditorPrefs.SetString("EditorScreenshot.{Application.productName}.screenshotFolderPath", screenshotFolderPath);
+				EditorPrefs.SetString("EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", screenshotFilenamePrefix);
+				EditorPrefs.SetInt("EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
 			}
 
 			if (GUILayout.Button("Take screenshot")) TakeScreenshot();
@@ -97,8 +114,7 @@ namespace CommonsEditor
 
 				Debug.LogFormat("Screenshot recorded at {0} ({1})", path, UnityStats.screenRes);
 
-				++nextScreenshotIndex;
-				EditorPrefs.SetInt("EditorScreenshot.nextScreenshotIndex", nextScreenshotIndex);
+				IncrementScreenshotIndex();
 			}
 			catch (IOException ex)
 			{
@@ -142,12 +158,11 @@ namespace CommonsEditor
 					Directory.CreateDirectory(screenshotFolderPath);
 				}
 				string path = string.Format("{0}/{1}{2:00} (hires).png", screenshotFolderPath, screenshotFilenamePrefix, nextScreenshotIndex);
-				System.IO.File.WriteAllBytes(path, bytes);
+				File.WriteAllBytes(path, bytes);
 
 				Debug.LogFormat("Hires Screenshot recorded at {0} ({1})", path, UnityStats.screenRes);
 
-				++nextScreenshotIndex;
-				EditorPrefs.SetInt("EditorScreenshot.nextScreenshotIndex", nextScreenshotIndex);
+				IncrementScreenshotIndex();
 			}
 			catch (IOException ex)
 			{
@@ -155,6 +170,11 @@ namespace CommonsEditor
 			}
 		}
 
+		private void IncrementScreenshotIndex()
+		{
+			++nextScreenshotIndex;
+			EditorPrefs.SetInt("EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
+		}
 	}
 
 }
