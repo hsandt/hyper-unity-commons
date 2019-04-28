@@ -9,7 +9,6 @@
 using UnityEngine;
 using UnityEditor;
 
-[InitializeOnLoad]
 public class AnchorToolsEditor : EditorWindow
 {
     /// When true make the anchors match the rect boundaries after a rect resize
@@ -59,8 +58,8 @@ public class AnchorToolsEditor : EditorWindow
         SceneView.onSceneGUIDelegate -= OnScene;
     }
 
-    static public Rect anchorRect;
-    static public Vector2 anchorVector;
+    private static Rect anchorRect;
+    private static Vector2 anchorVector;  // This is currently unused, so it's always (0, 0). It seems we can remove it.
     private static Rect anchorRectOld;
     private static Vector2 anchorVectorOld;
     private static RectTransform currentRectTransform;
@@ -100,8 +99,6 @@ public class AnchorToolsEditor : EditorWindow
 
         AnchorsToCorners();
         anchorRectOld = anchorRect;
-
-        EditorUtility.SetDirty(currentRectTransform.gameObject);
     }
 
     private static void TryToGetRectTransform()
@@ -145,6 +142,8 @@ public class AnchorToolsEditor : EditorWindow
 
     private static void AnchorsToCorners()
     {
+        Undo.RecordObject(currentRectTransform, "Stick Anchors");
+        
         float pivotX = anchorRect.width * currentRectTransform.pivot.x;
         float pivotY = anchorRect.height * (1 - currentRectTransform.pivot.y);
         currentRectTransform.anchorMin = new Vector2(0f, 1f);
