@@ -1,7 +1,8 @@
 // An Editor script to move anchors and resize rect boundaries at the same time
-// Source: https://answers.unity.com/questions/1100603/how-to-make-anchor-snap-to-self-rect-transform-in.html
+// Limitation: it cannot stick anchors to a rect if it is rotated, since anchors are always axis-aligned
 
 // Credits
+// Source: https://answers.unity.com/questions/1100603/how-to-make-anchor-snap-to-self-rect-transform-in.html
 // Phedg1: original script
 // stephane.lallee: combined component and editor tool into one script
 // hsandt:
@@ -63,9 +64,7 @@ public class AnchorToolsEditor : EditorWindow
     }
 
     private static Rect anchorRect;
-    private static Vector2 anchorVector;  // This is currently unused, so it's always (0, 0). It seems we can remove it.
     private static Rect anchorRectOld;
-    private static Vector2 anchorVectorOld;
     private static RectTransform currentRectTransform;
     private static RectTransform parentRectTransform;
     private static Vector2 pivotOld;
@@ -87,7 +86,6 @@ public class AnchorToolsEditor : EditorWindow
             currentRectTransform.offsetMin != offsetMinOld ||
             currentRectTransform.offsetMax != offsetMaxOld ||
             currentRectTransform.pivot != pivotOld ||
-            anchorVector != anchorVectorOld ||
             anchorRect != anchorRectOld
             );
     }
@@ -99,7 +97,6 @@ public class AnchorToolsEditor : EditorWindow
 
         CalculateCurrentXY();
         pivotOld = currentRectTransform.pivot;
-        anchorVectorOld = anchorVector;
 
         AnchorsToCorners();
         anchorRectOld = anchorRect;
@@ -130,8 +127,8 @@ public class AnchorToolsEditor : EditorWindow
     {
         float pivotX = anchorRect.width * currentRectTransform.pivot.x;
         float pivotY = anchorRect.height * (1 - currentRectTransform.pivot.y);
-        Vector2 newXY = new Vector2(currentRectTransform.anchorMin.x * parentRectTransform.rect.width + currentRectTransform.offsetMin.x + pivotX - parentRectTransform.rect.width * anchorVector.x,
-                                  -(1 - currentRectTransform.anchorMax.y) * parentRectTransform.rect.height + currentRectTransform.offsetMax.y - pivotY + parentRectTransform.rect.height * (1 - anchorVector.y));
+        Vector2 newXY = new Vector2(currentRectTransform.anchorMin.x * parentRectTransform.rect.width + currentRectTransform.offsetMin.x + pivotX,
+                                  -(1 - currentRectTransform.anchorMax.y) * parentRectTransform.rect.height + currentRectTransform.offsetMax.y - pivotY + parentRectTransform.rect.height);
         anchorRect.x = newXY.x;
         anchorRect.y = newXY.y;
         anchorRectOld = anchorRect;
@@ -154,10 +151,10 @@ public class AnchorToolsEditor : EditorWindow
         currentRectTransform.anchorMax = new Vector2(0f, 1f);
         currentRectTransform.offsetMin = new Vector2(anchorRect.x / currentRectTransform.localScale.x, anchorRect.y / currentRectTransform.localScale.y - anchorRect.height);
         currentRectTransform.offsetMax = new Vector2(anchorRect.x / currentRectTransform.localScale.x + anchorRect.width, anchorRect.y / currentRectTransform.localScale.y);
-        currentRectTransform.anchorMin = new Vector2(currentRectTransform.anchorMin.x + anchorVector.x + (currentRectTransform.offsetMin.x - pivotX) / parentRectTransform.rect.width * currentRectTransform.localScale.x,
-                                                 currentRectTransform.anchorMin.y - (1 - anchorVector.y) + (currentRectTransform.offsetMin.y + pivotY) / parentRectTransform.rect.height * currentRectTransform.localScale.y);
-        currentRectTransform.anchorMax = new Vector2(currentRectTransform.anchorMax.x + anchorVector.x + (currentRectTransform.offsetMax.x - pivotX) / parentRectTransform.rect.width * currentRectTransform.localScale.x,
-                                                 currentRectTransform.anchorMax.y - (1 - anchorVector.y) + (currentRectTransform.offsetMax.y + pivotY) / parentRectTransform.rect.height * currentRectTransform.localScale.y);
+        currentRectTransform.anchorMin = new Vector2(currentRectTransform.anchorMin.x + (currentRectTransform.offsetMin.x - pivotX) / parentRectTransform.rect.width * currentRectTransform.localScale.x,
+                                                 currentRectTransform.anchorMin.y - 1f + (currentRectTransform.offsetMin.y + pivotY) / parentRectTransform.rect.height * currentRectTransform.localScale.y);
+        currentRectTransform.anchorMax = new Vector2(currentRectTransform.anchorMax.x + (currentRectTransform.offsetMax.x - pivotX) / parentRectTransform.rect.width * currentRectTransform.localScale.x,
+                                                 currentRectTransform.anchorMax.y - 1f + (currentRectTransform.offsetMax.y + pivotY) / parentRectTransform.rect.height * currentRectTransform.localScale.y);
         currentRectTransform.offsetMin = new Vector2((0 - currentRectTransform.pivot.x) * anchorRect.width * (1 - currentRectTransform.localScale.x), (0 - currentRectTransform.pivot.y) * anchorRect.height * (1 - currentRectTransform.localScale.y));
         currentRectTransform.offsetMax = new Vector2((1 - currentRectTransform.pivot.x) * anchorRect.width * (1 - currentRectTransform.localScale.x), (1 - currentRectTransform.pivot.y) * anchorRect.height * (1 - currentRectTransform.localScale.y));
 
