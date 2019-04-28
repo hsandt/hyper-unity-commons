@@ -19,9 +19,9 @@ public class AnchorToolsEditor : EditorWindow
     /// When true make the anchors match the rect boundaries after a rect resize
     private bool stickAnchorsToRect = false;
         
-    AnchorToolsEditor()
+    static AnchorToolsEditor()
     {
-        Debug.Log("[AnchorToolsEditor] Registering for anchors update On Scene GUI");
+        Debug.Log("[AnchorToolsEditor] (static) Registering for anchors update On Scene GUI");
         SceneView.onSceneGUIDelegate += OnScene;
     }
     
@@ -47,11 +47,13 @@ public class AnchorToolsEditor : EditorWindow
         if (GUILayout.Button("Stick Anchors to Rect")) UpdateAnchors();
     }
 
-    private void OnScene(SceneView sceneView)
+    private static void OnScene(SceneView sceneView)
     {
+        AnchorToolsEditor editorScreenshot = GetWindow<AnchorToolsEditor>(title: "Anchor Tools");
+
         // detect mouse up button as a resize event; this is not accurate as other actions may be used,
         // and we may modify the rect by inputting values with the keyboard, but works for quick usage
-        if (stickAnchorsToRect && Event.current.type == EventType.MouseUp && Event.current.button == 0)
+        if (editorScreenshot.stickAnchorsToRect && Event.current.type == EventType.MouseUp && Event.current.button == 0)
         {
             UpdateAnchors();
         }
