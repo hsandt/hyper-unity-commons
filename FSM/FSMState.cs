@@ -8,7 +8,7 @@ namespace CommonsPattern
 
 	/// Abstract class for finite-state machine state. TStateKey can be any comparable, although we recommend using an Enum.
 	/// TState, the base class of all your states, must be provided, and therefore you need to create a base class
-	/// that inherits from FSMState<> as an intermediary:
+	/// that inherits from FSMState<> as an intermediary, using the curiously recursive pattern:
 	/// 	public abstract class MyStateClass : FSMState<MyStateKey, MyStateClass>
 	/// In any case, the default value of TStateKey should represent the None state and never be used for an actual state.
 	/// Thus, for an enum, the 1st value (= 0) should always be None.

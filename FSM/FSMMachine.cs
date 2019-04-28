@@ -15,16 +15,24 @@ namespace CommonsPattern
 		State1,
 		State2
 	}
+	
+	public class MyState1 : MyState {
+		// implement methods...
+	} 
+
+	public class MyState2 : MyState {
+		// implement methods...
+	} 
 
 	public class MyMonoBehaviour : MonoBehaviour {
 
-		FSMMachine<StateEnum> fsmMachine;
+		FSMMachine<MyStateKey, MyState> fsmMachine;
 
 		void Awake () {
-			fsmMachine = new FSMMachine<StateEnum>();
+			fsmMachine = new FSMMachine<MyStateKey, MyState>();
 			fsmMachine.AddState(new MyState1());
 			fsmMachine.AddState(new MyState2());
-			fsmMachine.SetDefaultStateByKey(StateEnum.State1);
+			fsmMachine.SetDefaultStateByKey(MyStateKey.State1);
 			// or
 			fsmMachine.SetDefaultStateByKey(MyState1.Key);
 		}
@@ -37,6 +45,11 @@ namespace CommonsPattern
 			fsmMachine.UpdateMachine();
 		}
 	
+		// call when MyMonoBehaviour must be cleared/reset but not destroyed
+		void Clear () {
+			fsmMachine.Clear();
+		}
+
 	}
 
 	We recommend to create a child class of FSMMachine<MyState> to add custom features.
