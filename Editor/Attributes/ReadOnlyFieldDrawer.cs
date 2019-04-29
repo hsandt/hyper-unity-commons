@@ -6,8 +6,12 @@ using UnityEditor;
 namespace CommonsHelper.Editor
 {
 
-[CustomPropertyDrawer(typeof(ReadOnlyFieldAttribute))]
-public class ReadOnlyFieldDrawer : PropertyDrawer
+    /// ReadOnlyField will gray out elements it is used on.
+    /// When used on an array, it will gray out the array elements but not the array itself, so the size can still be
+    /// changed. There is currently no work around, so the user must be careful not to modify the size manually.
+    /// https://answers.unity.com/questions/1150679/custom-propertydrawer-for-attributes-on-array-memb.html
+    [CustomPropertyDrawer(typeof(ReadOnlyFieldAttribute))]
+    public class ReadOnlyFieldDrawer : PropertyDrawer
     {
         public override float GetPropertyHeight(SerializedProperty property,
             GUIContent label)
