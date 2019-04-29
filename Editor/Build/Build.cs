@@ -13,9 +13,9 @@ namespace CommonsHelper.Editor
 
 	public static class Build {
 
-		/// Path to expected BuildData asset inside some Resources folder
-		/// AssetDatabase.CreateAsset needs extension .asset to create the correct file name, although Resources.Load works without too
-		private const string buildDataPathInResources = "Build/BuildData.asset";
+		/// Path to expected BuildData asset inside some Resources folder, without ".asset"
+		/// (important to work with Resources.Load)
+		private const string buildDataPathInResources = "Build/BuildData";
 		
 		/// Path to Resources folder where new BuildData will be created if no BuildData is found
 		private const string defaultResourcesDirectoryPath = "Game/Resources";
@@ -80,7 +80,8 @@ namespace CommonsHelper.Editor
 				// create missing BuildData asset
 				buildData = ScriptableObject.CreateInstance<BuildData>();
 				buildData.appName = PlayerSettings.productName;
-				AssetDatabase.CreateAsset(buildData, fullBuildDataPath);
+				// AssetDatabase.CreateAsset needs extension .asset to create with correct file name
+				AssetDatabase.CreateAsset(buildData, $"{fullBuildDataPath}.asset");
 			}
 
 			// Example: "Tactical Ops v3.1.7 - Windows 64 dev"
