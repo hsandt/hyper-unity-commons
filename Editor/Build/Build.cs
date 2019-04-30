@@ -126,7 +126,12 @@ namespace CommonsHelper.Editor
 		[MenuItem("Build/Build Windows 64")]
 	#endif
 		static void BuildWindows64 () {
-			BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, false);
+			// safety check to avoid building by accident while playing
+			// (in particular because F10 is used as a debugging key in some IDEs)
+			if (!Application.isPlaying)
+			{
+				BuildPlayerWithVersion(BuildTarget.StandaloneWindows64, false);
+			}
 		}
 
 		/// Build Windows 64 development
@@ -142,7 +147,10 @@ namespace CommonsHelper.Editor
 		[MenuItem("Build/Build OS X")]
 	#endif
 		static void BuildOSX () {
-			BuildPlayerWithVersion(BuildTarget.StandaloneOSX, false);
+			if (!Application.isPlaying)
+			{
+				BuildPlayerWithVersion(BuildTarget.StandaloneOSX, false);
+			}
 		}
 
 		/// Build OS X development
@@ -158,7 +166,10 @@ namespace CommonsHelper.Editor
 		[MenuItem("Build/Build Linux 64")]
 		#endif
 		static void BuildLinux64 () {
-			BuildPlayerWithVersion(BuildTarget.StandaloneLinux64, false);
+			if (!Application.isPlaying)
+			{
+				BuildPlayerWithVersion(BuildTarget.StandaloneLinux64, false);
+			}
 		}
 
 		/// Build Linux development
