@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -51,6 +52,8 @@ namespace CommonsHelper.Tests
 
         [SetUp]
         public void Init () {
+            // This will initialize a path with 4 control points, including 2 key points at (0, 0) and (3, 0).
+            // This is important as tests rely on the initial state.
             path = new BezierPath2D();
         }
     
@@ -83,27 +86,56 @@ namespace CommonsHelper.Tests
 
             Assert.AreEqual(new Vector2(0f, 10), path.GetControlPoint(1));
         }
-
+        
         [Test]
-        public void AddKeyPoint_Add1KeyPointOnTheRight()
+        public void GetKeyPointsCount_3KeyPoints()
         {
-            // arrange last control points
-            path.SetControlPoint(2, new Vector2(2f, -1f));
-            path.SetControlPoint(3, new Vector2(3f, 0f));
-
-            // add new key point
-            path.AddKeyPoint(new Vector2(5f, 0));
+            path.AddKeyPoint(new Vector2(5f, 0f));
             
-            // verify added control points
-            Assert.AreEqual(new[] {
-                new Vector2(4f, 1f),
-                new Vector2(4f, 1f),
-                new Vector2(5f, 0f)
-            }, new[] {
-                path.GetControlPoint(4),
-                path.GetControlPoint(5),
-                path.GetControlPoint(6)
-            });
+            Assert.AreEqual(3, path.GetKeyPointsCount());
+        }
+        
+        [Test]
+        public void GetKeyPoints_3KeyPoints()
+        {
+            path.AddKeyPoint(new Vector2(3f, 3f));
+            
+            Assert.AreEqual(
+                new Vector2[] {new Vector2(0f, 0f), new Vector2(3f, 0f), new Vector2(3f, 3f)}, 
+                path.GetKeyPoints().ToArray());
+        }
+        
+        [Test]
+        public void GetNearestKeyPointIndex_CloseTo1st()
+        {
+            path.AddKeyPoint(new Vector2(3f, 3f));
+            
+            Assert.AreEqual( 0, path.GetNearestKeyPointIndex(new Vector2(-0.5f, 0f)));
+        }
+        
+        [Test]
+        public void GetNearestKeyPointIndex_CloseTo2nd()
+        {
+            path.AddKeyPoint(new Vector2(3f, 3f));
+            
+            Assert.AreEqual( 1, path.GetNearestKeyPointIndex(new Vector2(4f, -1f)));
+        }
+        
+        [Test]
+        public void GetNearestKeyPointIndex_CloseTo2ndAnd3rd()
+        {
+            path.AddKeyPoint(new Vector2(3f, 3f));
+            
+            // It's a draw, so we return the lowest index
+            Assert.AreEqual( 1, path.GetNearestKeyPointIndex(new Vector2(3f, 1.5f)));
+        }
+        
+        [Test]
+        public void GetNearestKeyPointIndex_CloseTo3rd()
+        {
+            path.AddKeyPoint(new Vector2(3f, 3f));
+            
+            Assert.AreEqual( 2, path.GetNearestKeyPointIndex(new Vector2(3f, 1.51f)));
         }
         
         [Test]
@@ -115,7 +147,7 @@ namespace CommonsHelper.Tests
         [Test]
         public void GetCurvesCount_3KeyPoints()
         {
-            path.AddKeyPoint(new Vector2(5f, 0));
+            path.AddKeyPoint(new Vector2(5f, 0f));
             
             Assert.AreEqual(2, path.GetCurvesCount());
         }
@@ -157,6 +189,86 @@ namespace CommonsHelper.Tests
                 new Vector2(5f, 0f)
             }, path.GetCurve(1));
         }
+
+        [Test]
+        public void AddKeyPoint_Add1KeyPointOnTheRight()
+        {
+            // arrange last control points
+            path.SetControlPoint(2, new Vector2(2f, -1f));
+            path.SetControlPoint(3, new Vector2(3f, 0f));
+
+            // add new key point
+            path.AddKeyPoint(new Vector2(5f, 0));
+            
+            // verify added control points
+            Assert.AreEqual(new[] {
+                new Vector2(4f, 1f),
+                new Vector2(4f, 1f),
+                new Vector2(5f, 0f)
+            }, new[] {
+                path.GetControlPoint(4),
+                path.GetControlPoint(5),
+                path.GetControlPoint(6)
+            });
+        }
         
+        [Test]
+        public void RemoveKeyPoint_RemoveStartKeyPoint()
+        {
+            path.AddKeyPoint(new Vector2(3f, 3f));
+
+            // arrange last control points to avoid depending too much on how AddKeyPoint
+            // auto-computes tangents
+            path.SetControlPoint(4, new Vector2(4f, 2f));
+            path.SetControlPoint(5, new Vector2(2f, 4f));
+            
+            // remove start point
+            path.RemoveKeyPoint(0);
+            
+            Assert.AreEqual(new[] {
+                new Vector2(3f, 0f),
+                new Vector2(4f, 2f),
+                new Vector2(2f, 4f),
+                new Vector2(3f, 3f)
+            }, path.ControlPoints);
+        }
+        
+        [Test]
+        public void RemoveKeyPoint_RemoveMiddleKeyPoint()
+        {
+            path.AddKeyPoint(new Vector2(3f, 3f));
+
+            // arrange last control points to avoid depending too much on how AddKeyPoint
+            // auto-computes tangents
+            path.SetControlPoint(4, new Vector2(4f, 2f));
+            path.SetControlPoint(5, new Vector2(2f, 4f));
+            
+            // remove start point
+            path.RemoveKeyPoint(1);
+            
+            Assert.AreEqual(new[] {
+                new Vector2(0f, 0f),
+                new Vector2(1f, 1f),
+                new Vector2(2f, 4f),
+                new Vector2(3f, 3f)
+            }, path.ControlPoints);
+        }
+        
+        [Test]
+        public void RemoveKeyPoint_RemoveEndKeyPoint()
+        {
+            path.AddKeyPoint(new Vector2(3f, 3f));
+
+            // remove start point
+            path.RemoveKeyPoint(2);
+            
+            // verify added control points
+            Assert.AreEqual(new[] {
+                new Vector2(0f, 0f),
+                new Vector2(1f, 1f),
+                new Vector2(2f, -1f),
+                new Vector2(3f, 0f)
+            }, path.ControlPoints);
+        }
     }
 }

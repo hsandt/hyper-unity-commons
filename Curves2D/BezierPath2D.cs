@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using UnityEngine;
 
 namespace CommonsHelper
@@ -15,24 +16,28 @@ namespace CommonsHelper
         {
             return (1-t) * (1-t) * (1-t) * p0 + 3 * (1-t) * (1-t) * t * p1 + 3 * (1-t) * t * t * p2 + t * t * t * p3;
         }
-        
+
         /// List of control points of each successive Bezier curve, concatenated.
         /// The end of one Bezier curve is the start of the next one, so to reduce the size of the list,
         /// we consider points linking two curves only once.
         /// There is a key point every 3 control points (the path must go through each key point)
-        /// Format: [keyPoint1, controlPoint1A, controlPoint1B, keyPoint2, controlPoint2A, controlPoint2B, ... keyPointN]
+        /// We use `indices` for flat iterations, and `key indices` for iteration on key points only.
+        /// Format: [keyPoint1, outTangentPoint1, inTangentPoint2, keyPoint2, outTangentPoint2, ... inTangentPointN, keyPointN]
+        /// We assume it always has at least 4 points.
         [SerializeField]
-        private List<Vector2> controlPoints = new List<Vector2>
-        {
-            // default to a kind of wave to demonstrate
-            new Vector2(0f, 0f),
-            new Vector2(1f, 1f),
-            new Vector2(2f, -1f),
-            new Vector2(3f, 0f)
-        };
-    
+        private List<Vector2> controlPoints;
+        public ReadOnlyCollection<Vector2> ControlPoints => controlPoints.AsReadOnly();
+        
         public BezierPath2D()
         {
+            // default to a kind of wave to demonstrate
+            controlPoints = new List<Vector2>
+            {
+                new Vector2(0f, 0f),
+                new Vector2(1f, 1f),
+                new Vector2(2f, -1f),
+                new Vector2(3f, 0f)
+            };
         }
 
         // Only allow access to the points via a conservative interface.
@@ -58,40 +63,77 @@ namespace CommonsHelper
             Debug.AssertFormat(index >= 0 && index < controlPoints.Count, "Invalid index: {0}. Expected index between 0 and {1}", index, controlPoints.Count - 1);
             controlPoints[index] = controlPosition;
         }
+        
+        /// Return the number of key points (equal to the number of curves + 1)
+        public int GetKeyPointsCount()
+        {
+            return GetCurvesCount() + 1;
+        }
+        
+        /// Return key point at given key index
+        public Vector2 GetKeyPoint(int keyIndex)
+        {
+            return controlPoints[3 * keyIndex];
+        }
+        
+        /// Yield each curve of 4 control points compounding the path, from start to end.
+        public IEnumerable<Vector2> GetKeyPoints()
+        {
+            int keyPointsCount = GetKeyPointsCount();
+            for (int keyIndex = 0; keyIndex < keyPointsCount; keyIndex++)
+            {
+                yield return GetKeyPoint(keyIndex);
+            }
+        }
+        
+        /// Return the index of the key point the nearest to passed position
+        public int GetNearestKeyPointIndex(Vector2 position)
+        {
+            int nearestKeyPointIndex = -1;
+            float nearestKeyPointDistance = float.MaxValue;
+            
+            int keyPointsCount = GetKeyPointsCount();
+            for (int keyIndex = 0; keyIndex < keyPointsCount; keyIndex++)
+            {
+                float distance = Vector2.SqrMagnitude(GetKeyPoint(keyIndex) - position);
+                if (distance < nearestKeyPointDistance)
+                {
+                    nearestKeyPointIndex = keyIndex;
+                    nearestKeyPointDistance = distance;
+                }
+            }
 
+            return nearestKeyPointIndex;
+        }
+
+        /// Return the number of curves compounding this path (equal to the number of key points - 1)
         public int GetCurvesCount()
         {
             return (controlPoints.Count - 1 ) / 3;
         }
 
-        /// Return curve at given index. A Bezier curve is a part of a Bezier path, compounded of 4 control points.
-        public Vector2[] GetCurve(int index)
+        /// Return curve at given key index. A Bezier curve is a part of a Bezier path, compounded of 4 control points.
+        public Vector2[] GetCurve(int keyIndex)
         {
             return new[]
             {
-                controlPoints[3 * index],
-                controlPoints[3 * index + 1],
-                controlPoints[3 * index + 2],
-                controlPoints[3 * index + 3]
+                controlPoints[3 * keyIndex],
+                controlPoints[3 * keyIndex + 1],
+                controlPoints[3 * keyIndex + 2],
+                controlPoints[3 * keyIndex + 3]
             };
         }
 
         /// Yield each curve of 4 control points compounding the path, from start to end.
         public IEnumerable<Vector2[]> GetCurves()
         {
-            for (int i = 0; i < GetCurvesCount(); i++)
+            int curvesCount = GetCurvesCount();
+            for (int keyIndex = 0; keyIndex < curvesCount; keyIndex++)
             {
-                yield return new[]
-                {
-                    controlPoints[3 * i],
-                    controlPoints[3 * i + 1],
-                    controlPoints[3 * i + 2],
-                    controlPoints[3 * i + 3]
-                };
+                yield return GetCurve(keyIndex);
             }
         }
 
-        
         /// Add a key point at the end of the path, automatically choosing smooth control points between the added
         /// key point and the previous one.
         public void AddKeyPoint(Vector2 newKeyPoint)
@@ -124,12 +166,38 @@ namespace CommonsHelper
             controlPoints.AddRange(new[] {newControlPointA, newControlPointB, newKeyPoint});
         }
 
-        /// Return the position of an interpolated point of curve of index i at ratio t
-        public Vector2 InterpolateCurve(int index, float t)
+        /// Remove key point at key index, also removing the surrounding tangent points (1 for the start and end point,
+        /// 2 for a middle point).
+        /// UB unless there are at least 3 key points, and the keyIndex is a valid key point index.
+        public void RemoveKeyPoint(int keyIndex)
         {
-            Debug.AssertFormat(index >= 0 && index < controlPoints.Count, "Invalid index: {0}. Expected index between 0 and {1}", index, controlPoints.Count - 1);
+            int keyPointsCount = GetKeyPointsCount();
+            Debug.AssertFormat(keyPointsCount >= 3, "There are only {0} key points, cannot remove one more key point.", keyPointsCount);
+            Debug.AssertFormat(keyIndex >= 0 && keyIndex < keyPointsCount, "Invalid key index: {0}. Expected index between 0 and {1}.", keyIndex, keyPointsCount - 1);
+
+            if (keyIndex == 0)
+            {
+                // remove start point, its out tangent point and the 2nd point's in tangent point
+                controlPoints.RemoveRange(0, 3);
+            }
+            else if (keyIndex == keyPointsCount - 1)
+            {
+                // remove end point, its in tangent point and the penultimate point's out tangent point
+                controlPoints.RemoveRange(3 * keyIndex - 2, 3);
+            }
+            else
+            {
+                controlPoints.RemoveRange(3 * keyIndex - 1, 3);
+            }
+        }
+
+        /// Return the position of an interpolated point of curve of index i at ratio t
+        public Vector2 InterpolateCurve(int keyIndex, float t)
+        {
+            int curvesCount = GetCurvesCount();
+            Debug.AssertFormat(keyIndex >= 0 && keyIndex < curvesCount, "Invalid curve index: {0}. Expected index between 0 and {1}.", keyIndex, curvesCount - 1);
             
-            Vector2[] curve = GetCurve(index);
+            Vector2[] curve = GetCurve(keyIndex);
             return InterpolateBezier(curve[0], curve[1], curve[2], curve[3], t);
         }
     

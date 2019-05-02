@@ -61,6 +61,8 @@ namespace CommonsHelper
             EditorGUI.BeginChangeCheck();
 
             // Draw toggle button and label
+            GUILayout.BeginHorizontal();
+            
             editActive = GUILayout.Toggle(editActive, EditorGUIUtility.IconContent("EditCollider"),
                 GUIData.Styles.singleButtonStyle, GUILayout.Width(buttonWidth), GUILayout.Height(buttonHeight));
             GUILayout.Label("Edit Bezier Path");
@@ -69,6 +71,8 @@ namespace CommonsHelper
             {
                 SessionState.SetBool(kBezierPath2DEditActiveKey, editActive);
             }
+            
+            GUILayout.EndHorizontal();
 
             if (GUILayout.Button("Add New Key Point at Origin"))
             {
@@ -104,13 +108,32 @@ namespace CommonsHelper
         private void HandleEditInput()
         {
             Event guiEvent = Event.current;
-            if (guiEvent.shift && guiEvent.type == EventType.MouseDown && guiEvent.button == 0)
+
+            // Get unique control ID
+            int controlID = GUIUtility.GetControlID(GetHashCode(), FocusType.Passive);
+            EventType eventType = guiEvent.GetTypeForControl(controlID);
+
+            if (eventType == EventType.Layout)
+            {
+                // Required to catch event and avoid selecting object under cursor
+                HandleUtility.AddDefaultControl(controlID);
+            }
+            else if (guiEvent.shift && eventType == EventType.MouseDown && guiEvent.button == 0)
             {
                 // add new key point at the end at mouse position
                 Vector2 newKeyPoint = (Vector2)HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin;
                 path.AddKeyPoint(newKeyPoint);
                 
-                // consume event (doesn't seem to work, I still select the object under the cursor)
+                // consume event (AddDefaultControl is necessary and sufficient, but useful if other events in same control)
+                guiEvent.Use();
+            }
+            else if (guiEvent.control && eventType == EventType.MouseDown && guiEvent.button == 0)
+            {
+                // remove key point the nearest to mouse position
+                Vector2 mousePoint = (Vector2)HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin;
+                int index = path.GetNearestKeyPointIndex(mousePoint);
+                path.RemoveKeyPoint(index);
+                
                 guiEvent.Use();
             }
         }
