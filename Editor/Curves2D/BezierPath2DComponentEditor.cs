@@ -78,6 +78,7 @@ namespace CommonsHelper
             {
                 Undo.RecordObject(script, "Add Key Point");
                 path.AddKeyPoint(Vector2.zero);
+                SceneView.RepaintAll();
             }
         }
 
@@ -129,11 +130,16 @@ namespace CommonsHelper
             }
             else if (guiEvent.control && eventType == EventType.MouseDown && guiEvent.button == 0)
             {
-                // remove key point the nearest to mouse position
-                Vector2 mousePoint = (Vector2)HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin;
-                int index = path.GetNearestKeyPointIndex(mousePoint);
-                path.RemoveKeyPoint(index);
+                // check if there are enough points for a removal
+                if (path.GetKeyPointsCount() > 2)
+                {
+                    // remove key point the nearest to mouse position
+                    Vector2 mousePoint = (Vector2)HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin;
+                    int index = path.GetNearestKeyPointIndex(mousePoint);
+                    path.RemoveKeyPoint(index);
+                }
                 
+                // still consume event to avoid unwanted effects
                 guiEvent.Use();
             }
         }
@@ -183,6 +189,13 @@ namespace CommonsHelper
         /// to visualize tangents
         private static void DrawControlPoints(BezierPath2D path)
         {
+            if (path.GetControlPointsCount() < 4)
+            {
+                // do not log warning to avoid spamming console, but this is a defect, and we will see nothing
+                // just add a new point manually to trigger the safety Init()
+                return;
+            }
+
             for (int i = 0; i < path.GetCurvesCount(); ++i)
             {
                 // before C# 7.0, we cannot use ref directly with GetCurve in an iteration or as return value of a getter
@@ -206,7 +219,7 @@ namespace CommonsHelper
                 var p3 = path.GetControlPoint(3 * i + 3);
                 HandlesUtil.DrawLine(p2, p3, Color.yellow);
             }
-
+            
             // last point
             int lastIndex = path.GetControlPointsCount() - 1;
             var lastPoint = path.GetControlPoint(lastIndex);

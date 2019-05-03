@@ -30,6 +30,11 @@ namespace CommonsHelper
         
         public BezierPath2D()
         {
+            Init();
+        }
+
+        private void Init()
+        {
             // default to a kind of wave to demonstrate
             controlPoints = new List<Vector2>
             {
@@ -138,6 +143,12 @@ namespace CommonsHelper
         /// key point and the previous one.
         public void AddKeyPoint(Vector2 newKeyPoint)
         {
+            if (controlPoints.Count < 4)
+            {
+                Debug.LogWarningFormat("Invalid initial state: only {0} points, expected at least 4. Reinitializing points.", controlPoints.Count);
+                Init();
+            }
+            
             Vector2 previousControlPointB = controlPoints[controlPoints.Count - 2];
             Vector2 previousKeyPoint = controlPoints[controlPoints.Count - 1];
             Vector2 startTangent = previousKeyPoint - previousControlPointB;
@@ -172,7 +183,7 @@ namespace CommonsHelper
         public void RemoveKeyPoint(int keyIndex)
         {
             int keyPointsCount = GetKeyPointsCount();
-            Debug.AssertFormat(keyPointsCount >= 3, "There are only {0} key points, cannot remove one more key point.", keyPointsCount);
+            Debug.AssertFormat(keyPointsCount > 2, "There are only {0} key points, cannot remove one more key point.", keyPointsCount);
             Debug.AssertFormat(keyIndex >= 0 && keyIndex < keyPointsCount, "Invalid key index: {0}. Expected index between 0 and {1}.", keyIndex, keyPointsCount - 1);
 
             if (keyIndex == 0)
