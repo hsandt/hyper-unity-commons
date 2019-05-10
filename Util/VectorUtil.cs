@@ -98,7 +98,7 @@ namespace CommonsHelper
 				return Vector2.Distance(point, segmentStart);
 			}
 
-			// Curvilinear abscissa, or parametric distance, of point p on oriented line e: r = <p - e[0], e> / ||e|| -> clamp between 0 and segment length
+			// Affine abscissa, or parametric distance, of point p on oriented line e: r = <p - e[0], e> / ||e|| -> clamp between 0 and segment length
 			Vector2 vector = point - segmentStart;
 			paramDistance = Mathf.Clamp(Vector2.Dot(vector, segmentDelta) / segmentMagnitude, 0f, segmentMagnitude);
 			return Vector2.Distance(point, Vector2.Lerp(segmentStart, segmentEnd, paramDistance / segmentMagnitude));

@@ -77,6 +77,12 @@ namespace CommonsHelper
 	        DrawPolyLine(points, color);
 	    }
 
+	    /// <summary>
+	    /// Draw an arrow
+	    /// </summary>
+	    /// <param name="p1">Arrow start position</param>
+	    /// <param name="p2">Arrow end position</param>
+	    /// <param name="color">Draw color</param>
 	    public static void DrawArrow2D (Vector2 p1, Vector2 p2, Color color) {
 	        Color oldColor = Handles.color;
 	        Handles.color = color;
@@ -85,6 +91,22 @@ namespace CommonsHelper
 	        Vector2 right = VectorUtil.Rotate90CW(forward);
 	        Handles.DrawLine(p2, p2 - 0.2f * forward - 0.2f * right);
 	        Handles.DrawLine(p2, p2 - 0.2f * forward + 0.2f * right);
+	        Handles.color = oldColor;
+	    }
+
+	    /// <summary>
+	    /// Draw an arrow head (V-shaped polyline)
+	    /// </summary>
+	    /// <param name="position">Position of the extremity of the arrow head</param>
+	    /// <param name="direction">Direction the arrow head is pointing to. Will be normalized.</param>
+	    /// <param name="color">Draw color</param>
+	    public static void DrawArrowHead2D (Vector2 position, Vector2 direction, Color color) {
+	        Color oldColor = Handles.color;
+	        Handles.color = color;
+	        Vector2 forward = direction.normalized;
+	        Vector2 right = VectorUtil.Rotate90CW(forward);
+	        Handles.DrawLine(position, position - 0.2f * forward - 0.2f * right);
+	        Handles.DrawLine(position, position - 0.2f * forward + 0.2f * right);
 	        Handles.color = oldColor;
 	    }
 
