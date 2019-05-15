@@ -240,30 +240,45 @@ namespace CommonsHelper
 			Handles.color = oldColor;
 		}
 
-	    public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2? snap = null, Handles.CapFunction capFunction = null) {
-			return (Vector2) Handles.FreeMoveHandle ((Vector3) pos, Quaternion.identity,
-	            HandleUtility.GetHandleSize ((Vector3) pos) * handleSize, snap ?? Vector3.one, capFunction ?? defaultHandleCap);
+	    /// Proxy for FreeMoveHandle with 2D position
+	    public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2? optionalSnap = null, Handles.CapFunction capFunction = null, int? controlID = null) {
+	        float size = HandleUtility.GetHandleSize ((Vector3) pos) * handleSize;
+	        Vector3 snap = optionalSnap ?? Vector3.one;
+	        capFunction = capFunction ?? defaultHandleCap;
+	        
+	        return controlID != null ?
+	            (Vector2) Handles.FreeMoveHandle ((int)controlID, (Vector3) pos, Quaternion.identity, size, snap, capFunction) :
+                (Vector2) Handles.FreeMoveHandle ((Vector3) pos, Quaternion.identity, size, snap, capFunction);
 		}
 
-		public static Vector3 DrawFreeMoveHandle (Vector3 pos, Vector3? snap = null, Handles.CapFunction capFunction = null) {
-			return Handles.FreeMoveHandle (pos, Quaternion.identity,
-	           HandleUtility.GetHandleSize (pos) * handleSize, snap ?? Vector3.one, capFunction ?? defaultHandleCap);
+	    /// Proxy for FreeMoveHandle with 3D position
+		public static Vector3 DrawFreeMoveHandle (Vector3 pos, Vector3? optionalSnap = null, Handles.CapFunction capFunction = null, int? controlID = null) {
+	        float size = HandleUtility.GetHandleSize ((Vector3) pos) * handleSize;
+	        Vector3 snap = optionalSnap ?? Vector3.one;
+	        capFunction = capFunction ?? defaultHandleCap;
+	        
+	        return controlID != null ?
+	            (Vector2) Handles.FreeMoveHandle ((int)controlID, pos, Quaternion.identity, size, snap, capFunction) :
+	            (Vector2) Handles.FreeMoveHandle (pos, Quaternion.identity, size, snap, capFunction);
 		}
 
-	    public static void DrawFreeMoveHandle (ref Vector2 pos, Color color, Vector2? snap = null, Handles.CapFunction capFunction = null) {
+	    /// Variant of DrawFreeMoveHandle (without controlID) with 2D position by reference
+	    public static void DrawFreeMoveHandle (ref Vector2 pos, Color color, Vector2? snap = null, Handles.CapFunction capFunction = null, int? controlID = null) {
 	        Color oldColor = Handles.color;
 	        Handles.color = color;
-	        pos = DrawFreeMoveHandle(pos, snap, capFunction);
+	        pos = DrawFreeMoveHandle(pos, snap, capFunction, controlID);
 	        Handles.color = oldColor;
 	    }
 
-	    public static void DrawFreeMoveHandle (ref Vector3 pos, Color color, Vector3? snap = null, Handles.CapFunction capFunction = null) {
+	    /// Variant of DrawFreeMoveHandle (without controlID) with 3D position by reference
+	    public static void DrawFreeMoveHandle (ref Vector3 pos, Color color, Vector3? snap = null, Handles.CapFunction capFunction = null, int? controlID = null) {
 	        Color oldColor = Handles.color;
 	        Handles.color = color;
-	        pos = DrawFreeMoveHandle(pos, snap, capFunction);
+	        pos = DrawFreeMoveHandle(pos, snap, capFunction, controlID);
 	        Handles.color = oldColor;
 	    }
 
+	    /// Proxy for DrawWireDisc (without controlID) with 2D position by reference
 	    public static void DrawCircleHandles (ref Vector2 center, ref float radius, Color color, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null) {
 	        Color oldColor = Handles.color;
 	        Handles.color = color;
