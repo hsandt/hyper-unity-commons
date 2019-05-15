@@ -17,6 +17,12 @@ namespace CommonsHelper
             return (1-t) * (1-t) * (1-t) * p0 + 3 * (1-t) * (1-t) * t * p1 + 3 * (1-t) * t * t * p2 + t * t * t * p3;
         }
 
+        /// Compute point on 2D Bezier curve (array of 4 points) at ratio t
+        public static Vector2 InterpolateBezier(Vector2[] curve, float t)
+        {
+            return InterpolateBezier(curve[0], curve[1], curve[2], curve[3], t);
+        }
+
         /// List of control points of each successive Bezier curve, concatenated.
         /// The end of one Bezier curve is the start of the next one, so to reduce the size of the list,
         /// we consider points linking two curves only once.
@@ -202,14 +208,85 @@ namespace CommonsHelper
             }
         }
 
-        /// Return the position of an interpolated point of curve of index i at ratio t
+        /// Return the position of the whole path at given ratio
+        /// Probably not used in final game, but useful to quickly get a result
+        public Vector2 InterpolatePathNormalized(float pathRatio)
+        {
+            Debug.Assert(pathRatio >= 0f && pathRatio <= 1f);
+            
+            int curvesCount = GetCurvesCount();
+            int keyIndex = Mathf.FloorToInt(Mathf.Min(pathRatio * curvesCount, 1f));
+            if (keyIndex == curvesCount)
+            {
+                keyIndex = curvesCount - 1;
+            }
+
+            float remainder = pathRatio % 1f;
+            
+            return InterpolateCurve(keyIndex, remainder);
+        }
+    
+
+        /// Return the position of the whole path at given distance
+        public Vector2 InterpolatePath(float distance)
+        {
+            // TODO: split path in segments, accumulate segment lengths and evaluate point at given curvilinear abscissa
+            return Vector2.zero;
+        }
+    
+        /// Return an evaluation of the length, as the sum of evaluated curve lengths,
+        /// with [segmentsCountPerCurve] segments approximation per curve
+        public float EvaluateLength(int segmentsCountPerCurve)
+        {
+            int curvesCount = GetCurvesCount();
+
+            float length = 0f;
+
+            for (int keyIndex = 0; keyIndex < curvesCount; ++keyIndex)
+            {
+                length += EvaluateCurveLength(keyIndex, 100);
+            }
+
+            return length;
+        }
+    
+        /// Return an evaluation of the length of curve of index i, as the sum of [segmentsCount] segment approximation
+        /// lengths
+        public float EvaluateCurveLength(int keyIndex, int segmentsCount)
+        {
+            Vector2[] curve = GetCurve(keyIndex);
+
+            // store end point of the previous iteration to reuse it as start point for the next one
+            Vector2 previousPoint = curve[0];
+            
+            // initialize total length to return
+            float length = 0f;
+            
+            for (int i = 0; i < segmentsCount; i++)
+            {
+                // compute segment end point ratio on curve
+                float t = (float)i / (float)segmentsCount;
+                
+                // locate segment end and add segment length to total length
+                Vector2 nextPoint = InterpolateBezier(curve, t);
+                length += Vector2.Distance(previousPoint, nextPoint);
+                
+                // update previous point for next iteration
+                previousPoint = nextPoint;
+            }
+
+            // return sum of all segment lengths
+            return length;
+        }
+    
+        /// Return the position of an interpolated point on curve of index i at ratio t
         public Vector2 InterpolateCurve(int keyIndex, float t)
         {
             int curvesCount = GetCurvesCount();
             Debug.AssertFormat(keyIndex >= 0 && keyIndex < curvesCount, "Invalid curve index: {0}. Expected index between 0 and {1}.", keyIndex, curvesCount - 1);
             
             Vector2[] curve = GetCurve(keyIndex);
-            return InterpolateBezier(curve[0], curve[1], curve[2], curve[3], t);
+            return InterpolateBezier(curve, t);
         }
     
     }

@@ -270,5 +270,16 @@ namespace CommonsHelper.Tests
                 new Vector2(3f, 0f)
             }, path.ControlPoints);
         }
+        
+        [Test]
+        public void EvaluateCurveLength_Linear()
+        {
+            // arrange last control points to make a straight line
+            path.SetControlPoint(4, new Vector2(1f, 0f));
+            path.SetControlPoint(5, new Vector2(2f, 0f));
+            
+            // for a straight line, the number of segments doesn't matter, we'll always get the exact length
+            Assert.AreEqual(3f, path.EvaluateCurveLength(0, 4));
+        }
     }
 }
