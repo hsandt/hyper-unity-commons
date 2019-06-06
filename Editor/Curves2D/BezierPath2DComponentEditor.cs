@@ -87,7 +87,10 @@ namespace CommonsHelper.Editor
 
         void OnSceneGUI ()
         {
-            DrawEditablePath();
+            if (script.shouldDrawEditablePath)
+            {
+                DrawEditablePath();
+            }
         }
 
         public void DrawEditablePath ()
