@@ -13,7 +13,7 @@ namespace CommonsHelper
                  "This is also automatically cleared by master components that already draw this as part of their children")]
         public bool shouldDrawEditablePath = true;
 #endif
-        
+
         [SerializeField, ReadOnlyField]
         private BezierPath2D path = new BezierPath2D();
         public BezierPath2D Path => path;
