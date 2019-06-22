@@ -9,14 +9,14 @@ namespace CommonsPattern
 	/// Static class that memoizes objects by tag
 	public static class Locator {
 
-		/// Dictionary of references to transforms
+		/// Dictionary of references to game objects
 		static Dictionary<string, GameObject> taggedGameObjects = new Dictionary<string, GameObject>();
 
-		/// Return game object transform with given tag using memoization
+		/// Return game object with given tag using memoization
 		public static GameObject FindWithTag (string tag) {
 			GameObject go;
 
-			// return any memoized transform, if the object is still valid
+			// return any memoized game object, if the object is still valid
 			if (taggedGameObjects.TryGetValue(tag, out go)) {
 				if (go != null)
 					return go;
@@ -30,7 +30,7 @@ namespace CommonsPattern
 			// search object with tag
 			go = GameObject.FindWithTag(tag);
 			if (go != null) {
-				// memoize transform and return it
+				// memoize game object and return it
 				taggedGameObjects[tag] = go;
 				return go;
 			}
