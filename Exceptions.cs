@@ -43,45 +43,6 @@ namespace CommonsHelper
 
 	}
 
-	public class UnassignedReferenceException : Exception {
-
-		private MonoBehaviour script;
-		private string referenceName;
-
-		protected UnassignedReferenceException() : base() {}
-
-		public UnassignedReferenceException(MonoBehaviour script, string referenceName) :
-		   base(string.Format("Attribute {1} of script {0} has not been assigned. Please assign it in the inspector.", script, referenceName))
-		{
-		   this.script = script;
-		   this.referenceName = referenceName;
-		}
-
-		public UnassignedReferenceException(MonoBehaviour script, string referenceName, string message)
-		   : base(message)
-		{
-			this.script = script;
-			this.referenceName = referenceName;
-		}
-
-		public UnassignedReferenceException(MonoBehaviour script, string referenceName, string message, Exception innerException) :
-		   base(message, innerException)
-		{
-			this.script = script;
-			this.referenceName = referenceName;
-		}
-
-	#if !(UNITY_WP8 || UNITY_WSA)
-		protected UnassignedReferenceException(SerializationInfo info, StreamingContext context)
-		   : base(info, context)
-		{ }
-	#endif
-
-		public MonoBehaviour Script { get { return script; } }
-		public string ReferenceName { get { return referenceName; } }
-
-	}
-
 	public class UninitializedSingletonException : Exception {
 
 		private string singletonName;
@@ -145,10 +106,9 @@ namespace CommonsHelper
 		   : base(info, context)
 		{ }
 	#endif
-	
+
 		public string SingletonName { get { return singletonName; } }
 
 	}
 
 }
-
