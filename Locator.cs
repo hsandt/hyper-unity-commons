@@ -23,7 +23,7 @@ namespace CommonsPattern
 				else {
 					// GameObject was registered with tag, but is now considered null. It has probably been destroyed by a script or during scene loading.
 					taggedGameObjects.Remove(tag);
-					Debug.LogWarningFormat("Game object with tag {0} was memoized but got destroyed in the meantime. Please avoid using Locator.FindWithTag() with transient objects.");
+					Debug.LogWarningFormat("Game object with tag {0} was memoized but got destroyed in the meantime. Please avoid using Locator.FindWithTag() with transient objects.", tag);
 				}
 			}
 
