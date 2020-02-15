@@ -1,0 +1,16 @@
+{
+  "name": "com.komehara.commons-debug",
+  "version": "1.0.0",
+  "displayName": "Commons Debug",
+  "description": "Collection of editor and runtime debug scripts",
+  "unity": "2019.3",
+  "unityRelease": "1f1",
+  "keywords": [
+    "debug"
+  ],
+  "author": {
+    "name": "Long Nguyen Huu",
+    "email": "contact@longnguyenhuu.com",
+    "url": "http://longnguyenhuu.com"
+  }
+}
