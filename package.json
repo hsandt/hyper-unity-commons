@@ -1,0 +1,17 @@
+{
+  "name": "com.komehara.commons-pattern",
+  "version": "1.0.0",
+  "displayName": "Commons Pattern",
+  "description": "Collection of scripts for common programming patterns",
+  "unity": "2019.3",
+  "unityRelease": "1f1",
+  "dependencies": {
+  },
+  "keywords": [
+  ],
+  "author": {
+    "name": "Long Nguyen Huu",
+    "email": "contact@longnguyenhuu.com",
+    "url": "http://longnguyenhuu.com"
+  }
+}
