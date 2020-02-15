@@ -18,13 +18,13 @@ public class AnchorToolsEditor : EditorWindow
 {
     /// When true make the anchors match the rect boundaries after a rect resize
     private bool stickAnchorsToRect = false;
-        
+
     static AnchorToolsEditor()
     {
         Debug.Log("[AnchorToolsEditor] (static) Registering for anchors update On Scene GUI");
-        SceneView.onSceneGUIDelegate += OnScene;
+        SceneView.duringSceneGui += OnScene;
     }
-    
+
     [MenuItem("Tools/Anchor Tools")]
     static void Init()
     {
@@ -33,7 +33,7 @@ public class AnchorToolsEditor : EditorWindow
         if (EditorPrefs.HasKey("AnchorToolsEditor.screenshotFolderPath"))
             editorScreenshot.stickAnchorsToRect = EditorPrefs.GetBool("AnchorToolsEditor.stickAnchorsToRect");
     }
-    
+
     void OnGUI()
     {
         EditorGUI.BeginChangeCheck();
@@ -62,7 +62,7 @@ public class AnchorToolsEditor : EditorWindow
     public void OnDestroy()
     {
         Debug.Log("[AnchorToolsEditor] Unregistering for anchors update On Scene GUI");
-        SceneView.onSceneGUIDelegate -= OnScene;
+        SceneView.duringSceneGui -= OnScene;
     }
 
     private static Rect anchorRect;
@@ -146,7 +146,7 @@ public class AnchorToolsEditor : EditorWindow
     private static void AnchorsToCorners()
     {
         Undo.RecordObject(currentRectTransform, "Stick Anchors");
-        
+
         float pivotX = anchorRect.width * currentRectTransform.pivot.x;
         float pivotY = anchorRect.height * (1 - currentRectTransform.pivot.y);
         currentRectTransform.anchorMin = new Vector2(0f, 1f);
