@@ -16,7 +16,7 @@ namespace CommonsHelper.Editor
 		/// Path to expected BuildData asset inside some Resources folder, without ".asset"
 		/// (important to work with Resources.Load)
 		private const string buildDataPathInResources = "Build/BuildData";
-		
+
 		/// Path to Resources folder where new BuildData will be created if no BuildData is found
 		private const string defaultResourcesDirectoryPath = "Game/Resources";
 
@@ -64,19 +64,21 @@ namespace CommonsHelper.Editor
 				return;
 			}
 
+			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
+
 			BuildData buildData = Resources.Load<BuildData>(buildDataPathInResources);
 			if (buildData == null)
 			{
 				string fullBuildDataPath = Path.Combine("Assets", defaultResourcesDirectoryPath, buildDataPathInResources);
 				Debug.Log($"[Build] No BuildData found at any Resources/{buildDataPathInResources}. Creating one at {fullBuildDataPath}.");
-				
+
 				// create directory recursively if it doesn't exist yet
 				string buildDataDirectory = Path.GetDirectoryName(fullBuildDataPath);
 				if (!Directory.Exists(buildDataDirectory))
 				{
 					Directory.CreateDirectory(buildDataDirectory);
 				}
-				
+
 				// create missing BuildData asset
 				buildData = ScriptableObject.CreateInstance<BuildData>();
 				buildData.appName = PlayerSettings.productName;
@@ -87,17 +89,17 @@ namespace CommonsHelper.Editor
 			// Example: "Tactical Ops v3.1.7 - Windows 64 dev"
 			string baseName = $"{buildData.appName} v{buildData.majorVersion}.{buildData.minorVersion}.{buildData.stageVersion} - " +
 				$"{buildTargetDerivedData.targetName}{(developmentMode ? " dev" : "")}";
-			
+
 			// For build configs generating an executable file (and exceptionally an .app folder on OSX),
 			// build inside a directory with the same name as the executable basename.
 			// This allows better build isolation and facilitates correct folder/zip uploading (e.g. on Windows, we need to upload UnityPlayer.dll).
 			// Example of locationPathName: "Build/Windows/Tactical Ops v3.1.7 - Windows 64 dev/Tactical Ops v3.1.7 - Windows 64 dev.exe"
-			
+
 			// For build configs generating a whole folder, do not add an extra level of directory.
 			// Example of locationPathName: "Build/WebGL/Tactical Ops v3.1.7 - WebGL"
-			
+
 			string extraParentDir = string.IsNullOrEmpty(buildTargetDerivedData.extension) ? "" : $"{baseName}/";
-			
+
 			BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
 			{
 				scenes = GetScenes(),
@@ -106,17 +108,42 @@ namespace CommonsHelper.Editor
 				options = autoRunOption | buildTargetDerivedData.platformSpecificOptions | extraOptions
 			};
 
+			// store original config to restore after build (and avoid unwanted changes in Player Settings that will show in VCS)
+			var originalIl2CppCompilerConfiguration = PlayerSettings.GetIl2CppCompilerConfiguration(buildTargetGroup);
+			var originalManagedStrippingLevel = PlayerSettings.GetManagedStrippingLevel(buildTargetGroup);
 
 			if (developmentMode)
+			{
+				// Debug/Development build
 				buildPlayerOptions.options |= developmentOptions;
+
+				// for development build, do not optimize and only strip at Medium level for faster build iterations
+				PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Debug);
+				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, ManagedStrippingLevel.Medium);
+			}
+			else
+			{
+				// Release build
+
+				// unfortunately, IL2CPP Master build fails on Linux, so we stick to Release even for non-development mode
+				PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Release);
+				// use strip at High level
+				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, ManagedStrippingLevel.High);
+			}
+
+			// Note: at this point, PlayerSettings have been changed, so unlike passing BuildPlayerOptions this has
+			// a side-effect on the current configuration.
 
 			Debug.LogFormat("Building {0}...", buildPlayerOptions.locationPathName);
 
 			Reporting.BuildReport buildReport = BuildPipeline.BuildPlayer(buildPlayerOptions);
 			Reporting.BuildSummary buildSummary = buildReport.summary;
-			
+
 			Debug.LogFormat("Build result: {0} ({3:c} from {1} to {2})", buildSummary.result,
 				buildSummary.buildStartedAt, buildSummary.buildEndedAt, (buildSummary.buildEndedAt - buildSummary.buildStartedAt));
+
+			PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, originalIl2CppCompilerConfiguration);
+			PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, originalManagedStrippingLevel);
 		}
 
 		/// Build Windows 64
@@ -210,4 +237,3 @@ namespace CommonsHelper.Editor
 	}
 
 }
-
