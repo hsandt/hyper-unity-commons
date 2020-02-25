@@ -29,11 +29,13 @@ namespace CommonsHelper
 		}
 
 		/// Try to get component of type T, log error if none found
-		public static T GetComponentOrFail<T>(this GameObject gameObject) {
+		public static T GetComponentOrFail<T>(this GameObject gameObject) where T : Component {
 			T component = gameObject.GetComponent<T>();
-	        if (component == null) {
-	            Debug.LogErrorFormat(gameObject, "No component of type {0} found on {1}.", typeof(T), gameObject);
-	            throw ExceptionsUtil.CreateExceptionFormat("GetComponentOrFail failed");
+			// Unity now returns a pseudo-null if component is missing, which must be checked via instance ID or ToString
+			// https://stackoverflow.com/questions/44991173/getcomponent-returning-null-instead-of-null
+	        if (component.GetInstanceID() == 0) {
+	            throw ExceptionsUtil.CreateExceptionFormat("GetComponentOrFail: no component of type {0} found on {1}",
+		            typeof(T), gameObject);
 	        }
 			return component;
 		}
@@ -101,7 +103,7 @@ namespace CommonsHelper
 	public static class ComponentExtensions {
 
 		/// Try to get component of type T, log error if none found
-		public static T GetComponentOrFail<T>(this Component script) {
+		public static T GetComponentOrFail<T>(this Component script) where T : Component {
 			return script.gameObject.GetComponentOrFail<T>();
 		}
 
