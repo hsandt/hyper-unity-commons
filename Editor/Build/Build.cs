@@ -107,27 +107,43 @@ namespace CommonsHelper.Editor
 				target = buildTarget,
 				options = autoRunOption | buildTargetDerivedData.platformSpecificOptions | extraOptions
 			};
-
+			
 			// store original config to restore after build (and avoid unwanted changes in Player Settings that will show in VCS)
+			var originalScriptingBackend = PlayerSettings.GetScriptingBackend(buildTargetGroup);
 			var originalIl2CppCompilerConfiguration = PlayerSettings.GetIl2CppCompilerConfiguration(buildTargetGroup);
 			var originalManagedStrippingLevel = PlayerSettings.GetManagedStrippingLevel(buildTargetGroup);
 
 			if (developmentMode)
 			{
-				// Debug/Development build
+				// Debug/Development build: do not optimize and only strip at Medium level for faster build iterations
 				buildPlayerOptions.options |= developmentOptions;
 
-				// for development build, do not optimize and only strip at Medium level for faster build iterations
-				PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Debug);
+				if (buildTarget != BuildTarget.WebGL)
+				{
+					// use Mono for faster build
+					PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.Mono2x);
+				}
+				else
+				{
+					// WebGL uses WebAssembly anyway, so at least set C++ config to debug
+					PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Debug);
+				}
+				
 				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, ManagedStrippingLevel.Medium);
 			}
 			else
 			{
 				// Release build
 
+				// WebGL uses WebAssembly anyway so no need to set IL2CPP
+				if (buildTarget != BuildTarget.WebGL)
+				{
+					PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.IL2CPP);
+				}
+				
 				// unfortunately, IL2CPP Master build fails on Linux, so we stick to Release even for non-development mode
+				// if Master works on Windows/WebGL, though, consider using it for their Releases
 				PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Release);
-				// use strip at High level
 				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, ManagedStrippingLevel.High);
 			}
 
@@ -142,6 +158,12 @@ namespace CommonsHelper.Editor
 			Debug.LogFormat("Build result: {0} ({3:c} from {1} to {2})", buildSummary.result,
 				buildSummary.buildStartedAt, buildSummary.buildEndedAt, (buildSummary.buildEndedAt - buildSummary.buildStartedAt));
 
+			// restore original settings
+			if (buildTarget != BuildTarget.WebGL)
+			{
+				PlayerSettings.SetScriptingBackend(buildTargetGroup, originalScriptingBackend);
+			}
+			
 			PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, originalIl2CppCompilerConfiguration);
 			PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, originalManagedStrippingLevel);
 		}
