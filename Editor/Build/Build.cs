@@ -135,15 +135,42 @@ namespace CommonsHelper.Editor
 			{
 				// Release build
 
+				bool useIL2CPP = false;
+				
 				// WebGL uses WebAssembly anyway so no need to set IL2CPP
-				if (buildTarget != BuildTarget.WebGL)
+				if (buildTarget == BuildTarget.WebGL)
 				{
-					PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.IL2CPP);
+					useIL2CPP = true;
+				}
+				else
+				{
+					// only try to build IL2CPP if target platform matches editor platform
+					// this means we use Mono when cross-platforming for Standalone targets,
+					// and require IL2CPP module to be installed when building for local platform
+					BuildTarget editorPlatform;
+					
+					// Editor must be running on one of those, so editorPlatform should be defined
+#if UNITY_EDITOR_WIN
+					editorPlatform = BuildTarget.StandaloneWindows64;
+#elif UNITY_EDITOR_OSX
+					editorPlatform = BuildTarget.StandaloneOSX;
+#elif UNITY_EDITOR_LINUX
+					editorPlatform = BuildTarget.StandaloneLinux64;
+#endif
+					if (buildTarget == editorPlatform)
+					{  
+						PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.IL2CPP);
+						useIL2CPP = true;
+					}
+				}
+
+				if (useIL2CPP)
+				{
+					// unfortunately, IL2CPP Master build fails on Linux, so we stick to Release even for non-development mode
+					// if Master works on Windows/WebGL, though, consider using it for their Releases
+					PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Release);
 				}
 				
-				// unfortunately, IL2CPP Master build fails on Linux, so we stick to Release even for non-development mode
-				// if Master works on Windows/WebGL, though, consider using it for their Releases
-				PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Release);
 				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, ManagedStrippingLevel.High);
 			}
 
