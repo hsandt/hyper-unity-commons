@@ -18,7 +18,7 @@ namespace CommonsHelper.Editor
 		private const string buildDataPathInResources = "Build/BuildData";
 
 		/// Path to Resources folder where new BuildData will be created if no BuildData is found
-		private const string defaultResourcesDirectoryPath = "Game/Resources";
+		private const string defaultResourcesDirectoryPath = "Resources";
 
 		struct BuildTargetDerivedData {
 
@@ -57,8 +57,7 @@ namespace CommonsHelper.Editor
 		/// whether it is a development build, and extra options (not used in this script, but useful for command line scripts using Unity headless mode)
 		/// This requires to have a BuildData ScriptableObject asset in some Resources/Build folder.
 		public static void BuildPlayerWithVersion (BuildTarget buildTarget, bool developmentMode, BuildOptions extraOptions = BuildOptions.None) {
-			BuildTargetDerivedData buildTargetDerivedData;
-			if (!buildTargetDerivedDataDict.TryGetValue(buildTarget, out buildTargetDerivedData))
+			if (!buildTargetDerivedDataDict.TryGetValue(buildTarget, out var buildTargetDerivedData))
 			{
 				Debug.LogWarningFormat("[Build] Build target {0} has no entry in Build.buildTargetDerivedDataDict. Stop.", buildTarget);
 				return;
