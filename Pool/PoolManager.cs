@@ -25,16 +25,10 @@ namespace CommonsPattern
 		/* state variables */
 		List<TPooledObject> m_Pool = new List<TPooledObject>();
 
-		// TEMPLATE METHOD FOR DERIVED CLASSES
-		// void Awake () {
-		//  SetInstanceOrSelfDestruct(this);
-		// 	Init();
-		// }
-
 		/// <summary>
 		/// Initialize pool by creating [poolSize] copies of the pooled object
 		/// </summary>
-		protected void Init () {
+		protected override void Init () {
 			// Debug.LogFormat("Setup with poolSize: {0}", poolSize);
 			// prepare pool with enough bullets
 			for (int i = 0; i < poolSize; ++i) {

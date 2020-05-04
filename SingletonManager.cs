@@ -4,49 +4,85 @@ using UnityEngine;
 
 namespace CommonsPattern
 {
+	/*
+	A generic singleton base class for manager game objects that are present only
+	once in the scene.
+	
+	Usage:
+	
+	1. Create a subclass script using the curiously recurrent template pattern:
+	
+	```
+	using CommonsPattern;
 
-	/// <summary>
-	/// A singleton generic base class for game objects that are present only
-	/// once in the scene. A game object is *not* created if it does not already exist,
-	/// and an exception is thrown if an instance is called but does not exist yet.
-	/// Each subclass must record itself in Awake(), using `SetInstanceOrSelfDestruct(this)`
-	///
-	/// Be aware this will not prevent a non singleton constructor
-	///   such as `T myT = new T();`
-	/// To prevent that, add `protected T () {}` to your singleton class.
-	/// </summary>
-	//public class SingletonManager<T> : MonoBehaviour where T : MonoBehaviour {
+	public class MyManager : SingletonManager<MyManager> {
+		// if you need to override behavior on Awake
+		protected override void Init() {
+			// init your stuff
+		}
+	}
+	```
+	
+	Alternatively, if you prefer defining your own Awake:
+	
+	```
+	using CommonsPattern;
+
+	public class MyManager : SingletonManager<MyManager> {
+		// if you need to override behavior on Awake
+		private void Awake() {
+			// replaces InitSingleton() for subclasses, more efficient with static type check
+			SetInstanceOrSelfDestruct(this);
+			
+			// init your stuff
+		}
+	}
+	```
+	
+	2. Create a Game Object (we recommend a Prefab) with your script.
+	Either place it in a scene that is always loaded (once), or instantiate your prefab (once) at runtime.
+	
+	Manager instances will automatically be registered as static instance, accessed via the Instance property.
+	Step 2 is necessary, as a manager game object will *not* created if it does not already exist.
+	
+	If no instances have been registered, Instance returns null without error.
+	If more than 1 instance is detected, any extra instance will self-destruct with a warning.
+	*/
 	public class SingletonManager<T> : MonoBehaviour where T : SingletonManager<T> {
 
-		// TEMPLATE
-		// protected T () {}
-		// void Awake () {
-		// 	SetInstanceOrSelfDestruct(this);
-		// }
-
 		private static T _instance;
+		public static T Instance => _instance;
 
-		public static T Instance {
-			get {
-				return _instance;
-			}
-			// set is obsolete, use SetInstanceOrSelfDestruct instead
-			protected set {
-				SetInstanceOrSelfDestruct(value);
-				Debug.LogWarningFormat("[{0}] Instance::set is deprecated, please use SetInstanceOrSelfDestruct(this).", typeof(T).ToString());
-			}
+		private void Awake() {
+			InitSingleton();
+			Init();
 		}
 
+		private void InitSingleton () {
+			T thisAsT = this as T;
+			if (thisAsT != null) {
+				SetInstanceOrSelfDestruct(thisAsT);
+			}
+			else {
+				Debug.LogErrorFormat("{0} inherits from SingletonManager<{1}> but is not a {1} itself. " +
+						"Make sure to inherit from SingletonManager using the curiously recurrent template pattern.",
+					GetType(), typeof(T));
+			}
+		}
+		
 		protected static void SetInstanceOrSelfDestruct (T value) {
 			if (_instance == null) {
 				_instance = value;
 			} else {
 				Destroy(value.gameObject);
-				Debug.LogWarningFormat("Instance of {0} already exists, existing instance will self-destruct." +
-					"Please remove any extra instances of Manager in the scene.", typeof(T));
+				Debug.LogWarningFormat("Instance of {0} already exists, this new instance will self-destruct." +
+						"Please remove any extra instances of Manager in the scene.",
+					typeof(T));
 			}
 		}
 
+		protected virtual void Init() {}
+		
 	}
 
 }

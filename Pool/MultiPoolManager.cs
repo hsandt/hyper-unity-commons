@@ -38,14 +38,7 @@ namespace CommonsPattern
 
 		// int nbObjectsInUse;
 
-		// TEMPLATE
-		// void Awake () {
-		//  SetInstanceOrSelfDestruct(this);
-
-		// 	Init();
-		// }
-
-		protected void Init () {
+		protected override void Init () {
 			LoadAllPrefabs();
 
 			foreach (var entry in prefabLibrary) {
