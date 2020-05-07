@@ -48,15 +48,11 @@ namespace CommonsDebug
 	//	public delegate void UpdateVariableHandler(string variableName, string valueText);
 	//	public static event UpdateVariableHandler UpdateVariableEvent;
 
-		void Awake () {
-	#if UNITY_EDITOR
+		protected override void Init () {
+#if UNITY_EDITOR
 			initialized = true;  // Hot reload support
-	#endif
-			SetInstanceOrSelfDestruct(this);
-			Init();
-		}
-
-		public void Init () {
+#endif
+			
 			// prepare one debug text and one debug variable per channel (only one can appear per channel at a time)
 			// (similar to pool, but fewer objects and each has a fixed position)
 

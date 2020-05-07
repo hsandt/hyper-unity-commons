@@ -138,12 +138,8 @@ namespace CommonsDebug
 		List<PooledLabel<SpatialLabelData>> m_SpatialLabelDataPool = new List<PooledLabel<SpatialLabelData>>();
 #endif
 
-		void Awake () {
-			SetInstanceOrSelfDestruct(this);
-			Init();
-		}
-
-		void Init () {
+		protected override void Init()
+		{
 			for (int i = 0; i < uiLabelPoolSize; i++) {
 				m_UILabelDataPool.Add(new PooledLabel<LabelData>());
 			}
