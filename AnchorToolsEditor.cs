@@ -11,6 +11,11 @@
 // - fixed Undo stick anchors
 // - log on callback (un)registration
 
+// Further:
+// See achimmihca's MoveCornersToAnchors https://gist.github.com/achimmihca/a8d92347f2fe88050fae5f381eff9a6d
+// and AnchorsToCornersMenuItems https://gist.github.com/achimmihca/4f053a81983c91bdf661214e1b88f65b
+// for the menu item variant (useful to bind shortcuts) and the reverse operation
+
 using UnityEngine;
 using UnityEditor;
 
