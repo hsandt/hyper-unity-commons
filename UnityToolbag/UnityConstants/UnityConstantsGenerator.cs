@@ -88,7 +88,8 @@ namespace UnityToolbag
                 writer.WriteLine("    }");
                 writer.WriteLine();
 
-                // Write out scenes
+                // Write out scene static const values
+                // (known issue: scenes with same name in different folders will create two members with same name)
                 writer.WriteLine("    public static class Scenes");
                 writer.WriteLine("    {");
                 int sceneIndex = 0;
@@ -103,6 +104,25 @@ namespace UnityToolbag
                     writer.WriteLine("        /// ID of scene '{0}'.", sceneName);
                     writer.WriteLine("        /// </summary>");
                     writer.WriteLine("        public const int {0} = {1};", MakeSafeForCode(sceneName), sceneIndex);
+
+                    sceneIndex++;
+                }
+                writer.WriteLine("    }");
+                writer.WriteLine();
+
+                // Write out scene enum values
+                // (known issue: scenes with same name in different folders will create two members with same name)
+                writer.WriteLine("    public enum ScenesEnum");
+                writer.WriteLine("    {");
+                sceneIndex = 0;
+                foreach (var scene in EditorBuildSettings.scenes) {
+                    if (!scene.enabled) {
+                        continue;
+                    }
+
+                    var sceneName = Path.GetFileNameWithoutExtension(scene.path);
+
+                    writer.WriteLine("        {0} = {1},", MakeSafeForCode(sceneName), sceneIndex);
 
                     sceneIndex++;
                 }
