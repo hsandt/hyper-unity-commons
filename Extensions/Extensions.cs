@@ -31,9 +31,10 @@ namespace CommonsHelper
 		/// Try to get component of type T, log error if none found
 		public static T GetComponentOrFail<T>(this GameObject gameObject) where T : Component {
 			T component = gameObject.GetComponent<T>();
-			// Unity now returns a pseudo-null if component is missing, which must be checked via instance ID or ToString
+			// At some point Unity returned a pseudo-null if component was missing, which had to be checked via instance ID or ToString
 			// https://stackoverflow.com/questions/44991173/getcomponent-returning-null-instead-of-null
-	        if (component.GetInstanceID() == 0) {
+			// Now it returns a proper null again, but for backward compatibility we still check the instance ID.
+	        if (component == null || component.GetInstanceID() == 0) {
 	            throw ExceptionsUtil.CreateExceptionFormat("GetComponentOrFail: no component of type {0} found on {1}",
 		            typeof(T), gameObject);
 	        }
