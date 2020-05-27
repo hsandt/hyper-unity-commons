@@ -134,7 +134,7 @@ namespace CommonsHelper.Editor
 			{
 				// Release build
 
-				bool useIL2CPP = false;
+				bool useIL2CPP;
 				
 				// WebGL uses WebAssembly anyway so no need to set IL2CPP
 				if (buildTarget == BuildTarget.WebGL)
@@ -160,6 +160,11 @@ namespace CommonsHelper.Editor
 					{  
 						PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.IL2CPP);
 						useIL2CPP = true;
+					}
+					else
+					{
+						PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.Mono2x);
+						useIL2CPP = false;
 					}
 				}
 
