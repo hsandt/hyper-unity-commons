@@ -14,10 +14,18 @@ namespace CommonsEditor
 	{
 		const string defaultScreenshotFolderPath = "Screenshots";
 		const string defaultScreenshotFilenamePrefix = "screenshot_";
+		
+		// EXPERIMENTAL: default parameters for hi-res screenshot
+		const int defaultHiResWidth = 3840;
+		const int defaultHiResHeight = 2160;
 
 		string screenshotFolderPath = defaultScreenshotFolderPath;
 		string screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
 		int nextScreenshotIndex = 0;
+		
+		// EXPERIMENTAL: parameters for hi-res screenshot
+		public int hiResWidth = defaultHiResWidth;
+		public int hiResHeight = defaultHiResHeight;
 
 		[MenuItem("Window/Editor Screenshot")]
 		static void Init()
@@ -35,7 +43,7 @@ namespace CommonsEditor
 		{
 			EditorScreenshot editorScreenshot = GetWindow<EditorScreenshot>(title: "Screenshot");
 
-			if (EditorPrefs.HasKey("EditorScreenshot.screenshotFolderPath"))
+			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.screenshotFolderPath"))
 			{
 				editorScreenshot.screenshotFolderPath = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath");
 			}
@@ -44,21 +52,45 @@ namespace CommonsEditor
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFolderPath))
 			{
 				editorScreenshot.screenshotFolderPath = defaultScreenshotFolderPath;
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath", editorScreenshot.screenshotFolderPath);
+				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath", defaultScreenshotFolderPath);
 			}
-			
-			if (EditorPrefs.HasKey("EditorScreenshot.screenshotFilenamePrefix"))
+
+			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix"))
+			{
 				editorScreenshot.screenshotFilenamePrefix = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix");
+			}
 			
 			// if empty, revert to default
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFilenamePrefix))
 			{
 				editorScreenshot.screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", editorScreenshot.screenshotFilenamePrefix);
+				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", defaultScreenshotFilenamePrefix);
+			}
+
+			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.nextScreenshotIndex"))
+			{
+				editorScreenshot.nextScreenshotIndex = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex");
+			}
+
+			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.hiResWidth"))
+			{
+				editorScreenshot.hiResWidth = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.hiResWidth");
+			}
+
+			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.hiResHeight"))
+			{
+				editorScreenshot.hiResHeight = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.hiResHeight");
 			}
 			
-			if (EditorPrefs.HasKey("EditorScreenshot.nextScreenshotIndex"))
-				editorScreenshot.nextScreenshotIndex = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex");
+			// if one dimension is 0, revert to default
+			if (editorScreenshot.hiResWidth == 0 || editorScreenshot.hiResHeight == 0)
+			{
+				editorScreenshot.hiResWidth = defaultHiResWidth;
+				editorScreenshot.hiResHeight = defaultHiResHeight;
+				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.hiResWidth", defaultHiResWidth);
+				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.hiResHeight", defaultHiResHeight);
+
+			}
 
 			return editorScreenshot;
 		}
@@ -71,15 +103,19 @@ namespace CommonsEditor
 			screenshotFolderPath = EditorGUILayout.TextField(savePathLabel, screenshotFolderPath);
 			screenshotFilenamePrefix = EditorGUILayout.TextField("Screenshot prefix", screenshotFilenamePrefix);
 			nextScreenshotIndex = EditorGUILayout.IntField("Next screenshot index", nextScreenshotIndex);
+			hiResWidth = EditorGUILayout.IntField("Hi-res width", hiResWidth);
+			hiResHeight = EditorGUILayout.IntField("Hi-res height", hiResHeight);
 
 			if (EditorGUI.EndChangeCheck()) {
 				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath", screenshotFolderPath);
 				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", screenshotFilenamePrefix);
 				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
+				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.hiResWidth", hiResWidth);
+				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.hiResHeight", hiResHeight);
 			}
 
 			if (GUILayout.Button("Take screenshot")) TakeScreenshot();
-			if (GUILayout.Button("Take hires screenshot")) TakeHiresScreenshot();
+			if (GUILayout.Button("Take hi-res screenshot")) TakeHiresScreenshot();
 		}
 
 		void TakeScreenshot()
@@ -131,10 +167,6 @@ namespace CommonsEditor
 		// EXPERIMENTAL: hi-res screenshot
 		// http://answers.unity3d.com/questions/22954/how-to-save-a-picture-take-screenshot-from-a-camer.html
 		// For transparency, insert code from http://answers.unity3d.com/questions/12070/capture-rendered-scene-to-png-with-background-tran.html
-
-		public int resWidth = 2550;
-		public int resHeight = 3300;
-
 		void TakeHiresScreenshot ()
 		{
 			Camera camera = Camera.main;
@@ -143,12 +175,12 @@ namespace CommonsEditor
 				return;
 			}
 
-			RenderTexture rt = new RenderTexture(resWidth, resHeight, 24);
+			RenderTexture rt = new RenderTexture(hiResWidth, hiResHeight, 24);
 			camera.targetTexture = rt;
-			Texture2D screenShot = new Texture2D(resWidth, resHeight, TextureFormat.RGB24, false);
+			Texture2D screenShot = new Texture2D(hiResWidth, hiResHeight, TextureFormat.RGB24, false);
 			camera.Render();
 			RenderTexture.active = rt;
-			screenShot.ReadPixels(new Rect(0, 0, resWidth, resHeight), 0, 0);
+			screenShot.ReadPixels(new Rect(0, 0, hiResWidth, hiResHeight), 0, 0);
 			camera.targetTexture = null;
 			RenderTexture.active = null; // JC: added to avoid errors
 			if (EditorApplication.isPlaying)  // ADDED
