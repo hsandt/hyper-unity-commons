@@ -44,7 +44,7 @@ namespace CommonsEditor
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFolderPath))
 			{
 				editorScreenshot.screenshotFolderPath = defaultScreenshotFolderPath;
-				EditorPrefs.SetString("EditorScreenshot.{Application.productName}.screenshotFolderPath", editorScreenshot.screenshotFolderPath);
+				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath", editorScreenshot.screenshotFolderPath);
 			}
 			
 			if (EditorPrefs.HasKey("EditorScreenshot.screenshotFilenamePrefix"))
@@ -54,7 +54,7 @@ namespace CommonsEditor
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFilenamePrefix))
 			{
 				editorScreenshot.screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
-				EditorPrefs.SetString("EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", editorScreenshot.screenshotFilenamePrefix);
+				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", editorScreenshot.screenshotFilenamePrefix);
 			}
 			
 			if (EditorPrefs.HasKey("EditorScreenshot.nextScreenshotIndex"))
@@ -73,9 +73,9 @@ namespace CommonsEditor
 			nextScreenshotIndex = EditorGUILayout.IntField("Next screenshot index", nextScreenshotIndex);
 
 			if (EditorGUI.EndChangeCheck()) {
-				EditorPrefs.SetString("EditorScreenshot.{Application.productName}.screenshotFolderPath", screenshotFolderPath);
-				EditorPrefs.SetString("EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", screenshotFilenamePrefix);
-				EditorPrefs.SetInt("EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
+				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath", screenshotFolderPath);
+				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", screenshotFilenamePrefix);
+				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
 			}
 
 			if (GUILayout.Button("Take screenshot")) TakeScreenshot();
@@ -179,7 +179,7 @@ namespace CommonsEditor
 		private void IncrementScreenshotIndex()
 		{
 			++nextScreenshotIndex;
-			EditorPrefs.SetInt("EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
+			EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
 		}
 	}
 
