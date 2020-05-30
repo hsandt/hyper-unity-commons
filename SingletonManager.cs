@@ -42,11 +42,14 @@ namespace CommonsPattern
 	2. Create a Game Object (we recommend a Prefab) with your script.
 	Either place it in a scene that is always loaded (once), or instantiate your prefab (once) at runtime.
 	
+	3. If you need to customize OnDestroy, override OnDestroyInternal instead
+	
 	Manager instances will automatically be registered as static instance, accessed via the Instance property.
 	Step 2 is necessary, as a manager game object will *not* created if it does not already exist.
 	
 	If no instances have been registered, Instance returns null without error.
 	If more than 1 instance is detected, any extra instance will self-destruct with a warning.
+	On game object/component destruction, the instance is cleared.
 	*/
 	public class SingletonManager<T> : MonoBehaviour where T : SingletonManager<T> {
 
@@ -81,8 +84,18 @@ namespace CommonsPattern
 			}
 		}
 
+		/// Override this method to customize Awake behavior while preserving singleton logic
 		protected virtual void Init() {}
+
+		private void OnDestroy()
+		{
+			// clear singleton instance (cleaner than relying on Unity's null object after destruction)
+			_instance = null;
+			OnDestroyInternal();
+		}
 		
+		/// Override this method to customize OnDestroy behavior while preserving singleton logic
+		protected virtual void OnDestroyInternal() {}
 	}
 
 }
