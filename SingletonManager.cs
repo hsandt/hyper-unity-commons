@@ -89,8 +89,13 @@ namespace CommonsPattern
 
 		private void OnDestroy()
 		{
-			// clear singleton instance (cleaner than relying on Unity's null object after destruction)
-			_instance = null;
+			// if this was the registered instance, clear singleton instance
+			// (it's cleaner than relying on Unity's null object after destruction)
+			// otherwise, it was probably self-destructing with warning due to duplicate singletons, so do nothing else
+			if (_instance == this)
+			{
+				_instance = null;
+			}
 			OnDestroyInternal();
 		}
 		
