@@ -18,6 +18,8 @@ namespace CommonsPattern
 		/* External references */
 
 		/// Parent of all the pooled objects
+		[Tooltip("Parent under which all pooled objects will be created. If not set in inspector, must be set in code, " +
+		         "in override Init() but before base.Init().")]
 		public Transform poolTransform;
 
 		/* Parameters */
