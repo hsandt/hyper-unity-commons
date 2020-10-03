@@ -22,7 +22,7 @@ public class AnchorToolsEditor : EditorWindow
     static AnchorToolsEditor()
     {
         Debug.Log("[AnchorToolsEditor] (static) Registering for anchors update On Scene GUI");
-        SceneView.onSceneGUIDelegate += OnScene;
+        SceneView.duringSceneGui += OnScene;
     }
     
     [MenuItem("Tools/Anchor Tools")]
@@ -62,7 +62,7 @@ public class AnchorToolsEditor : EditorWindow
     public void OnDestroy()
     {
         Debug.Log("[AnchorToolsEditor] Unregistering for anchors update On Scene GUI");
-        SceneView.onSceneGUIDelegate -= OnScene;
+        SceneView.duringSceneGui -= OnScene;
     }
 
     private static Rect anchorRect;
