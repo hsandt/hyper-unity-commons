@@ -46,11 +46,11 @@ namespace CommonsDebug
 			return hit;
 		}
 
-		/// Draw a raycast all or non-alloc, providing its result hits array and the number of revelant hits at the beginning of the array nbResults
+		/// Draw a raycast all or non-alloc, providing its result hits array and the number of relevant hits at the beginning of the array nbResults
 		[Conditional("DEBUG")]
 	    public static void DrawRaycastMulti (Vector2 origin, Vector2 direction, float distance, RaycastHit2D[] hits, int nbResults, Color? color = null, float duration = 0f, float z = 0f)
 		{
-				// we can't draw an infinite ray so limit the draw distance
+			// we can't draw an infinite ray so limit the draw distance
 	        if (float.IsPositiveInfinity(distance))
 				distance = maxDrawLineDistance;
 
