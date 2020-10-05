@@ -143,20 +143,26 @@ namespace CommonsHelper.Editor
 				}
 				else
 				{
-					// only try to build IL2CPP if target platform matches editor platform
-					// this means we use Mono when cross-platforming for Standalone targets,
-					// and require IL2CPP module to be installed when building for local platform
-					BuildTarget editorPlatform;
+					// only try to build IL2CPP if target platform IL2CPP is supported on editor platform
+					// else, use Mono
+					// currently, we only know that a given editor platform supports itself as IL2CPP target,
+					//  and in addition, Windows can build IL2CPP for Linux (Unity 2020+)
+					// make sure to install any IL2CPP modules available for your version of Unity
+					bool shouldBuildILD2CPP;
 					
 					// Editor must be running on one of those, so editorPlatform should be defined
 #if UNITY_EDITOR_WIN
-					editorPlatform = BuildTarget.StandaloneWindows64;
+#	if UNITY_2020_1_OR_NEWER
+					shouldBuildILD2CPP = buildTarget == BuildTarget.StandaloneWindows64 || buildTarget == BuildTarget.StandaloneLinux64;
+#	else
+					shouldBuildILD2CPP = buildTarget == BuildTarget.StandaloneWindows64;
+#	endif
 #elif UNITY_EDITOR_OSX
-					editorPlatform = BuildTarget.StandaloneOSX;
+					shouldBuildILD2CPP = buildTarget == BuildTarget.StandaloneOSX;
 #elif UNITY_EDITOR_LINUX
-					editorPlatform = BuildTarget.StandaloneLinux64;
+					shouldBuildILD2CPP = buildTarget == BuildTarget.StandaloneLinux64;
 #endif
-					if (buildTarget == editorPlatform)
+					if (shouldBuildILD2CPP)
 					{  
 						PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.IL2CPP);
 						useIL2CPP = true;
