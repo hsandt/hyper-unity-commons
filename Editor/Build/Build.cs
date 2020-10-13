@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 // TODO: add pre-build and post-build hooks via callback methods (create another non-static class to override)
+// It could be useful e.g. to delete debug objects when building for release, or platform-specific objects when
+// building for other platforms (the EditorOnly tag is not enough for these particular cases)
 
 namespace CommonsHelper.Editor
 {
