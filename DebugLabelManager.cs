@@ -1,5 +1,16 @@
 // Spatial labels are based on Xelnath's answer on https://answers.unity.com/questions/44848/how-to-draw-debug-text-into-scene.html
+// and use Handles.Label, while flat UI labels use GUI.Label as in most answers
 // UI labels are inspired by UE4's visual logging system, and replace DebugScreenManager which is using the expensive Unity UI Text
+// Known issue when using PrintText/DrawUIText:
+// ArgumentException: Getting control N's position in a group with only N controls when doing repaint
+// Aborting
+//  UnityEngine.GUILayoutGroup.GetNext
+//  UnityEngine.GUILayoutUtility.DoGetRect
+//  UnityEngine.GUILayoutUtility.GetRect
+//  UnityEngine.GUILayout.DoLabel
+//  UnityEngine.GUILayout.Label
+//  CommonsDebug.DebugLabelManager.OnGUI
+//  UnityEngine.GUIUtility:ProcessEvent
 
 using System;
 using System.Collections;
