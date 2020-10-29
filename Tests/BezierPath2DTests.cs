@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
@@ -272,11 +273,50 @@ namespace CommonsHelper.Tests
         }
         
         [Test]
+        public void InterpolatePathByNormalizedParameter_Start()
+        {
+            // verify added control points
+            Assert.AreEqual(new Vector2(0f, 0f), path.InterpolatePathByNormalizedParameter(0f));
+        }
+        
+        [Test]
+        public void InterpolatePathByNormalizedParameter_End()
+        {
+            // verify added control points
+            Assert.AreEqual(new Vector2(3f, 0f), path.InterpolatePathByNormalizedParameter(1f));
+        }
+        
+        [Test]
+        public void InterpolatePathByNormalizedParameter_MultiCurveNearEnd()
+        {
+            path.AddKeyPoint(new Vector2(6f, 0f));
+            
+            // arrange control points to make a straight line from (3, 0)
+            path.SetControlPoint(4, new Vector2(4f, 0f));
+            path.SetControlPoint(5, new Vector2(5f, 0f));
+
+            // verify added control points
+            Vector2 position = path.InterpolatePathByNormalizedParameter(0.999f);
+            Assert.AreEqual(5.999, (double)position.x, 0.01);
+            Assert.AreEqual(0f, position.y);
+        }
+        
+        [Test]
+        public void InterpolatePathByNormalizedParameter_MultiCurveEnd()
+        {
+            path.AddKeyPoint(new Vector2(5f, 0f));
+            path.AddKeyPoint(new Vector2(10f, 0f));
+
+            // verify added control points
+            Assert.AreEqual(new Vector2(10f, 0f), path.InterpolatePathByNormalizedParameter(1f));
+        }
+        
+        [Test]
         public void EvaluateCurveLength_Linear()
         {
-            // arrange last control points to make a straight line
-            path.SetControlPoint(4, new Vector2(1f, 0f));
-            path.SetControlPoint(5, new Vector2(2f, 0f));
+            // arrange control points to make a straight line
+            path.SetControlPoint(1, new Vector2(1f, 0f));
+            path.SetControlPoint(2, new Vector2(2f, 0f));
             
             // for a straight line, the number of segments doesn't matter, we'll always get the exact length
             Assert.AreEqual(3f, path.EvaluateCurveLength(0, 4));

@@ -11,13 +11,13 @@ namespace CommonsHelper
     [Serializable]
     public class BezierPath2D
     {
-        /// Compute point on 2D Bezier curve of control points p0, p1, p2, p3 at ratio t
+        /// Compute point on 2D Bezier curve of control points p0, p1, p2, p3 at parameter t
         public static Vector2 InterpolateBezier(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
         {
             return (1-t) * (1-t) * (1-t) * p0 + 3 * (1-t) * (1-t) * t * p1 + 3 * (1-t) * t * t * p2 + t * t * t * p3;
         }
 
-        /// Compute point on 2D Bezier curve (array of 4 points) at ratio t
+        /// Compute point on 2D Bezier curve (array of 4 points) at parameter t
         public static Vector2 InterpolateBezier(Vector2[] curve, float t)
         {
             return InterpolateBezier(curve[0], curve[1], curve[2], curve[3], t);
@@ -207,28 +207,59 @@ namespace CommonsHelper
                 controlPoints.RemoveRange(3 * keyIndex - 1, 3);
             }
         }
-
-        /// Return the position of the whole path at given ratio
-        /// Probably not used in final game, but useful to quickly get a result
-        public Vector2 InterpolatePathNormalized(float pathRatio)
+        
+        /// Return the position on the whole path at given cumulated parameter
+        /// (0 for start, 1 for end of 1st curve, N for end of N-th curve) 
+        public Vector2 InterpolatePathByParameter(float t)
         {
-            Debug.Assert(pathRatio >= 0f && pathRatio <= 1f);
+            // TODO: like InterpolatePathNormalized, but not normalized
+            return Vector2.zero;
+        }
+
+        /// Return the position on the whole path at given normalized parameter
+        /// (0 for start, 1 for end)
+        /// Each curve is associated an equal range of values (1 / curvesCount)
+        /// but the computed position follows the usual Bezier expression of t
+        /// so the norm of the derivative of the returned Vector2 by pathRatio
+        /// is not guaranteed to be constant (if you pass normalized time as pathRatio
+        /// to move a point, the speed of that point may vary, like a Bezier animation)
+        /// RENAMED from InterpolatePathNormalized
+        public Vector2 InterpolatePathByNormalizedParameter(float normalizedT)
+        {
+            Debug.Assert(normalizedT >= 0f && normalizedT <= 1f);
+
+            // handle edge cases (including cases that would normally assert)
+            if (normalizedT <= 0)
+            {
+                return controlPoints[0];
+            }
+            if (normalizedT >= 1)
+            {
+                return controlPoints[controlPoints.Count - 1];
+            }
             
             int curvesCount = GetCurvesCount();
-            int keyIndex = Mathf.FloorToInt(Mathf.Min(pathRatio * curvesCount, 1f));
-            if (keyIndex == curvesCount)
-            {
-                keyIndex = curvesCount - 1;
-            }
 
-            float remainder = pathRatio % 1f;
+            float pathT = normalizedT * curvesCount;
+            int keyIndex = Mathf.FloorToInt(pathT);
             
+            // we have handled normalizedT == 1 case, so we cannot be right at the end
+            // and the keyIndex should never reach curvesCount
+            Debug.Assert(keyIndex < curvesCount);
+
+            float remainder = pathT - keyIndex;  // or pathT % 1f;
             return InterpolateCurve(keyIndex, remainder);
         }
     
-
-        /// Return the position of the whole path at given distance
-        public Vector2 InterpolatePath(float distance)
+        /// Return the position on the whole path at given distance from the start
+        public Vector2 InterpolatePathByDistance(float distance)
+        {
+            // TODO: split path in segments, accumulate segment lengths and evaluate point at given curvilinear abscissa
+            return Vector2.zero;
+        }
+    
+        /// Return the position on the whole path at given distance ratio (on total path length) from the start
+        public Vector2 InterpolatePathByNormalizedDistance(float normalizedDistance)
         {
             // TODO: split path in segments, accumulate segment lengths and evaluate point at given curvilinear abscissa
             return Vector2.zero;
@@ -264,7 +295,7 @@ namespace CommonsHelper
             
             for (int i = 0; i < segmentsCount; i++)
             {
-                // compute segment end point ratio on curve
+                // compute segment end point parameter on curve
                 float t = (float)i / (float)segmentsCount;
                 
                 // locate segment end and add segment length to total length
@@ -279,7 +310,7 @@ namespace CommonsHelper
             return length;
         }
     
-        /// Return the position of an interpolated point on curve of index i at ratio t
+        /// Return the position of an interpolated point on curve of index i at parameter t
         public Vector2 InterpolateCurve(int keyIndex, float t)
         {
             int curvesCount = GetCurvesCount();
