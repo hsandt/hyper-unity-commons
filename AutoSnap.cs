@@ -1,72 +1,52 @@
 // original: http://answers.unity3d.com/questions/148812/is-there-a-toggle-for-snap-to-grid.html
+// Opens a utility window where you can enable auto positional snapping with a custom grid interval
+// Currently, the grid interval is uniform on XYZ
+// We used to be able to snap rotation but it was unreliable as too small changes in rotation
+// would be ignored and in mixed rotations, rounding rotations on individual axes would cause problems.
 
 using UnityEngine;
 using UnityEditor;
-// using System.Reflection;
 
 namespace CommonsEditor
 {
-
 	public class AutoSnap : EditorWindow
 	{
 		// singleton window instance
 		static AutoSnap window;
 
-		Vector3 prevPosition;
-		Vector3 prevRotation;
-		bool doSnap = false;
-		// bool doRotateSnap = false;
-		float snapValue = 1f;
-		// float snapRotateValue = 45f;
+		private Vector3 prevPosition = Vector3.zero;  // this is always a point on the grid, so won't prevent initial snap
+		private bool doSnap = false;
+		private float snapValue = 1f;
 
 		[MenuItem("Edit/Auto Snap %l")]
-		static void Init()
+		private static void Init()
 		{
-			// window = GetWindow<AutoSnap>();
 			window = GetWindowWithRect<AutoSnap>(new Rect (100, 100, 275, 60), utility: true, title: "Auto Snap");
-			// if (window == null) {
-			// 	window = ScriptableObject.CreateInstance<AutoSnap>();
-			// 	Vector2 windowSize = new Vector2(275, 100);
-			// 	window.minSize = windowSize;
-			// 	window.maxSize = windowSize;
-			// }
 
 			if (EditorPrefs.HasKey("AutoSnap.doSnap"))
 				window.doSnap = EditorPrefs.GetBool("AutoSnap.doSnap");
 			if (EditorPrefs.HasKey("AutoSnap.snapValue"))
 				window.snapValue = EditorPrefs.GetFloat("AutoSnap.snapValue");
-			// if (EditorPrefs.HasKey("AutoSnap.doRotateSnap"))
-			// 	window.doRotateSnap = EditorPrefs.GetBool("AutoSnap.doRotateSnap");
-			// if (EditorPrefs.HasKey("AutoSnap.snapRotateValue"))
-			// 	window.snapRotateValue = EditorPrefs.GetFloat("AutoSnap.snapRotateValue");
-
-			// window.Show();
-			// window.ShowUtility();
+			
 			window.Focus();
 		}
 
-		void OnGUI()
+		private void OnGUI()
 		{
 			doSnap = EditorGUILayout.Toggle("Auto Snap", doSnap);
-			// doRotateSnap = EditorGUILayout.Toggle ("Auto Snap Rotation", doRotateSnap);
 			snapValue = EditorGUILayout.Slider("Snap Value", snapValue, 0f, 10f);
-			// snapRotateValue = EditorGUILayout.FloatField ("Rotation Snap Value", snapRotateValue);
 			if (GUILayout.Button("Save")) Save();
 		}
 
-		void Save() {
-			// Debug.LogFormat("Save by {0}", GetInstanceID());
+		private void Save() {
 			EditorPrefs.SetBool("AutoSnap.doSnap", doSnap);
 			EditorPrefs.SetFloat("AutoSnap.snapValue", snapValue);
-			// EditorPrefs.SetBool("AutoSnap.doRotateSnap", doRotateSnap);
-			// EditorPrefs.SetFloat("AutoSnap.snapRotateValue", snapRotateValue);
 		}
 
-		void SnapUpdate()
+		private void SnapUpdate()
 		{
 			// Snap selected parents (children will not be snapped individually)
-			// Debug.LogFormat("SnapUpdate by {0}", GetInstanceID());
-			// Debug.LogFormat("doSnap: {0}", doSnap);
+			// this is disabled during Play
 			if (doSnap && snapValue > 0
 				&& !EditorApplication.isPlaying
 				&& Selection.transforms.Length > 0
@@ -75,31 +55,14 @@ namespace CommonsEditor
 				Snap();
 				prevPosition = Selection.transforms[0].position;
 			}
-
-			/*
-			// rotation snap is not reliable, too small changes in rotation
-			//   will be ignored
-			// in mixed rotations, rounding rotations on individual axes
-			//   cause problems too
-			if (doRotateSnap && snapRotateValue > 0
-				&& !EditorApplication.isPlaying
-				&& Selection.transforms.Length > 0
-				&& Selection.transforms[0].eulerAngles != prevRotation)
-			{
-				RotateSnap();
-				prevRotation = Selection.transforms[0].eulerAngles;
-	                 //Debug.Log("Value of rotation " + Selection.transforms[0].rotation);
-	                 //Debug.Log ("Value of old Rotation " + prevRotation);
-			}
-			*/
 		}
 
 		// When windows is opened, let editor snap regularly (100 FPS)
-		void OnEnable() { EditorApplication.update += SnapUpdate; }
+		private void OnEnable() { EditorApplication.update += SnapUpdate; }
 
-		void OnDisable() { EditorApplication.update -= SnapUpdate; }
+		private void OnDisable() { EditorApplication.update -= SnapUpdate; }
 
-		void Snap()
+		private void Snap()
 		{
 			foreach (Transform transform in Selection.transforms)
 			{
@@ -116,30 +79,9 @@ namespace CommonsEditor
 			}
 		}
 
-		// void RotateSnap()
-		// {
-		// 	foreach (Transform transform in Selection.transforms)
-		// 	{
-		// 		Vector3 rot = transform.eulerAngles;
-		// 		rot.x = RotRound(rot.x);
-		// 		rot.y = RotRound(rot.y);
-		// 		rot.z = RotRound(rot.z);
-		// 		transform.eulerAngles = rot;
-		// 	}
-		// }
-
-		float Round(float input)
+		private float Round(float input)
 		{
 			return snapValue * Mathf.Round(input / snapValue);
 		}
-
-		// float RotRound(float input)
-		// {
-		// 	// Debug.Log("The division is: " + (input / snapRotateValue) );
-		// 	// Debug.Log("The rounding is: " + Mathf.Round(input / snapRotateValue) );
-		// 	// Debug.Log("The return is: " + (snapRotateValue * Mathf.Round(input / snapRotateValue)) );
-		// 	return snapRotateValue * Mathf.Round(input / snapRotateValue);
-		// }
 	}
-
 }
