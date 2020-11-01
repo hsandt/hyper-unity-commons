@@ -89,31 +89,33 @@ namespace CommonsHelper.Editor
         {
             if (script.shouldDrawEditablePath)
             {
-                DrawEditablePath();
+                DrawEditablePath(script.isRelative);
             }
         }
 
-        public void DrawEditablePath ()
+        public void DrawEditablePath (bool isRelative)
         {
             Undo.RecordObject(script, "Change Bezier Path");
+
+            Vector2 offset = isRelative ? (Vector2)script.transform.position : Vector2.zero;
 
             // Phase 1: draw control points to allow the user to edit them
             // The only reason we do that before HandleEditInput is to allow editing the control points
             // while detecting add/remove point input (as it uses a custom control ID and consumes all other events)
-            DrawControlPoints(path);
+            DrawControlPoints(path, offset);
             
             // Phase 2: in edit mode only, handle add/remove point input
             bool editActive = SessionState.GetBool(kBezierPath2DEditActiveKey, false);
             if (editActive)
             {
-                HandleEditInput();
+                HandleEditInput(offset);
             }
 
             // Phase 3: draw the interpolated path to have a smooth visualization
-            DrawInterpolatedPath(path);
+            DrawInterpolatedPath(path, offset);
         }
 
-        private void HandleEditInput ()
+        private void HandleEditInput (Vector2 offset)
         {
             Event guiEvent = Event.current;
 
@@ -129,7 +131,7 @@ namespace CommonsHelper.Editor
             else if (guiEvent.shift && eventType == EventType.MouseDown && guiEvent.button == 0)
             {
                 // add new key point at the end at mouse position
-                Vector2 newKeyPoint = (Vector2) HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin;
+                Vector2 newKeyPoint = (Vector2) HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin - offset;
                 path.AddKeyPoint(newKeyPoint);
 
                 // consume event (AddDefaultControl is necessary and sufficient, but useful if other events in same control)
@@ -141,7 +143,9 @@ namespace CommonsHelper.Editor
                 if (path.GetKeyPointsCount() > 2)
                 {
                     // remove key point the nearest to mouse position
-                    Vector2 mousePoint = (Vector2) HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin;
+                    // currently, it won't remove a point if you're hovering it, not just nearby, but it's convenient
+                    // to avoid removing a point by accident when you only wanted to snap by holding ctrl 
+                    Vector2 mousePoint = (Vector2) HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin - offset;
                     int index = path.GetNearestKeyPointIndex(mousePoint);
                     path.RemoveKeyPoint(index);
                 }
@@ -151,18 +155,18 @@ namespace CommonsHelper.Editor
             }
         }
 
-        /// Draw the interpolated path, without control points
-        private static void DrawInterpolatedPath (BezierPath2D path)
+        /// Draw the interpolated path, without control points, with offset
+        private static void DrawInterpolatedPath (BezierPath2D path, Vector2 offset)
         {
-            List<Vector2> interpolatedPoints = InterpolatePath(path);
+            List<Vector2> interpolatedPoints = InterpolatePath(path, offset);
             HandlesUtil.DrawPolyLine2D(interpolatedPoints.ToArray(), pathColor);
             
             // add an arrow in the middle to show the orientation of the path
             DrawArrowInPathMiddle(interpolatedPoints);
         }
 
-        /// Return a list of interpolated points over the given path
-        private static List<Vector2> InterpolatePath (BezierPath2D path)
+        /// Return a list of interpolated points over the given path, with offset
+        private static List<Vector2> InterpolatePath (BezierPath2D path, Vector2 offset)
         {
             // interpolate each curve, and concatenate all of them into a smooth path
             List<Vector2> interpolatedPoints = new List<Vector2>();
@@ -184,14 +188,14 @@ namespace CommonsHelper.Editor
                 for (int j = 0; j < segmentCount; ++j)
                 {
                     float t = (float) j / (float) segmentCount;
-                    interpolatedPoints.Add(BezierPath2D.InterpolateBezier(curve[0], curve[1], curve[2], curve[3], t));
+                    interpolatedPoints.Add(BezierPath2D.InterpolateBezier(curve[0], curve[1], curve[2], curve[3], t) + offset);
                 }
             }
 
             // last point
             int lastIndex = path.GetControlPointsCount() - 1;
             Vector2 lastPoint = path.GetControlPoint(lastIndex);
-            interpolatedPoints.Add(lastPoint);
+            interpolatedPoints.Add(lastPoint + offset);
 
             return interpolatedPoints;
         }
@@ -210,8 +214,8 @@ namespace CommonsHelper.Editor
         }
 
         /// Draw the control points of the given path, with segments between key points and non-key control points
-        /// to visualize tangents
-        private static void DrawControlPoints (BezierPath2D path)
+        /// to visualize tangents, with offset
+        private static void DrawControlPoints (BezierPath2D path, Vector2 offset)
         {
             if (path.GetControlPointsCount() < 4)
             {
@@ -224,33 +228,33 @@ namespace CommonsHelper.Editor
             {
                 // before C# 7.0, we cannot use ref directly with GetCurve in an iteration or as return value of a getter
                 // try .NET 4.5 later
-                var p0 = path.GetControlPoint(3 * i);
+                var p0 = path.GetControlPoint(3 * i) + offset;
                 HandlesUtil.DrawFreeMoveHandle(ref p0, keyPointColor);
-                path.SetControlPoint(3 * i, p0);
+                path.SetControlPoint(3 * i, p0 - offset);
 
                 // draw out tangent point
-                var p1 = path.GetControlPoint(3 * i + 1);
+                var p1 = path.GetControlPoint(3 * i + 1) + offset;
                 HandlesUtil.DrawFreeMoveHandle(ref p1, ColorUtil.orange);
-                path.SetControlPoint(3 * i + 1, p1);
+                path.SetControlPoint(3 * i + 1, p1 - offset);
 
                 // draw out tangent
                 HandlesUtil.DrawLine(p0, p1, tangentColor);
 
                 // draw in tangent point
-                var p2 = path.GetControlPoint(3 * i + 2);
+                var p2 = path.GetControlPoint(3 * i + 2) + offset;
                 HandlesUtil.DrawFreeMoveHandle(ref p2, ColorUtil.orange);
-                path.SetControlPoint(3 * i + 2, p2);
+                path.SetControlPoint(3 * i + 2, p2 - offset);
 
                 // draw in tangent
-                var p3 = path.GetControlPoint(3 * i + 3);
+                var p3 = path.GetControlPoint(3 * i + 3) + offset;
                 HandlesUtil.DrawLine(p2, p3, tangentColor);
             }
 
             // draw last key point
             int lastIndex = path.GetControlPointsCount() - 1;
-            var lastPoint = path.GetControlPoint(lastIndex);
+            var lastPoint = path.GetControlPoint(lastIndex) + offset;
             HandlesUtil.DrawFreeMoveHandle(ref lastPoint, Color.white);
-            path.SetControlPoint(lastIndex, lastPoint);
+            path.SetControlPoint(lastIndex, lastPoint - offset);
         }
     }
 }
