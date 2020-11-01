@@ -103,6 +103,10 @@ namespace CommonsEditor
 		{
 			foreach (Transform transform in Selection.transforms)
 			{
+				// Undo in case you mis-snapped an object, but remember to disable Auto Snap before undoing or it will
+				// resnap immediately!
+				Undo.RecordObject(transform, "Auto-snap position");
+				
 				// Debug.Log(string.Format("Snapping {0}", transform));
 				Vector3 pos = transform.localPosition;
 				pos.x = Round(pos.x);
