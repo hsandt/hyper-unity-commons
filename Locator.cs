@@ -10,9 +10,12 @@ namespace CommonsPattern
 	public static class Locator {
 
 		/// Dictionary of references to game objects
+		/// Note that this has static lifetime, so avoid using Locator to find game objects that can be destroyed
+		/// (including on scene change)
 		static Dictionary<string, GameObject> taggedGameObjects = new Dictionary<string, GameObject>();
 
 		/// Return game object with given tag using memoization
+		/// If the object was found but destroyed, warn and try to find it again
 		public static GameObject FindWithTag (string tag) {
 			GameObject go;
 
