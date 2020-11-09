@@ -73,6 +73,8 @@ namespace CommonsHelper.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 SessionState.SetBool(kBezierPath2DEditActiveKey, editActive);
+                // repaint so the controls appear/disappear immediately in Scene View
+                SceneView.RepaintAll();
             }
 
             GUILayout.EndHorizontal();
@@ -87,27 +89,24 @@ namespace CommonsHelper.Editor
 
         void OnSceneGUI ()
         {
-            if (script.shouldDrawEditablePath)
-            {
-                DrawEditablePath(script.isRelative);
-            }
+            DrawEditablePath(script.isRelative);
         }
 
-        public void DrawEditablePath (bool isRelative)
+        private void DrawEditablePath (bool isRelative)
         {
             Undo.RecordObject(script, "Change Bezier Path");
 
+            bool editActive = SessionState.GetBool(kBezierPath2DEditActiveKey, false);
             Vector2 offset = isRelative ? (Vector2)script.transform.position : Vector2.zero;
 
-            // Phase 1: draw control points to allow the user to edit them
-            // The only reason we do that before HandleEditInput is to allow editing the control points
-            // while detecting add/remove point input (as it uses a custom control ID and consumes all other events)
-            DrawControlPoints(path, offset);
-            
-            // Phase 2: in edit mode only, handle add/remove point input
-            bool editActive = SessionState.GetBool(kBezierPath2DEditActiveKey, false);
             if (editActive)
             {
+                // Phase 1: in edit mode only, draw control points to allow the user to edit them
+                // The only reason we do that before HandleEditInput is to allow editing the control points
+                // while detecting add/remove point input (as it uses a custom control ID and consumes all other events)
+                DrawControlPoints(path, offset);
+                
+                // Phase 2: in edit mode only, handle add/remove point input
                 HandleEditInput(offset);
             }
 
