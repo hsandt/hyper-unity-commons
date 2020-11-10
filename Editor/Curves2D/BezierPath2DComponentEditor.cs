@@ -94,13 +94,13 @@ namespace CommonsHelper.Editor
 
         private void DrawEditablePath (bool isRelative)
         {
-            Undo.RecordObject(script, "Change Bezier Path");
-
             bool editActive = SessionState.GetBool(kBezierPath2DEditActiveKey, false);
             Vector2 offset = isRelative ? (Vector2)script.transform.position : Vector2.zero;
 
             if (editActive)
             {
+                Undo.RecordObject(script, "Change Bezier Path");
+
                 // Phase 1: in edit mode only, draw control points to allow the user to edit them
                 // The only reason we do that before HandleEditInput is to allow editing the control points
                 // while detecting add/remove point input (as it uses a custom control ID and consumes all other events)
