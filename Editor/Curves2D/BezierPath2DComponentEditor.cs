@@ -116,6 +116,10 @@ namespace CommonsHelper.Editor
 
         private void HandleEditInput (Vector2 offset)
         {
+            // Known issue: when edit is active, user cannot click on other objects even when not holding modifier key
+            // Check PolygonCollider2DTool.cs and PolygonCollider2DEditor.cs in Unity repository for examples
+            // on how to handle mouse input to edit polygon without catching all mouse events
+            
             Event guiEvent = Event.current;
 
             // Get unique control ID
