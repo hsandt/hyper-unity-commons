@@ -42,10 +42,9 @@ namespace CommonsHelper
 	    }
 
 	    public static void DrawLine (Vector3 p1, Vector3 p2, Color color) {
-	        Color oldColor = Handles.color;
-	        Handles.color = color;
-	        Handles.DrawLine(p1, p2);
-	        Handles.color = oldColor;
+		    using (new Handles.DrawingScope(color)) {
+			    Handles.DrawLine(p1, p2);
+		    }
 	    }
 	    
 	    /// <summary>
@@ -54,16 +53,11 @@ namespace CommonsHelper
 	    /// <param name="points">Array of points of the polyline.</param>
 	    /// <param name="color">Optional draw color. Current gizmos color if not set.</param>
 	    public static void DrawPolyLine (Vector3[] points, Color? color = null) {
-	        Color oldColor = Handles.color;
-	        if (color != null)
-	            Handles.color = (Color) color;
-		
-	        for (int i = 0; i < points.Length - 1; ++i) {
-	            Handles.DrawLine(points[i], points[i + 1]);
-	        }
-
-	        if (color != null)
-	            Handles.color = oldColor;
+		    using (new Handles.DrawingScope(color ?? Handles.color)) {
+				for (int i = 0; i < points.Length - 1; ++i) {
+					Handles.DrawLine(points[i], points[i + 1]);
+				}
+		    }
 	    }
 	    
 	    /// <summary>
@@ -84,14 +78,13 @@ namespace CommonsHelper
 	    /// <param name="p2">Arrow end position</param>
 	    /// <param name="color">Draw color</param>
 	    public static void DrawArrow2D (Vector2 p1, Vector2 p2, Color color) {
-	        Color oldColor = Handles.color;
-	        Handles.color = color;
-	        Handles.DrawLine(p1, p2);
-	        Vector2 forward = (p2 - p1).normalized;
-	        Vector2 right = VectorUtil.Rotate90CW(forward);
-	        Handles.DrawLine(p2, p2 - 0.2f * forward - 0.2f * right);
-	        Handles.DrawLine(p2, p2 - 0.2f * forward + 0.2f * right);
-	        Handles.color = oldColor;
+		    using (new Handles.DrawingScope(color)) {
+			    Handles.DrawLine(p1, p2);
+			    Vector2 forward = (p2 - p1).normalized;
+			    Vector2 right = VectorUtil.Rotate90CW(forward);
+			    Handles.DrawLine(p2, p2 - 0.2f * forward - 0.2f * right);
+			    Handles.DrawLine(p2, p2 - 0.2f * forward + 0.2f * right);
+		    }
 	    }
 
 	    /// <summary>
@@ -101,13 +94,12 @@ namespace CommonsHelper
 	    /// <param name="direction">Direction the arrow head is pointing to. Will be normalized.</param>
 	    /// <param name="color">Draw color</param>
 	    public static void DrawArrowHead2D (Vector2 position, Vector2 direction, Color color) {
-	        Color oldColor = Handles.color;
-	        Handles.color = color;
-	        Vector2 forward = direction.normalized;
-	        Vector2 right = VectorUtil.Rotate90CW(forward);
-	        Handles.DrawLine(position, position - 0.2f * forward - 0.2f * right);
-	        Handles.DrawLine(position, position - 0.2f * forward + 0.2f * right);
-	        Handles.color = oldColor;
+	        using (new Handles.DrawingScope(color)) {
+				Vector2 forward = direction.normalized;
+				Vector2 right = VectorUtil.Rotate90CW(forward);
+				Handles.DrawLine(position, position - 0.2f * forward - 0.2f * right);
+				Handles.DrawLine(position, position - 0.2f * forward + 0.2f * right);
+			}
 	    }
 
 		#region Handle
@@ -127,117 +119,115 @@ namespace CommonsHelper
 
 			if (pixelResolution < minDrawRectCameraResolution) return;
 
-			Color oldColor = Handles.color;
+			Color drawingColor;
 
 			// if the rectangle is reversed, change the color to notify the user
 			if (rect.width >= 0 && rect.height >= 0)
-				Handles.color = color;
+				drawingColor = color;
 			else if (rect.width < 0 && rect.height >= 0)
-				Handles.color = Color.Lerp(color, Color.yellow, 0.5f);
+				drawingColor = Color.Lerp(color, Color.yellow, 0.5f);
 			else if (rect.width >= 0)
-				Handles.color = Color.Lerp(color, Color.yellow, 0.5f);
+				drawingColor = Color.Lerp(color, Color.yellow, 0.5f);
 			else
-				Handles.color = Color.Lerp(color, Color.red, 0.5f);
+				drawingColor = Color.Lerp(color, Color.red, 0.5f);
 
-			Matrix4x4 oldMatrix = Handles.matrix;
+			Matrix4x4 drawingMatrix;
 
 			// only use the local matrix if scale is valid (no null coordinates)
 			// else, only consider position and rotation to avoid producing NaN values
-			if (owner.lossyScale.x != 0 && owner.lossyScale.y != 0 && owner.lossyScale.z != 0) {
-				Handles.matrix = owner.localToWorldMatrix;
+			if (owner.lossyScale.x != 0f && owner.lossyScale.y != 0f && owner.lossyScale.z != 0f) {
+				drawingMatrix = owner.localToWorldMatrix;
 			}
 			else {
 				// rotation is supported by not recommended, esp. because AABB operations cannot be applied, and the world rect based on the min and max corners is incorrect
-				Handles.matrix = Matrix4x4.TRS(owner.position, owner.rotation, Vector3.one);
+				drawingMatrix = Matrix4x4.TRS(owner.position, owner.rotation, Vector3.one);
 			}
 
-			// Draw rect edges
-			var points = new Vector3[] {
-				new Vector3(rect.xMin, rect.yMin),
-				new Vector3(rect.xMax, rect.yMin),
-				new Vector3(rect.xMax, rect.yMax),
-				new Vector3(rect.xMin, rect.yMax),
-				new Vector3(rect.xMin, rect.yMin)
-			};
-			Handles.DrawPolyLine(points);
-
-			if (pixelResolution < minDrawRectHandlesCameraResolution) {
-				Handles.matrix = oldMatrix;
-				Handles.color = oldColor;
-				return;
+			using (new Handles.DrawingScope(drawingColor, drawingMatrix))
+			{
+				// Draw rect edges
+				var points = new Vector3[] {
+					new Vector3(rect.xMin, rect.yMin),
+					new Vector3(rect.xMax, rect.yMin),
+					new Vector3(rect.xMax, rect.yMax),
+					new Vector3(rect.xMin, rect.yMax),
+					new Vector3(rect.xMin, rect.yMin)
+				};
+				Handles.DrawPolyLine(points);
+	
+				if (pixelResolution < minDrawRectHandlesCameraResolution) {
+					return;
+				}
+	
+				// Prepare temporary vector for the 9 handles
+				Vector2 tempVec;
+	
+				// Draw center handle
+				EditorGUI.BeginChangeCheck ();
+				tempVec = DrawFreeMoveHandle(rect.center);
+				if (EditorGUI.EndChangeCheck ()) {
+					rect.center = tempVec;
+				}
+	
+				// Draw left handle
+				EditorGUI.BeginChangeCheck ();
+				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.center.y));
+				if (EditorGUI.EndChangeCheck ()) {
+					rect.xMin = tempVec.x;
+				}
+	
+				// Draw right handle
+				EditorGUI.BeginChangeCheck ();
+				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.center.y));
+				if (EditorGUI.EndChangeCheck ()) {
+					rect.xMax = tempVec.x;
+				}
+	
+				// Draw bottom handle
+				EditorGUI.BeginChangeCheck ();
+				tempVec = DrawFreeMoveHandle(new Vector3(rect.center.x, rect.yMin));
+				if (EditorGUI.EndChangeCheck ()) {
+					rect.yMin = tempVec.y;
+				}
+	
+				// Draw top handle
+				EditorGUI.BeginChangeCheck ();
+				tempVec = DrawFreeMoveHandle(new Vector3(rect.center.x, rect.yMax));
+				if (EditorGUI.EndChangeCheck ()) {
+					rect.yMax = tempVec.y;
+				}
+	
+				// Draw bottom-left handle
+				EditorGUI.BeginChangeCheck ();
+				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.yMin));
+				if (EditorGUI.EndChangeCheck ()) {
+					rect.min = tempVec;
+				}
+	
+				// Draw top-left handle
+				EditorGUI.BeginChangeCheck ();
+				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.yMax));
+				if (EditorGUI.EndChangeCheck ()) {
+					rect.xMin = tempVec.x;
+					rect.yMax = tempVec.y;
+				}
+	
+				// Draw bottom-right handle
+				EditorGUI.BeginChangeCheck ();
+				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.yMin));
+				if (EditorGUI.EndChangeCheck ()) {
+					rect.xMax = tempVec.x;
+					rect.yMin = tempVec.y;
+				}
+	
+				// Draw top-right handle
+				EditorGUI.BeginChangeCheck ();
+				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.yMax));
+				if (EditorGUI.EndChangeCheck ()) {
+					rect.xMax = tempVec.x;
+					rect.yMax = tempVec.y;
+				}
 			}
-
-			// Prepare temporary vector for the 9 handles
-			Vector2 tempVec;
-
-			// Draw center handle
-			EditorGUI.BeginChangeCheck ();
-			tempVec = DrawFreeMoveHandle(rect.center);
-			if (EditorGUI.EndChangeCheck ()) {
-				rect.center = tempVec;
-			}
-
-			// Draw left handle
-			EditorGUI.BeginChangeCheck ();
-			tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.center.y));
-			if (EditorGUI.EndChangeCheck ()) {
-				rect.xMin = tempVec.x;
-			}
-
-			// Draw right handle
-			EditorGUI.BeginChangeCheck ();
-			tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.center.y));
-			if (EditorGUI.EndChangeCheck ()) {
-				rect.xMax = tempVec.x;
-			}
-
-			// Draw bottom handle
-			EditorGUI.BeginChangeCheck ();
-			tempVec = DrawFreeMoveHandle(new Vector3(rect.center.x, rect.yMin));
-			if (EditorGUI.EndChangeCheck ()) {
-				rect.yMin = tempVec.y;
-			}
-
-			// Draw top handle
-			EditorGUI.BeginChangeCheck ();
-			tempVec = DrawFreeMoveHandle(new Vector3(rect.center.x, rect.yMax));
-			if (EditorGUI.EndChangeCheck ()) {
-				rect.yMax = tempVec.y;
-			}
-
-			// Draw bottom-left handle
-			EditorGUI.BeginChangeCheck ();
-			tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.yMin));
-			if (EditorGUI.EndChangeCheck ()) {
-				rect.min = tempVec;
-			}
-
-			// Draw top-left handle
-			EditorGUI.BeginChangeCheck ();
-			tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.yMax));
-			if (EditorGUI.EndChangeCheck ()) {
-				rect.xMin = tempVec.x;
-				rect.yMax = tempVec.y;
-			}
-
-			// Draw bottom-right handle
-			EditorGUI.BeginChangeCheck ();
-			tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.yMin));
-			if (EditorGUI.EndChangeCheck ()) {
-				rect.xMax = tempVec.x;
-				rect.yMin = tempVec.y;
-			}
-
-			// Draw top-right handle
-			EditorGUI.BeginChangeCheck ();
-			tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.yMax));
-			if (EditorGUI.EndChangeCheck ()) {
-				rect.xMax = tempVec.x;
-				rect.yMax = tempVec.y;
-			}
-
-			Handles.matrix = oldMatrix;
-			Handles.color = oldColor;
 		}
 
 	    /// Proxy for FreeMoveHandle with 2D position
@@ -264,42 +254,41 @@ namespace CommonsHelper
 
 	    /// Variant of DrawFreeMoveHandle (without controlID) with 2D position by reference
 	    public static void DrawFreeMoveHandle (ref Vector2 pos, Color color, Vector2? snap = null, Handles.CapFunction capFunction = null, int? controlID = null) {
-	        Color oldColor = Handles.color;
-	        Handles.color = color;
-	        pos = DrawFreeMoveHandle(pos, snap, capFunction, controlID);
-	        Handles.color = oldColor;
+		    using (new Handles.DrawingScope(color)) {
+			    pos = DrawFreeMoveHandle(pos, snap, capFunction, controlID);
+		    }
 	    }
 
 	    /// Variant of DrawFreeMoveHandle (without controlID) with 3D position by reference
 	    public static void DrawFreeMoveHandle (ref Vector3 pos, Color color, Vector3? snap = null, Handles.CapFunction capFunction = null, int? controlID = null) {
-	        Color oldColor = Handles.color;
-	        Handles.color = color;
-	        pos = DrawFreeMoveHandle(pos, snap, capFunction, controlID);
-	        Handles.color = oldColor;
+		    using (new Handles.DrawingScope(color)) {
+				pos = DrawFreeMoveHandle(pos, snap, capFunction, controlID);
+		    }
 	    }
 
 	    /// Proxy for DrawWireDisc (without controlID) with 2D position by reference
 	    public static void DrawCircleHandles (ref Vector2 center, ref float radius, Color color, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null) {
-	        Color oldColor = Handles.color;
-	        Handles.color = color;
-	        DrawFreeMoveHandle(ref center, color, snap, capFunction);           // center
-	        Handles.DrawWireDisc((Vector3)center, Vector3.forward, radius);     // circle
-	        radius = Handles.RadiusHandle(Quaternion.identity, center, radius); // radius
-	        Handles.color = oldColor;
+		    using (new Handles.DrawingScope(color)) {
+				DrawFreeMoveHandle(ref center, color, snap, capFunction);           // center
+				Handles.DrawWireDisc((Vector3)center, Vector3.forward, radius);     // circle
+				radius = Handles.RadiusHandle(Quaternion.identity, center, radius); // radius
+		    }
 	    }
 
-		/// Store the current Handles matrix to oldMatrix reference, and set the Handles matrix to the local matrix
-		/// of the passed transform, ignoring scale if it has null components
-		public static void SetHandlesMatrix(Transform tr, out Matrix4x4 oldMatrix) {
-			oldMatrix = Handles.matrix;
+		/// Return DrawingScope with local to world matrix of passed transform, ignoring scale if it has null components
+		/// Usage: using (HandlesUtil.GetMatrixDrawingScope()) { /* draw your local handles */ }
+		public static Handles.DrawingScope GetMatrixDrawingScope(Transform tr) {
+			Matrix4x4 drawingMatrix;
 
 			// only use the local matrix if scale is valid (no null coordinates)
 			// else, only consider position and rotation to avoid producing NaN values
 			if (tr.lossyScale.x != 0 && tr.lossyScale.y != 0 && tr.lossyScale.z != 0)
-				Handles.matrix = tr.localToWorldMatrix;
+				drawingMatrix = tr.localToWorldMatrix;
 			else {
-				Handles.matrix = Matrix4x4.TRS(tr.position, tr.rotation, Vector3.one);
+				drawingMatrix = Matrix4x4.TRS(tr.position, tr.rotation, Vector3.one);
 			}
+
+			return new Handles.DrawingScope(drawingMatrix);
 		}
 
 	    #endregion
