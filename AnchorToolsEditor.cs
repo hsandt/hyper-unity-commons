@@ -54,13 +54,20 @@ public class AnchorToolsEditor : EditorWindow
 
     private static void OnScene(SceneView sceneView)
     {
-        AnchorToolsEditor editorScreenshot = GetWindow<AnchorToolsEditor>(title: "Anchor Tools");
-
         // detect mouse up button as a resize event; this is not accurate as other actions may be used,
         // and we may modify the rect by inputting values with the keyboard, but works for quick usage
-        if (editorScreenshot.stickAnchorsToRect && Event.current.type == EventType.MouseUp && Event.current.button == 0)
+        if (Event.current.type == EventType.MouseUp && Event.current.button == 0)
         {
-            UpdateAnchors();
+            // Get Anchor Tools Editor window to check if we should stick anchors to rect
+            // ! This will focus the Anchor Tools Editor, so do this at the deepest level possible
+            // Currently it will do this every time we release the left mouse button on the scene (without even checking
+            // if we actually modified a rectangle transform), which may be unwanted (currently it doesn't bother much)
+            // Consider storing stickAnchorsToRect in User Preferences instead to access it without depending on Window
+            AnchorToolsEditor editorScreenshot = GetWindow<AnchorToolsEditor>(title: "Anchor Tools");
+            if (editorScreenshot.stickAnchorsToRect)
+            {
+                UpdateAnchors();
+            }
         }
     }
 
