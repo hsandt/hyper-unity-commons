@@ -42,6 +42,7 @@ namespace CommonsHelper
 		}
 
 		/// Instantiate prefab / clone game object (helper to avoid casting to GameObject every time)
+		[System.Obsolete("Use GameObject.Instantiate which now returns with same type as first argument")]
 		public static GameObject Instantiate (this GameObject model) {
 			if (model == null) throw new Exception("Cannot instantiate null model.");
 			GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
@@ -49,6 +50,7 @@ namespace CommonsHelper
 		}
 
 		/// Instantiate prefab / clone game object under parent (named InstantiateUnder to avoid conflict with Instantiate<T>(Transform))
+		[System.Obsolete("Use GameObject.Instantiate which now handles common arguments and returns with same type as first argument")]
 		public static GameObject InstantiateUnder (this GameObject model, Transform parentTr, bool instantiateInWorldSpace = false) {
 			if (model == null) throw new Exception("Cannot instantiate null model.");
 			GameObject gameObjectInstance = Object.Instantiate(model, parentTr, instantiateInWorldSpace) as GameObject;
@@ -56,7 +58,8 @@ namespace CommonsHelper
 		}
 
 		/// Instantiate prefab / clone game object under parent retaining the local position, adding some offset
-		[System.Obsolete("Use Instantiate as GameObject with parent argument, then add offset to localPosition instead")]
+		[System.Obsolete("Use GameObject.Instantiate with worldPositionStays: false, " +
+		                 "then add offset to localPosition instead")]
 		public static GameObject InstantiateUnderWithOffset (this GameObject model, Transform parentTr, Vector3 offset) {
 			if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 			GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
@@ -66,6 +69,8 @@ namespace CommonsHelper
 		}
 
 		/// Instantiate prefab / clone game object and set it at local position under parent transform on layer layer
+		[System.Obsolete("Use GameObject.Instantiate with worldPositionStays: false, " +
+			"then add offset to localPosition and set layer manually instead")]
 		public static GameObject InstantiateUnderAtOn (this GameObject model, Transform parentTr, Vector3 localPos, int layer = -1) {
 			if (model == null) throw new Exception("Cannot instantiate null model.");
 			GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
@@ -77,7 +82,7 @@ namespace CommonsHelper
 		}
 
 		/// Instantiate prefab / clone game object and set it at world position under parent transform
-		[System.Obsolete("Use Instantiate as GameObject with parent and position arguments instead")]
+ 		[System.Obsolete("Use GameObject.Instantiate which now handles common arguments and returns with same type as first argument")]
 		public static GameObject InstantiateUnderWithWorldPosition (this GameObject model, Transform parentTr, Vector3 position) {
 			if (model == null) throw ExceptionsUtil.CreateExceptionFormat("Cannot instantiate null model.");
 			GameObject gameObjectInstance = Object.Instantiate(model) as GameObject;
