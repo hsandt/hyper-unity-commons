@@ -32,7 +32,7 @@ namespace CommonsPattern
 			// Debug.LogFormat("Setup with poolSize: {0}", poolSize);
 			// prepare pool with enough bullets
 			for (int i = 0; i < poolSize; ++i) {
-				GameObject pooledGameObject = pooledObjectPrefab.InstantiateUnder(poolTransform);
+				GameObject pooledGameObject = Instantiate(pooledObjectPrefab, poolTransform);
 				TPooledObject pooledObject = pooledGameObject.GetComponentOrFail<TPooledObject>();
 			    pooledObject.InitPooled();
 				pooledObject.Release();
