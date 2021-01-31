@@ -7,7 +7,7 @@ namespace CommonsHelper.Editor
 {
 	public class HierarchyGeneration : MonoBehaviour
 	{
-	    [MenuItem("GameObject/Create Empty Sibling #&d", priority = 1)]
+	    [MenuItem("GameObject/Create Empty Sibling #&d", priority = 0)]
 	    static void CreateEmptySibling()
 	    {
 	        GameObject go = new GameObject("GameObject");
