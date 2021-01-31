@@ -1,4 +1,4 @@
-/// From HierarchyGeneration.cs found online, but removed the last 2 methods that were added natively to Unity
+// From HierarchyGeneration.cs found online, but removed the last 2 methods that were added natively to Unity
 
 using UnityEngine;
 using UnityEditor;
@@ -7,7 +7,7 @@ namespace CommonsHelper.Editor
 {
 	public class HierarchyGeneration : MonoBehaviour
 	{
-	    [MenuItem("GameObject/Create Empty Sibling #&d", priority = 5)]
+	    [MenuItem("GameObject/Create Empty Sibling #&d", priority = 1)]
 	    static void CreateEmptySibling()
 	    {
 	        GameObject go = new GameObject("GameObject");
