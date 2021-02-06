@@ -48,7 +48,14 @@ namespace CommonsHelper.Editor
 		};
 
 		const BuildOptions autoRunOption = BuildOptions.AutoRunPlayer;
-		const BuildOptions developmentOptions = BuildOptions.Development | BuildOptions.AllowDebugging;
+		
+		// options for dev build on Standalone (PC and mobile)
+		const BuildOptions standAloneDevelopmentOptions = BuildOptions.Development | BuildOptions.AllowDebugging;
+		
+		// WebGL dev build only should not rely on AllowDebugging aka Script Debugging
+		// (despite being only visible for Standalone in Build Settings UI), so don't use this option on WebGL dev build
+		// See https://forum.unity.com/threads/cannot-build-in-development-mode.691183/#post-6793151
+		const BuildOptions webGLDevelopmentOptions = BuildOptions.Development;
 
 		/// Return all the scenes checked in the Build Settings
 		static string[] GetScenes () {
@@ -117,15 +124,18 @@ namespace CommonsHelper.Editor
 			if (developmentMode)
 			{
 				// Debug/Development build: do not optimize and only strip at Medium level for faster build iterations
-				buildPlayerOptions.options |= developmentOptions;
 
 				if (buildTarget != BuildTarget.WebGL)
 				{
+					buildPlayerOptions.options |= standAloneDevelopmentOptions;
+					
 					// use Mono for faster build
 					PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.Mono2x);
 				}
 				else
 				{
+					buildPlayerOptions.options |= webGLDevelopmentOptions;
+					
 					// WebGL uses WebAssembly anyway, so at least set C++ config to debug
 					PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Debug);
 				}
