@@ -55,7 +55,8 @@ namespace CommonsHelper.Editor
 		// WebGL dev build only should not rely on AllowDebugging aka Script Debugging
 		// (despite being only visible for Standalone in Build Settings UI), so don't use this option on WebGL dev build
 		// See https://forum.unity.com/threads/cannot-build-in-development-mode.691183/#post-6793151
-		const BuildOptions webGLDevelopmentOptions = BuildOptions.Development;
+		// Instead, we need to Connect to Host or it will fail to run (and it must be run with localhost)
+		const BuildOptions webGLDevelopmentOptions = BuildOptions.Development | BuildOptions.ConnectToHost;
 
 		/// Return all the scenes checked in the Build Settings
 		static string[] GetScenes () {
