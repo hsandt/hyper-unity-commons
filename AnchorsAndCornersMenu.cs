@@ -216,11 +216,27 @@ public static class MoveAnchorsToCornersExtensions
 
     public static void MoveAnchorsToCorners(this RectTransform rectTransform)
     {
-        RectTransform parentRectTransform = rectTransform.transform.parent.GetComponent<RectTransform>();
-        Vector2 size = CalculateAnchorRectWidthAndHeight(rectTransform);
-        Vector2 position = CalculateAnchorRectPosition(rectTransform, parentRectTransform, size.x, size.y);
-        Rect anchorRect = new Rect(position.x, position.y, size.x, size.y);
-        MoveAnchorsToCorners(rectTransform, parentRectTransform, anchorRect);
+        Transform parent = rectTransform.transform.parent;
+        RectTransform parentRectTransform = null;
+        
+        if (parent != null)
+        {
+            parentRectTransform = parent.GetComponent<RectTransform>();
+        }
+
+        if (parentRectTransform != null)
+        {
+            Vector2 size = CalculateAnchorRectWidthAndHeight(rectTransform);
+            Vector2 position = CalculateAnchorRectPosition(rectTransform, parentRectTransform, size.x, size.y);
+            Rect anchorRect = new Rect(position.x, position.y, size.x, size.y);
+            MoveAnchorsToCorners(rectTransform, parentRectTransform, anchorRect);
+        }
+        else
+        {
+            Debug.LogWarningFormat(rectTransform,
+                "rectTransform {0} has no parent with RectTransform, it is probably the root Canvas. Cannot MoveAnchorsToCorners.",
+                rectTransform);
+        }
     }
 
     private static Vector2 CalculateAnchorRectWidthAndHeight(RectTransform ownRectTransform)
