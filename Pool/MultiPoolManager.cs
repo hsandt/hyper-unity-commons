@@ -36,9 +36,7 @@ namespace CommonsPattern
 		protected Dictionary<string, GameObject> prefabLibrary = new Dictionary<string, GameObject>();
 
 		/// Pool of object instances, per name
-		Dictionary<string, List<TPooledObject>> m_MultiPool = new Dictionary<string, List<TPooledObject>>();
-
-		// int nbObjectsInUse;
+		private readonly Dictionary<string, List<TPooledObject>> m_MultiPool = new Dictionary<string, List<TPooledObject>>();
 
 		protected override void Init () {
 			LoadAllPrefabs();
@@ -89,11 +87,12 @@ namespace CommonsPattern
 	            }
 	        }
 	        else {
-	            Debug.LogWarningFormat(this, "Prefab {0} not found in multi pool dictionary", prefabName);
+	            Debug.LogErrorFormat(this, "Prefab {0} not found in multi pool dictionary", prefabName);
 	            return null;
 	        }
-			// starvation
-			Debug.LogWarningFormat(this, "Multi-pool starvation, cannot get a released instance of object {0}", prefabName);
+			
+			// pool starvation
+			Debug.LogErrorFormat(this, "Multi-pool starvation, cannot get a released instance of object {0}", prefabName);
 			return null;
 		}
 
