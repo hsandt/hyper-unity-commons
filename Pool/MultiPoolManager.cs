@@ -22,14 +22,23 @@ namespace CommonsPattern
 		         "in override Init() but before base.Init().")]
 		public Transform poolTransform;
 
+		
 		/* Parameters */
 
-		[Tooltip("Path of gameobject prefabs to load, starting just after Resources/")]
-		[SerializeField] protected string resourcePrefabsPath = "";
+		[SerializeField, Tooltip("Path of gameobject prefabs to load, starting just after Resources/")]
+		protected string resourcePrefabsPath = "";
 
-		[Tooltip("Max number of objects to pool for each type (multi-pool total size is a multiple)")]
-		[SerializeField] protected int poolSize = 10;
-
+		[SerializeField, Tooltip("Initial number of objects to pool for each type (multi-pool total size is a multiple). " +
+		                         "More pooled objects may be instantiated dynamically if Instantiate New Object On Starvation is true.")]
+		[UnityEngine.Serialization.FormerlySerializedAs("poolSize")]
+		protected int initialPoolSize = 10;
+		
+		[SerializeField, Tooltip("Should the manager instantiate a new pooled object in case of starvation? " +
+		                         "This will increase the pool size dynamically and may slow down on spawn, " +
+		                         "but avoids not spawning an object at all. Recommended for gameplay objects.")]
+		protected bool instantiateNewObjectOnStarvation = false;
+		
+		
 		/* State variables */
 
 		/// Dictionary of resource prefabs used to generate pooled objects, per name
@@ -38,6 +47,7 @@ namespace CommonsPattern
 		/// Pool of object instances, per name
 		private readonly Dictionary<string, List<TPooledObject>> m_MultiPool = new Dictionary<string, List<TPooledObject>>();
 
+		
 		protected override void Init () {
 			LoadAllPrefabs();
 
@@ -58,19 +68,26 @@ namespace CommonsPattern
 			}
 		}
 
-		/// Initialize and fill pool [prefabName] with [poolSize] prefab instances
+		/// Initialize and fill pool [prefabName] with [initialPoolSize] prefab instances
 		void GeneratePool (string prefabName, GameObject prefab) {
 #if DEBUG_MULTI_POOL_MANAGER
-			Debug.LogFormat("[MultiPoolManager] Setup prefab pool of size {0} for {1}", poolSize, prefab.name);
+			Debug.LogFormat("[MultiPoolManager] Setup prefab pool of size {0} for {1}", initialPoolSize, prefab.name);
 #endif
 			m_MultiPool.Add(prefabName, new List<TPooledObject>());
-			for (int i = 0; i < poolSize; ++i) {
-				GameObject sourceObject = Instantiate(prefab, poolTransform) as GameObject;
-				TPooledObject pooledObject = sourceObject.GetComponentOrFail<TPooledObject>();
-			    pooledObject.InitPooled();
-				pooledObject.Release();
-				m_MultiPool[prefabName].Add(pooledObject);
+			for (int i = 0; i < initialPoolSize; ++i)
+			{
+				InstantiatePooledObject(prefabName, prefab);
 			}
+		}
+
+		private TPooledObject InstantiatePooledObject(string prefabName, GameObject prefab)
+		{
+			GameObject sourceObject = Instantiate(prefab, poolTransform);
+			TPooledObject pooledObject = sourceObject.GetComponentOrFail<TPooledObject>();
+			pooledObject.InitPooled();
+			pooledObject.Release();
+			m_MultiPool[prefabName].Add(pooledObject);
+			return pooledObject;
 		}
 
 		/// Retrieve a released instance in the pool of objects called prefabName
@@ -78,8 +95,7 @@ namespace CommonsPattern
 			// O(n), n pool size
 	        List<TPooledObject> pooledObjects;
 	        if (m_MultiPool.TryGetValue(prefabName, out pooledObjects)) {
-	            Debug.AssertFormat(poolSize == pooledObjects.Count, this, "[CODE] Pool list of {0} in multipool has {1} elements but pool size is {2}.", prefabName, pooledObjects.Count, poolSize);
-				for (int i = 0; i < poolSize; ++i) {
+				for (int i = 0; i < pooledObjects.Count; ++i) {
 	                TPooledObject pooledObject = pooledObjects[i];
 					if (!pooledObject.IsInUse()) {
 						return pooledObject;
@@ -92,6 +108,13 @@ namespace CommonsPattern
 	        }
 			
 			// pool starvation
+			if (instantiateNewObjectOnStarvation)
+			{
+				// Performance note: we are not "smart", instantiating a batch of new objects
+				// as a List allocation would do, by power of two. We really just instantiate what we need.
+				return InstantiatePooledObject(prefabName, prefabLibrary[prefabName]);
+			}
+			
 			Debug.LogErrorFormat(this, "Multi-pool starvation, cannot get a released instance of object {0}", prefabName);
 			return null;
 		}
@@ -106,7 +129,7 @@ namespace CommonsPattern
 			//	we can immediately check the length of the lists to know if any / all are used
 			foreach (var nameListPair in m_MultiPool)
 			{
-				for (int i = 0; i < poolSize; ++i) {
+				for (int i = 0; i < initialPoolSize; ++i) {
 					TPooledObject pooledObject = nameListPair.Value[i];
 					if (pooledObject.IsInUse()) {
 						return true;
