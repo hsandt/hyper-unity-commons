@@ -21,7 +21,7 @@ namespace CommonsPattern
         /* State */
         
         /// List of objects in the pool, active or inactive
-        private List<TPooledObject> m_Objects = new List<TPooledObject>();
+        private List<TPooledObject> m_Objects;
 
         
         /// Constructor.
@@ -34,6 +34,8 @@ namespace CommonsPattern
         /// Initialise pool with [initialPoolSize] objects
         public void Init(int initialPoolSize)
         {
+            m_Objects = new List<TPooledObject>(initialPoolSize);
+            
             for (int i = 0; i < initialPoolSize; ++i)
             {
                 InstantiatePooledObject();
