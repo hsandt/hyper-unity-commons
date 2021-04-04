@@ -37,7 +37,7 @@ namespace CommonsPattern
 		/* State */
 
 		/// Pool managed internally
-		private Pool<TPooledObject> m_Pool;
+		protected Pool<TPooledObject> m_Pool;
 		
 
 		protected override void Init ()
@@ -52,6 +52,12 @@ namespace CommonsPattern
 		public TPooledObject GetObject()
 		{
 			return m_Pool.GetObject(instantiateNewObjectOnStarvation);
+		}
+		
+		/// Release all objects in use
+		public void ReleaseAllObjects()
+		{
+			m_Pool.ReleaseAllObjects();
 		}
 	}
 }

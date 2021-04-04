@@ -45,15 +45,15 @@ namespace CommonsPattern
 		
 		/* State */
 
-		/// Dictionary of pools managed internally, indexed by prefab name
-		private readonly Dictionary<string, Pool<TPooledObject>> m_MultiPool = new Dictionary<string, Pool<TPooledObject>>();
+		/// Dictionary of sub-pools managed internally, indexed by prefab name
+		protected readonly Dictionary<string, Pool<TPooledObject>> m_MultiPool = new Dictionary<string, Pool<TPooledObject>>();
 
 		
 		protected override void Init() {
 			// Load all prefabs from Resources
 			LoadAllPrefabs();
 
-			// Generate pool of objects for each prefab
+			// Generate a sub-pool of objects for each prefab
 			foreach (var entry in prefabLibrary) {
 				string prefabName = entry.Key;
 				GameObject prefab = entry.Value;
@@ -117,15 +117,23 @@ namespace CommonsPattern
 			//	or decrement in counter of objects in use, so we can directly answer
 			// ALTERNATIVE 2: two lists, one of objects released and one of objects in use
 			//	we can immediately check the length of the lists to know if any / all are used
-			foreach (var namePoolPair in m_MultiPool)
+			foreach (Pool<TPooledObject> pool in m_MultiPool.Values)
 			{
-				Pool<TPooledObject> pool = namePoolPair.Value;
 				if (pool.AnyInUse())
 				{
 					return true;
 				}
 			}
 			return false;
+		}
+		
+		/// Release all objects in use in all sub-pools
+		public void ReleaseAllObjects()
+		{
+			foreach (Pool<TPooledObject> pool in m_MultiPool.Values)
+			{
+				pool.ReleaseAllObjects();
+			}
 		}
 	}
 }

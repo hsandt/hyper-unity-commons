@@ -96,5 +96,17 @@ namespace CommonsPattern
             }
             return false;
         }
+        
+        /// Release all objects in use
+        public void ReleaseAllObjects()
+        {
+            foreach (TPooledObject pooledObject in m_Objects)
+            {
+                if (pooledObject.IsInUse())
+                {
+                    pooledObject.Release();
+                }
+            }
+        }
     }
 }
