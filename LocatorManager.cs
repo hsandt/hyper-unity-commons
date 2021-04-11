@@ -7,6 +7,8 @@ namespace CommonsPattern
 	/// Singleton manager that memoizes objects by tag
 	/// It is important to make it a singleton with instance members rather than a (static) class with static members
 	/// to avoid preserving taggedGameObjects across play sessions, in case we change tags between two sessions.
+	/// SEO: before any script whose Awake uses LocatorManager (e.g. PoolManager setting poolTransform in Init)
+	/// executionOrder was set to -50 in .meta to work with most scripts
 	public class LocatorManager : SingletonManager<LocatorManager>
 	{
 		/// Dictionary of references to game objects
