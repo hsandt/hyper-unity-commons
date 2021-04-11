@@ -1,11 +1,8 @@
 ﻿//#define DEBUG_MULTI_POOL_MANAGER
 
 using UnityEngine;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-
-using CommonsHelper;
 
 namespace CommonsPattern
 {
@@ -89,9 +86,9 @@ namespace CommonsPattern
 		/// Initialize and fill pool of [initialPoolSize] objects of type [prefabName]
 		private void GeneratePool(string prefabName, GameObject pooledObjectPrefab)
 		{
-//#if DEBUG_MULTI_POOL_MANAGER
+#if DEBUG_MULTI_POOL_MANAGER
 			Debug.LogFormat("[MultiPoolManager] Setup prefab pool of size {0} for object type '{1}'", initialPoolSize, prefabName);
-//#endif
+#endif
 			m_MultiPool.Add(prefabName, new Pool<TPooledObject>(pooledObjectPrefab, poolTransform));
 			m_MultiPool[prefabName].Init(initialPoolSize);
 		}
@@ -104,7 +101,7 @@ namespace CommonsPattern
 		        return pool.GetObject(instantiateNewObjectOnStarvation);
 	        }
 			
-			Debug.LogErrorFormat(this, "Prefab '{0}' not found in multi pool dictionary", prefabName);
+			Debug.LogErrorFormat(this, "Prefab '{0}' not found in multi pool dictionary of {1}", prefabName, name);
 			return null;
 		}
 
