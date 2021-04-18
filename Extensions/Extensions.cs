@@ -29,6 +29,9 @@ namespace CommonsHelper
 		}
 
 		/// Try to get component of type T, log error if none found
+		/// Note that we ensure T : Component unlike the original GetComponent.
+		/// If you need to get a component verifying some unrelated interface IMyInterface,
+		/// use GetComponent[IMyInterface] and check the result yourself
 		public static T GetComponentOrFail<T>(this GameObject gameObject) where T : Component {
 			T component = gameObject.GetComponent<T>();
 			// At some point Unity returned a pseudo-null if component was missing, which had to be checked via instance ID or ToString
