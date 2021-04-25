@@ -104,7 +104,7 @@ namespace CommonsHelper
 
 		#region Handle
 
-		const float handleSize = 0.1f;
+		const float defaultHandleScreenSize = 0.1f;
 		static readonly Handles.CapFunction defaultHandleCap = Handles.CubeHandleCap;  // Unity 5.6
 
 		/// Minimum camera resolution required to show the rectangle at all
@@ -231,8 +231,8 @@ namespace CommonsHelper
 		}
 
 	    /// Proxy for FreeMoveHandle with 2D position
-	    public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2? optionalSnap = null, Handles.CapFunction capFunction = null, int? controlID = null) {
-	        float size = HandleUtility.GetHandleSize ((Vector3) pos) * handleSize;
+	    public static Vector2 DrawFreeMoveHandle (Vector2 pos, Vector2? optionalSnap = null, Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null) {
+	        float size = HandleUtility.GetHandleSize ((Vector3) pos) * defaultHandleScreenSize * screenSizeScale;
 	        Vector3 snap = optionalSnap ?? Vector3.one;
 	        capFunction = capFunction ?? defaultHandleCap;
 	        
@@ -242,8 +242,8 @@ namespace CommonsHelper
 		}
 
 	    /// Proxy for FreeMoveHandle with 3D position
-		public static Vector3 DrawFreeMoveHandle (Vector3 pos, Vector3? optionalSnap = null, Handles.CapFunction capFunction = null, int? controlID = null) {
-	        float size = HandleUtility.GetHandleSize ((Vector3) pos) * handleSize;
+		public static Vector3 DrawFreeMoveHandle (Vector3 pos, Vector3? optionalSnap = null, Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null) {
+	        float size = HandleUtility.GetHandleSize ((Vector3) pos) * defaultHandleScreenSize * screenSizeScale;
 	        Vector3 snap = optionalSnap ?? Vector3.one;
 	        capFunction = capFunction ?? defaultHandleCap;
 	        
@@ -253,25 +253,26 @@ namespace CommonsHelper
 		}
 
 	    /// Variant of DrawFreeMoveHandle (without controlID) with 2D position by reference
-	    public static void DrawFreeMoveHandle (ref Vector2 pos, Color color, Vector2? snap = null, Handles.CapFunction capFunction = null, int? controlID = null) {
+	    public static void DrawFreeMoveHandle (ref Vector2 pos, Color color, Vector2? snap = null, Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null) {
 		    using (new Handles.DrawingScope(color)) {
-			    pos = DrawFreeMoveHandle(pos, snap, capFunction, controlID);
+			    pos = DrawFreeMoveHandle(pos, snap, capFunction, screenSizeScale, controlID);
 		    }
 	    }
 
 	    /// Variant of DrawFreeMoveHandle (without controlID) with 3D position by reference
-	    public static void DrawFreeMoveHandle (ref Vector3 pos, Color color, Vector3? snap = null, Handles.CapFunction capFunction = null, int? controlID = null) {
+	    public static void DrawFreeMoveHandle (ref Vector3 pos, Color color, Vector3? snap = null, Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null) {
 		    using (new Handles.DrawingScope(color)) {
-				pos = DrawFreeMoveHandle(pos, snap, capFunction, controlID);
+				pos = DrawFreeMoveHandle(pos, snap, capFunction, screenSizeScale, controlID);
 		    }
 	    }
 
 	    /// Proxy for DrawWireDisc (without controlID) with 2D position by reference
-	    public static void DrawCircleHandles (ref Vector2 center, ref float radius, Color color, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null) {
+	    public static void DrawCircleHandles (ref Vector2 center, ref float radius, Color color, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null, float screenSizeScale = 1f) {
 		    using (new Handles.DrawingScope(color)) {
-				DrawFreeMoveHandle(ref center, color, snap, capFunction);           // center
-				Handles.DrawWireDisc((Vector3)center, Vector3.forward, radius);     // circle
-				radius = Handles.RadiusHandle(Quaternion.identity, center, radius); // radius
+				DrawFreeMoveHandle(ref center, color, snap, capFunction, screenSizeScale);  // center
+				Handles.DrawWireDisc((Vector3)center, Vector3.forward, radius);                   // circle
+			    // RadiusHandle doesn't allow customizing cap function, it always uses DotHandleCap
+				radius = Handles.RadiusHandle(Quaternion.identity, center, radius);               // radius
 		    }
 	    }
 
