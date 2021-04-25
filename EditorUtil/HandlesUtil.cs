@@ -40,6 +40,27 @@ namespace CommonsHelper
 	        return 80f / HandleUtility.GetHandleSize(position);
 	    }
 
+		/// Return size of a pixel in world distance unit, when looking with a 2D camera.
+		/// This is essentially the reverse of Get2DPixelResolution(), but 0 if camera is not 2D.
+		/// Multiply your Handles label, etc. position offsets by this to get screen-size-constant offsets. 
+		public static float Get2DPixelSize()
+		{
+			float pixelsPerUnit = Get2DPixelResolution();
+			if (pixelsPerUnit > 0)
+			{
+				return 1f / pixelsPerUnit;
+			}
+			
+			// Non orthographic and forward/backward cameras are not supported by our calculation
+			return 0f;
+		}
+
+	    /// Return size of a pixel of a 2D or 3D camera in world distance unit.
+	    /// This is really the reverse of GetPixelResolution().
+	    public static float GetPixelSize(Vector3 position) {
+	        return HandleUtility.GetHandleSize(position) / 80f;
+	    }
+
 	    public static void DrawLine (Vector3 p1, Vector3 p2, Color color) {
 		    using (new Handles.DrawingScope(color)) {
 			    Handles.DrawLine(p1, p2);
