@@ -267,9 +267,9 @@ namespace CommonsHelper
 	    }
 
 	    /// Proxy for DrawWireDisc (without controlID) with 2D position by reference
-	    public static void DrawCircleHandles (ref Vector2 center, ref float radius, Color color, Vector3 snap = default(Vector3), Handles.CapFunction capFunction = null, float screenSizeScale = 1f) {
+	    public static void DrawCircleHandles (ref Vector2 center, ref float radius, Color color, Vector3 snap = default(Vector3), Handles.CapFunction centerCapFunction = null, float screenSizeScale = 1f) {
 		    using (new Handles.DrawingScope(color)) {
-				DrawFreeMoveHandle(ref center, color, snap, capFunction, screenSizeScale);  // center
+				DrawFreeMoveHandle(ref center, color, snap, centerCapFunction, screenSizeScale);  // center
 				Handles.DrawWireDisc((Vector3)center, Vector3.forward, radius);                   // circle
 			    // RadiusHandle doesn't allow customizing cap function, it always uses DotHandleCap
 				radius = Handles.RadiusHandle(Quaternion.identity, center, radius);               // radius
