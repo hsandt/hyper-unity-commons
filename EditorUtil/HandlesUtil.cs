@@ -1,10 +1,9 @@
 #if UNITY_EDITOR
 
-using UnityEngine;
-using UnityEditor;
 using System;
 using System.Collections;
-using UnityEditor.Graphs;
+using UnityEngine;
+using UnityEditor;
 
 namespace CommonsHelper
 {
@@ -21,7 +20,7 @@ namespace CommonsHelper
 		/// Since in orthographic view, the distance between the camera and the target is not relevant,
 		/// Use this function to determine if a draw target will likely be too small for details.
 		/// (inspired by HandleUtility.GetHandleSize() implementation, adapted to 2D mode)
-		static float Get2DPixelResolution() {
+		public static float Get2DPixelResolution() {
 			Camera camera = Camera.current;
 			// Non orthographic and forward/backward cameras are not supported by our calculation
 			if (camera == null || !(camera.orthographic && Mathf.Abs(camera.transform.forward.z) == 1f))
@@ -34,7 +33,7 @@ namespace CommonsHelper
 
 	    /// Return resolution of a 2D or 3D camera in pixels per world distance unit.
 	    /// This is more generic as Get2DPixelResolution and supports 3D cameras with different view angles.
-	    static float GetPixelResolution(Vector3 position) {
+	    public static float GetPixelResolution(Vector3 position) {
 	        // GetHandleSize is basically doing the right computation, plus some tweaks, so we reverse them
 	        // to get the distance between two points separated by 1m on the same Z plane as the passed position,
 	        // seen from the current camera.
@@ -306,8 +305,15 @@ namespace CommonsHelper
 		/// Temporary text GUI style, modified on each DrawVectorText call
 		static readonly GUIStyle textGuiStyle = new GUIStyle();
 
+		[Obsolete("Use Label2D.")]
+		public static void DrawVectorText(Vector3 position, string text, float sizeFactor = 1f,
+			bool fixedFontSize = false, Color? color = null)
+		{
+			Label2D(position, text, sizeFactor, fixedFontSize, color);
+		}
+		
 		/// Draw vector text on a scene camera at a given position, size and color. If fixedFontSize is false, the size is constant in world space, else it is constant in screen space.
-		public static void DrawVectorText(Vector3 position, string text, float sizeFactor = 1f, bool fixedFontSize = false, Color? color = null)
+		public static void Label2D(Vector3 position, string text, float sizeFactor = 1f, bool fixedFontSize = false, Color? color = null)
 		{
 			float pixelsPerUnit = Get2DPixelResolution();
 
@@ -332,7 +338,7 @@ namespace CommonsHelper
 			textGuiStyle.fontSize = (int) Mathf.Floor (BASE_FONT_SIZE * finalSizeFactor);
 
 			// draw label
-			Handles.Label (position, text, textGuiStyle);
+			Handles.Label(position, text, textGuiStyle);
 		}
 
 		#endregion
