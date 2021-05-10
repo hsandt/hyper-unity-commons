@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections;
+using System.Reflection;
 using UnityEngine;
 using UnityEditor;
 
@@ -132,6 +133,39 @@ namespace CommonsHelper
 
 		/// Minimum camera resolution required to show the handles at all (bigger than minDrawRectCameraResolution)
 		const float minDrawRectHandlesCameraResolution = 60f;
+		
+		/// Adapted from Handles.CircleHandleCap
+		/// Draws a circle with a cross inside so we can drag a wide circle while seeing the target position precisely
+		public static void CrossedCircleHandleCap(int controlID, Vector3 position, Quaternion rotation, float size, EventType eventType)
+		{
+			switch (eventType)
+			{
+				case EventType.MouseMove:
+				case EventType.Layout:
+					HandleUtility.AddControl(controlID, HandleUtility.DistanceToRectangle(position, rotation, size));
+					break;
+				case EventType.Repaint:
+					// Reflection code for Handles.StartCapDraw(position, rotation, size);
+					var handlesEntries = Type.GetType("UnityEditor.Handles,UnityEditor.dll");
+					if (handlesEntries != null)
+					{
+						var startCapDrawMethod = handlesEntries.GetMethod("StartCapDraw", BindingFlags.Static | BindingFlags.NonPublic);
+						if (startCapDrawMethod != null)
+						{
+							startCapDrawMethod.Invoke(null, new object[]{position, rotation, size});
+                        
+							// End of reflection, do the rest of what Handles.CircleHandleCap does normally
+							Vector3 normal = rotation * new Vector3(0.0f, 0.0f, 1f);
+							Handles.DrawWireDisc(position, normal, size);
+                        
+							// Add custom code here to draw the cross inside the circle
+							Handles.DrawLine(position + size * Vector3.left, position + size * Vector3.right);
+							Handles.DrawLine(position + size * Vector3.up, position + size * Vector3.down);
+						}
+					}
+					break;
+			}
+		}
 
 		public static void DrawRect (ref Rect rect, Transform owner, Color color) {
 
