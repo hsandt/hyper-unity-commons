@@ -11,7 +11,9 @@ namespace CommonsPattern
 		// Behaviour is broader than MonoBehaviour and contains all native Unity components that have an Update event,
 		// along with the OnEnable and OnDisable events.
 		// In Awake(), make sure you register sibling behaviours you need to pause with slaveBehaviours.Add(myBehaviour);
-		[Tooltip("Slave behaviours to pause and resume. Only set non-sibling components here, as sibling components should be added programmatically.")]
+		// Often, you can just register all the components found with GetComponents<ClearableBehaviour>, except the Master
+		// component itself (check clearableBehaviour != this).
+		[Tooltip("Slave behaviours to pause and resume. Only set non-sibling components in the Inspector, as sibling components should be added programmatically.")]
 		public List<Behaviour> slaveBehaviours;
 
 		// ParticleSystems are other types of Components with their own Play/Pause methods, so they are in another list
