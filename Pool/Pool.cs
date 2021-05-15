@@ -45,9 +45,15 @@ namespace CommonsPattern
         /// Instantiate new game object from prefab under poolTransform, initialises it,
         /// releases it (so it is ready for usage) and adds it to pooled objects list, then return reference to it.
         /// Fail if prefab has no TPooledObject component.
-        public TPooledObject InstantiatePooledObject()
+        private TPooledObject InstantiatePooledObject()
         {
+            // Instantiate prefab under pool transform
             GameObject prefabInstance = Object.Instantiate(m_PooledObjectPrefab, m_PoolTransform);
+            
+            // Append count to name to make it easier to distinguish pooled objects
+            // Ex: Projectile(Clone) 3 (we haven't added the object yet, so count starts at 0)
+            prefabInstance.name += $" {m_Objects.Count}";
+            
             TPooledObject pooledObject = prefabInstance.GetComponentOrFail<TPooledObject>();
             pooledObject.InitPooled();
             pooledObject.Release();
