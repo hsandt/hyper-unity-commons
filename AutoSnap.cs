@@ -7,6 +7,8 @@
 using UnityEngine;
 using UnityEditor;
 
+using CommonsHelper;
+
 namespace CommonsEditor
 {
 	public class AutoSnap : EditorWindow
@@ -70,18 +72,8 @@ namespace CommonsEditor
 				// resnap immediately!
 				Undo.RecordObject(transform, "Auto-snap position");
 				
-				// Debug.Log(string.Format("Snapping {0}", transform));
-				Vector3 pos = transform.localPosition;
-				pos.x = Round(pos.x);
-				pos.y = Round(pos.y);
-				pos.z = Round(pos.z);
-				transform.localPosition = pos;
+				transform.localPosition = VectorUtil.RoundVector3(transform.localPosition, snapValue);
 			}
-		}
-
-		private float Round(float input)
-		{
-			return snapValue * Mathf.Round(input / snapValue);
 		}
 	}
 }
