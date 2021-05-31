@@ -296,10 +296,11 @@ namespace CommonsHelper
             for (int i = 0; i < segmentsCount; i++)
             {
                 // compute segment end point parameter on curve
-                float t = (float)i / (float)segmentsCount;
+                // this is the next point after current i, hence i + 1
+                float nextT = (float)(i + 1) / (float)segmentsCount;
                 
                 // locate segment end and add segment length to total length
-                Vector2 nextPoint = InterpolateBezier(curve, t);
+                Vector2 nextPoint = InterpolateBezier(curve, nextT);
                 length += Vector2.Distance(previousPoint, nextPoint);
                 
                 // update previous point for next iteration
