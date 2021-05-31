@@ -3,10 +3,8 @@ using System.Collections;
 
 namespace CommonsHelper
 {
-
 	public static class VectorUtil
 	{
-
 		/// Return vector projected on direction vector (automatically normalized)
 		/// UB unless direction is not close to Zero vector
 		public static Vector2 ProjectParallel(Vector2 vector, Vector2 direction)
@@ -103,7 +101,24 @@ namespace CommonsHelper
 			paramDistance = Mathf.Clamp(Vector2.Dot(vector, segmentDelta) / segmentMagnitude, 0f, segmentMagnitude);
 			return Vector2.Distance(point, Vector2.Lerp(segmentStart, segmentEnd, paramDistance / segmentMagnitude));
 		}
-
+		
+		/// Return a 2D vector with each coordinate rounded to a multiple of snapValue
+		public static Vector2 RoundVector2(Vector2 vector, float snapValue)
+		{
+			Vector2 roundedPosition;
+			roundedPosition.x = MathUtil.Round(vector.x, snapValue);
+			roundedPosition.y = MathUtil.Round(vector.y, snapValue);
+			return roundedPosition;
+		}
+		
+		/// Return a 3D vector with each coordinate rounded to a multiple of snapValue
+		public static Vector3 RoundVector3(Vector3 vector, float snapValue)
+		{
+			Vector3 roundedPosition;
+			roundedPosition.x = MathUtil.Round(vector.x, snapValue);
+			roundedPosition.y = MathUtil.Round(vector.y, snapValue);
+			roundedPosition.z = MathUtil.Round(vector.z, snapValue);
+			return roundedPosition;
+		}
 	}
-
 }
