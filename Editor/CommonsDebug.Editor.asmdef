@@ -1,12 +1,19 @@
 {
     "name": "CommonsDebug.Editor",
+    "rootNamespace": "",
     "references": [
-        "CommonsDebug"
+        "CommonsDebug",
+        "CommonsHelper"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

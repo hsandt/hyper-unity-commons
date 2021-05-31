@@ -6,7 +6,8 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections;
-using System.Linq;
+
+using CommonsHelper;
 
 namespace CommonsDebug.Editor
 {
@@ -15,10 +16,30 @@ namespace CommonsDebug.Editor
 	[CustomEditor(typeof(EditEdgeCollider2D))]
 	public class EditEdgeCollider2DEditor : UnityEditor.Editor {
 	
-		EdgeCollider2D collider;
-
 		public override void OnInspectorGUI() {
 			DrawDefaultInspector();
+			
+			if (GUILayout.Button("Round all coordinates to 1/16 px"))
+			{
+				var script = (EditEdgeCollider2D) target;
+				EdgeCollider2D collider = script.GetComponent<EdgeCollider2D>();
+				
+				if (collider != null)
+				{
+					Undo.RecordObject(collider, "Snap edge collider 2D coordinates to 1/16 px");
+					
+					// .points return a temporary array copy, so we can work on it,
+					// but we must re-assign it to collider.points at the end
+					Vector2[] points = collider.points;
+					
+					for (int i = 0; i < points.Length; i++)
+					{
+						points[i] = VectorUtil.RoundVector2(points[i], 1f/16f);
+					}
+					
+					collider.points = points;
+				}
+			}
 		
 			/*
 			 * This custom inspector is now obsolete in Unity 5.4 where coordinates can be manually edited in the main component, in Normal view
