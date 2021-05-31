@@ -8,6 +8,7 @@ namespace CommonsHelper
 	/// Usage: create new Timer(initial time, callback), call CountDown on it every Update or FixedUpdate,
 	/// and process case when it returns true if you don't rely on the callback.
 	/// Call SetTime(duration) when you want to (re)start the timer.
+	[Serializable]
 	public struct Timer
 	{
 	    /* Parameters */
@@ -23,7 +24,10 @@ namespace CommonsHelper
 	    /// Defaults to 0 (stopped).
 		private float m_TimeLeft;
 
+		/// Has the timer any time left?
+		public bool HasTimeLeft => m_TimeLeft > 0;
 
+		
 		/// Construct new timer with initial time and callback
 		/// Both are optional since we may want a timer with manual handling of count down over,
 		/// or start countdown later.
