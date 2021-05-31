@@ -11,7 +11,6 @@ using CommonsHelper;
 
 namespace CommonsDebug.Editor
 {
-    
 	[CanEditMultipleObjects]
 	[CustomEditor(typeof(EditEdgeCollider2D))]
 	public class EditEdgeCollider2DEditor : UnityEditor.Editor {
@@ -90,5 +89,4 @@ namespace CommonsDebug.Editor
 		// }
 
 	}
-
 }
