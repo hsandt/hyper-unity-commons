@@ -1,5 +1,9 @@
-﻿// from http://forum.unity3d.com/threads/replace-game-object-with-prefab.24311/
-// Elecman, modified by huulong
+﻿// From http://forum.unity3d.com/threads/replace-game-object-with-prefab.24311/
+// Elecman's version on page 1
+// Modified by huulong to improve usability, and in particular better supports prefabs and instance linking in various
+// situations including replacing embedded prefabs.
+// Since them, many improvements were gradually added to the thread mentioned above, such as Keep Place in Hierarchy
+// using SetSiblingIndex. Make sure to check all the pages on the thread for potential improvements to merge in!
 
 using UnityEditor;
 using UnityEngine;
@@ -94,7 +98,7 @@ namespace CommonsEditor
 						// this includes a non-prefab object located under a prefab root
 						o = Instantiate(replacingObject);
 						// the normal Instantiate takes no Scene parameter like InstantiatePrefab, so just move
-						// the replacing object to the right scene manuallt
+						// the replacing object to the right scene manually
 						SceneManager.MoveGameObjectToScene(o, t.gameObject.scene);
 					}
 
