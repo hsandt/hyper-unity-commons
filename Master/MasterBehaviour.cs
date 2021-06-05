@@ -5,97 +5,128 @@ using System.Collections.Generic;
 
 namespace CommonsPattern
 {
+    public class MasterBehaviour : ClearableBehaviour, IPausable
+    {
+        // Behaviour is broader than MonoBehaviour and contains all native Unity components that have an Update event,
+        // along with the OnEnable and OnDisable events.
+        // In Awake(), make sure you register sibling behaviours you need to pause with slaveBehaviours.Add(myBehaviour);
+        // Often, you can just register all the components found with GetComponents<ClearableBehaviour>, except the Master
+        // component itself (check clearableBehaviour != this).
+        [Tooltip("Slave behaviours to pause and resume. Only set non-sibling components in the Inspector, " +
+                 "as sibling components should be added programmatically.")]
+        public List<Behaviour> slaveBehaviours;
 
-	public class MasterBehaviour : ClearableBehaviour, IPausable {
+        // Animator is a Behavior, but it has a special way to be Restarted, and we don't want to do
+        // another dynamic cast with "as" in Clear, so we store its reference in a separate member
+        [Tooltip("Animator to pause and resume")]
+        public Animator slaveAnimator;
 
-		// Behaviour is broader than MonoBehaviour and contains all native Unity components that have an Update event,
-		// along with the OnEnable and OnDisable events.
-		// In Awake(), make sure you register sibling behaviours you need to pause with slaveBehaviours.Add(myBehaviour);
-		// Often, you can just register all the components found with GetComponents<ClearableBehaviour>, except the Master
-		// component itself (check clearableBehaviour != this).
-		[Tooltip("Slave behaviours to pause and resume. Only set non-sibling components in the Inspector, as sibling components should be added programmatically.")]
-		public List<Behaviour> slaveBehaviours;
+        // ParticleSystems are other types of Components with their own Play/Pause methods, so they are in another list
+        [Tooltip("Particle systems to pause and resume")]
+        public List<ParticleSystem> slaveParticles;
 
-		// ParticleSystems are other types of Components with their own Play/Pause methods, so they are in another list
-		[Tooltip("Particle systems to pause and resume")]
-		public List<ParticleSystem> slaveParticles;
 
-		public override void Setup () {
-			// Enable all behaviours. Useful because we disable the behaviours in Clear(), and also
-			// because when restarting a level from an in-game menu that paused the game, we need to "Resume" the scripts.
-			for (int i = 0; i < slaveBehaviours.Count; ++i) {
-				Behaviour slaveBehaviour = slaveBehaviours[i];
-				if (slaveBehaviour != null) slaveBehaviour.enabled = true;
+        public override void Setup()
+        {
+            // Enable all behaviours. Useful because we disable the behaviours in Clear(), and also
+            // because when restarting a level from an in-game menu that paused the game, we need to "Resume" the scripts.
+            foreach (Behaviour slaveBehaviour in slaveBehaviours)
+            {
+                if (slaveBehaviour != null) slaveBehaviour.enabled = true;
 
-				// If the slave behaviour is also a ClearableBehaviour, Setup it now. This allows not to Setup everything manually in the derived class.
-				ClearableBehaviour slaveClearableBehaviour = slaveBehaviour as ClearableBehaviour;
-				if (slaveClearableBehaviour)
-					slaveClearableBehaviour.Setup();
-			}
-		}
+                // If the slave behaviour is also a ClearableBehaviour, Setup it now. This allows not to Setup everything manually in the derived class.
+                ClearableBehaviour slaveClearableBehaviour = slaveBehaviour as ClearableBehaviour;
+                if (slaveClearableBehaviour)
+                    slaveClearableBehaviour.Setup();
+            }
 
-		public override void Clear() {
-			for (int i = 0; i < slaveBehaviours.Count; ++i) {
-				// Disable the behaviours to stop Updating in case the game object won't be deactivated and there will be some time before the next Setup
-				Behaviour slaveBehaviour = slaveBehaviours[i];
-				if (slaveBehaviour != null) slaveBehaviour.enabled = false;
+            if (slaveAnimator != null)
+            {
+                slaveAnimator.enabled = true;
+            }
+        }
 
-				// If the slave behaviour is also a ClearableBehaviour, Clear it now. This allows not to Clear everything manually in the derived class.
-				ClearableBehaviour slaveClearableBehaviour = slaveBehaviour as ClearableBehaviour;
-				if (slaveClearableBehaviour)
-					slaveClearableBehaviour.Clear();
-			}
+        public override void Clear()
+        {
+            foreach (Behaviour slaveBehaviour in slaveBehaviours)
+            {
+                if (slaveBehaviour != null) slaveBehaviour.enabled = false;
 
-			for (int i = 0; i < slaveParticles.Count; ++i) {
-				ParticleSystem slaveParticle = slaveParticles[i];
-				if (slaveParticle != null) {
-					// Whatever the current state of the particles, stop and clear them completely
-					// This is only required if the game object is not deactivated before/after being Cleared,
-					// so that particles do not remain in their current state and replay from there.
-					// Caution: in this case, even if they should play on start, they won't on next Setup.
-					if (slaveParticle.isPlaying || slaveParticle.isPaused) slaveParticle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-					else if (slaveParticle.IsAlive()) slaveParticle.Clear();  // must have been stopped with Stop(ParticleSystemStopBehavior.StopEmitting)
-				}
-			}
-		}
+                // If the slave behaviour is also a ClearableBehaviour, Clear it now. This allows not to Clear everything manually in the derived class.
+                ClearableBehaviour slaveClearableBehaviour = slaveBehaviour as ClearableBehaviour;
+                if (slaveClearableBehaviour)
+                    slaveClearableBehaviour.Clear();
+            }
 
-		/// Pause all slave behaviours
-		public virtual void Pause ()
-		{
-			for (int i = 0; i < slaveBehaviours.Count; ++i) {
-				Behaviour slaveBehaviour = slaveBehaviours[i];
-				if (slaveBehaviour != null) slaveBehaviour.enabled = false;
-			}
-			for (int i = 0; i < slaveParticles.Count; ++i) {
-				ParticleSystem slaveParticle = slaveParticles[i];
-				if (slaveParticle != null && slaveParticle.isPlaying) slaveParticle.Pause();
-			}
-		}
+            if (slaveAnimator != null)
+            {
+                slaveAnimator.enabled = false;
+                slaveAnimator.Rebind();
+            }
 
-		/// Resume all slave behaviours
-		public virtual void Resume () {
-			for (int i = 0; i < slaveBehaviours.Count; ++i) {
-				Behaviour slaveBehaviour = slaveBehaviours[i];
-				if (slaveBehaviour != null) slaveBehaviour.enabled = true;
-			}
-			for (int i = 0; i < slaveParticles.Count; ++i) {
-				ParticleSystem slaveParticle = slaveParticles[i];
-				if (slaveParticle != null && slaveParticle.isPaused) slaveParticle.Play();
-			}
-		}
+            foreach (ParticleSystem slaveParticle in slaveParticles)
+            {
+                if (slaveParticle != null)
+                {
+                    // Whatever the current state of the particles, stop and clear them completely
+                    // This is only required if the game object is not deactivated before/after being Cleared,
+                    // so that particles do not remain in their current state and replay from there.
+                    // Caution: in this case, even if they should play on start, they won't on next Setup.
+                    if (slaveParticle.isPlaying || slaveParticle.isPaused)
+                    {
+                        slaveParticle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                    }
+                    else if (slaveParticle.IsAlive())
+                    {
+                        // it must have been stopped with Stop(ParticleSystemStopBehavior.StopEmitting)
+                        slaveParticle.Clear();
+                    }
+                }
+            }
+        }
 
-		/// Pause event callback
-		protected void OnPause(object sender, EventArgs e)
-		{
-			Pause();
-		}
+        /// Pause all slave behaviours
+        public virtual void Pause()
+        {
+            foreach (Behaviour slaveBehaviour in slaveBehaviours)
+            {
+                if (slaveBehaviour != null) slaveBehaviour.enabled = false;
+            }
 
-		/// Resume event callback
-		protected void OnResume(object sender, EventArgs e)
-		{
-			Resume();
-		}
+            if (slaveAnimator != null) slaveAnimator.enabled = false;
 
-	}
+            foreach (ParticleSystem slaveParticle in slaveParticles)
+            {
+                if (slaveParticle != null && slaveParticle.isPlaying) slaveParticle.Pause();
+            }
+        }
 
+        /// Resume all slave behaviours
+        public virtual void Resume()
+        {
+            foreach (Behaviour slaveBehaviour in slaveBehaviours)
+            {
+                if (slaveBehaviour != null) slaveBehaviour.enabled = true;
+            }
+
+            if (slaveAnimator != null) slaveAnimator.enabled = true;
+
+            foreach (ParticleSystem slaveParticle in slaveParticles)
+            {
+                if (slaveParticle != null && slaveParticle.isPaused) slaveParticle.Play();
+            }
+        }
+
+        /// Pause event callback
+        protected void OnPause(object sender, EventArgs e)
+        {
+            Pause();
+        }
+
+        /// Resume event callback
+        protected void OnResume(object sender, EventArgs e)
+        {
+            Resume();
+        }
+    }
 }
