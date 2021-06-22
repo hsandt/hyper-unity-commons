@@ -95,8 +95,8 @@ namespace CommonsHelper.Editor
 				AssetDatabase.CreateAsset(buildData, $"{fullBuildDataPath}.asset");
 			}
 
-			// Example: "Tactical Ops v3.1.7 - Windows 64 dev"
-			string baseName = $"{buildData.appName} v{buildData.majorVersion}.{buildData.minorVersion}.{buildData.stageVersion} - " +
+			// Example: "Tactical Ops v3.1.7 (WIP) - Windows 64 dev"
+			string baseName = $"{buildData.appName} {buildData.GetVersionString()} - " +
 				$"{buildTargetDerivedData.targetName}{(developmentMode ? " dev" : "")}";
 
 			// For build configs generating an executable file (and exceptionally an .app folder on OSX),
