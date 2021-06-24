@@ -320,7 +320,8 @@ namespace CommonsHelper
 		    }
 	    }
 
-	    /// Proxy for DrawWireDisc (without controlID) with 2D position by reference
+		/// Draw handles for a disc, allowing to move center and tune radius
+	    /// Proxy for DrawFreeMoveHandle + DrawWireDisc + RadiusHandle (without controlID) with 2D position by reference
 	    public static void DrawCircleHandles (ref Vector2 center, ref float radius, Color color, Vector3 snap = default(Vector3), Handles.CapFunction centerCapFunction = null, float screenSizeScale = 1f) {
 		    using (new Handles.DrawingScope(color)) {
 				DrawFreeMoveHandle(ref center, color, snap, centerCapFunction, screenSizeScale);  // center

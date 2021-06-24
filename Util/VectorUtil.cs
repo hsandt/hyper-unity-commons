@@ -38,10 +38,16 @@ namespace CommonsHelper
 			return vector - 2 * ProjectOrthogonal(vector, axis);
 		}
 
-		/// Return vector rotated by angle degrees
+		/// Return a 2D vector rotated by angle degrees
 		public static Vector2 Rotate(Vector2 vector, float angle)
 		{
 			return (Vector2) (Quaternion.AngleAxis(angle, Vector3.forward) * vector);
+		}
+
+		/// Return a 3D vector rotated by angle degrees
+		public static Vector3 Rotate(Vector3 vector, float angle)
+		{
+			return Quaternion.AngleAxis(angle, Vector3.forward) * vector;
 		}
 
 		/// Return vector rotated by 90 degrees clockwise
