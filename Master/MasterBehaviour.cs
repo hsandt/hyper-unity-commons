@@ -7,6 +7,14 @@ namespace CommonsPattern
 {
     public class MasterBehaviour : ClearableBehaviour, IPausable
     {
+        [Header("Parameters")]
+        
+        [SerializeField, Tooltip("Check to automatically register all ClearableBehaviour, and any Animator, as slaves on start")]
+        private bool addSiblingComponentsAsSlaves = true;
+        
+        
+        [Header("Slave components")]
+        
         // Behaviour is broader than MonoBehaviour and contains all native Unity components that have an Update event,
         // along with the OnEnable and OnDisable events.
         // In Awake(), make sure you register sibling behaviours you need to pause with slaveBehaviours.Add(myBehaviour);
@@ -24,7 +32,43 @@ namespace CommonsPattern
         // ParticleSystems are other types of Components with their own Play/Pause methods, so they are in another list
         [Tooltip("Particle systems to pause and resume")]
         public List<ParticleSystem> slaveParticles;
+        
+        
+        private void Awake()
+        {
+            if (addSiblingComponentsAsSlaves)
+            {
+                // Auto-add option was checked, so retrieve common component types automatically to register them as slaves.
+                // This is often enough, but if you need to register a few custom components too, you can always do that
+                // manually in the Inspector.
+                AddSiblingSlaveBehaviours();
+            }
 
+            Init();
+        }
+        
+        /// Override this method to customize Awake behavior while preserving Awake's behaviour
+        protected virtual void Init() {}
+        
+        /// Add all ClearableBehaviour components as slave behaviours, and any Animator component as slave animator
+        protected void AddSiblingSlaveBehaviours()
+        {
+            var clearableBehaviours = GetComponents<ClearableBehaviour>();
+            foreach (var clearableBehaviour in clearableBehaviours)
+            {
+                // to avoid infinite recursion on Setup/Clear, do not register the Master script itself as its own Slave!
+                if (clearableBehaviour != this)
+                {
+                    slaveBehaviours.Add(clearableBehaviour);
+                }
+            }
+
+            // Not all characters have animators, so don't fail if you don't find one 
+            slaveAnimator = GetComponent<Animator>();
+        }
+        
+        
+        /* ClearableBehaviour methods */
 
         public override void Setup()
         {
@@ -84,6 +128,9 @@ namespace CommonsPattern
                 }
             }
         }
+
+        
+        /* IPausable interface */
 
         /// Pause all slave behaviours
         public virtual void Pause()
