@@ -97,6 +97,19 @@ namespace CommonsPattern
             return null;
         }
         
+        /// Return an enumerable to all objects in use
+        public IEnumerable<TPooledObject> GetObjectsInUse()
+        {
+            // O(n)
+            foreach (TPooledObject pooledObject in m_Objects)
+            {
+                if (pooledObject.IsInUse())
+                {
+                    yield return pooledObject;
+                }
+            }
+        }
+        
         /// Return true if any pooled object is in use
         public bool AnyInUse()
         {
