@@ -12,10 +12,10 @@ namespace CommonsPattern
         /* Parameters */
 		
         /// Pooled object prefab
-        private GameObject m_PooledObjectPrefab;
+        private readonly GameObject m_PooledObjectPrefab;
         
         /// Parent under which all pooled objects will be created
-        private Transform m_PoolTransform;
+        private readonly Transform m_PoolTransform;
 
         
         /* State */
