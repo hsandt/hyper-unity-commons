@@ -81,7 +81,20 @@ namespace CommonsPattern
             // Pool starvation: check how we should handle it
             // Performance note: if instantiating object, we are not "smart" (e.g. instantiating a batch of new objects
             // as a List allocation would do, by power of two). We really just instantiate what we need, 1 object.
-            return instantiateNewObjectOnStarvation ? InstantiatePooledObject() : null;
+            // So in counterpart with log a warning, as generally such last minute instantiation is not intended and
+            // only a fallback, so we want to notify developer they may want to increase initial pool size instead.
+            if (instantiateNewObjectOnStarvation)
+            {
+                #if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarningFormat("[Pool] GetObject: pool for prefab '{0}' is starving at size {1} but " +
+                    "instantiateNewObjectOnStarvation is true, so we will instantiate a new object as fallback. " +
+                    "Consider increasing pool size to at least {2} to avoid this situation.",
+                    m_PooledObjectPrefab, m_Objects.Count, m_Objects.Count + 1);
+                #endif
+                return InstantiatePooledObject();
+            }
+            
+            return null;
         }
         
         /// Return true if any pooled object is in use
