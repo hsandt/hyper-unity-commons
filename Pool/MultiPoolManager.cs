@@ -104,6 +104,18 @@ namespace CommonsPattern
 			Debug.LogErrorFormat(this, "Prefab '{0}' not found in multi pool dictionary of {1}", prefabName, name);
 			return null;
 		}
+		
+		/// Return an enumerable to all objects in use in all pools
+		public IEnumerable<TPooledObject> GetObjectsInUseInAllPools()
+		{
+			foreach (Pool<TPooledObject> pool in m_MultiPool.Values)
+			{
+				foreach (TPooledObject pooledObject in pool.GetObjectsInUse())
+				{
+					yield return pooledObject;
+				}
+			}
+		}
 
 		/// Return true if any pooled object is in use
 		public bool AnyInUse ()

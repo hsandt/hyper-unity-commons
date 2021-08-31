@@ -51,6 +51,12 @@ namespace CommonsPattern
 			return m_Pool.GetObject(instantiateNewObjectOnStarvation);
 		}
 		
+		/// Return an enumerable to all objects in use
+		public IEnumerable<TPooledObject> GetObjectsInUse()
+		{
+			return m_Pool.GetObjectsInUse();
+		}
+		
 		/// Release all objects in use
 		public void ReleaseAllObjects()
 		{
