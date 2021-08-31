@@ -9,7 +9,9 @@ namespace CommonsPattern
     {
         [Header("Parameters")]
         
-        [SerializeField, Tooltip("Check to automatically register all ClearableBehaviour, and any Animator, as slaves on start")]
+        [SerializeField, Tooltip("Check to automatically register all ClearableBehaviour, any Animator, " +
+            "and any Particle Systems, as slaves on start. Note that we don't check for duplicates, " +
+            "so if you check this, do not add sibling slaves manually at all.")]
         private bool addSiblingComponentsAsSlaves = true;
         
         
@@ -56,15 +58,20 @@ namespace CommonsPattern
             var clearableBehaviours = GetComponents<ClearableBehaviour>();
             foreach (var clearableBehaviour in clearableBehaviours)
             {
-                // to avoid infinite recursion on Setup/Clear, do not register the Master script itself as its own Slave!
+                // To avoid infinite recursion on Setup/Clear, do not register the Master script itself as its own Slave!
                 if (clearableBehaviour != this)
                 {
+                    // Don't check if already in list, we've warned user that we don't check for duplicates in tooltip 
                     slaveBehaviours.Add(clearableBehaviour);
                 }
             }
 
             // Not all characters have animators, so don't fail if you don't find one 
             slaveAnimator = GetComponent<Animator>();
+
+            // Cumulate slave particles set manually with any sibling particle systems found
+            // Don't check if already in list, we've warned user that we don't check for duplicates in tooltip 
+            slaveParticles.AddRange(GetComponents<ParticleSystem>());
         }
         
         
@@ -137,6 +144,15 @@ namespace CommonsPattern
         {
             foreach (Behaviour slaveBehaviour in slaveBehaviours)
             {
+                // Unlike Setup/Clear which tries to cast to ClearableBehaviour to delegate Setup/Clear,
+                // we don't try to cast to IPausable to try to delegate Pause/Resume.
+                // This is because most of the time, we want to disable the script anyway to stop calling
+                // Update/FixedUpdate, and Unity provides OnEnable/OnDisable to plug custom behavior on
+                // enabling/disabling, so this is more convenient to use.
+                // Note that IPausable is still useful when it comes to identifying and storing a bunch of objects
+                // with specific pause behaviours, even if they are not Unity Behaviours with OnEnable/OnDisable,
+                // or when you want to allow overriding such behavior (which is the case with this MasterBehaviour script).
+                // To sum-up: define OnDisable on your slave behavior script.
                 if (slaveBehaviour != null) slaveBehaviour.enabled = false;
             }
 
@@ -153,6 +169,8 @@ namespace CommonsPattern
         {
             foreach (Behaviour slaveBehaviour in slaveBehaviours)
             {
+                // Same remark as in Pause
+                // To sum-up: define OnEnable on your slave behavior script.
                 if (slaveBehaviour != null) slaveBehaviour.enabled = true;
             }
 
