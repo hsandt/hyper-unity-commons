@@ -52,7 +52,7 @@ namespace CommonsPattern
                 parent.GetChild(i).gameObject.SetActive(false);
             }
     
-            // 3. Activate and intialise all required widgets
+            // 3. Activate and initialise all required widgets
             for (int i = 0; i < targetCount; i++)
             {
                 parent.GetChild(i).gameObject.SetActive(true);
