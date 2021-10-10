@@ -31,6 +31,10 @@ namespace CommonsPattern
         [Tooltip("Animator to pause and resume")]
         public Animator slaveAnimator;
 
+        // Rigidbody2D is not a Behavior, and must be handled with custom code
+        [Tooltip("Rigidbody2D to pause and resume")]
+        public Rigidbody2D slaveRigidbody2D;
+
         // ParticleSystems are other types of Components with their own Play/Pause methods, so they are in another list
         [Tooltip("Particle systems to pause and resume")]
         public List<ParticleSystem> slaveParticles;
@@ -72,8 +76,9 @@ namespace CommonsPattern
                 }
             }
 
-            // Not all characters have animators, so don't fail if you don't find one 
+            // Not all characters have those components, so don't fail if you don't find one 
             slaveAnimator = GetComponent<Animator>();
+            slaveRigidbody2D = GetComponent<Rigidbody2D>();
 
             // Cumulate slave particles set manually with any sibling particle systems found
             // Don't check if already in list, we've warned user that we don't check for duplicates in tooltip 
@@ -165,6 +170,7 @@ namespace CommonsPattern
             }
 
             if (slaveAnimator != null) slaveAnimator.enabled = false;
+            if (slaveRigidbody2D != null) slaveRigidbody2D.simulated = false;
 
             foreach (ParticleSystem slaveParticle in slaveParticles)
             {
@@ -185,6 +191,7 @@ namespace CommonsPattern
             }
 
             if (slaveAnimator != null) slaveAnimator.enabled = true;
+            if (slaveRigidbody2D != null) slaveRigidbody2D.simulated = true;
 
             foreach (ParticleSystem slaveParticle in slaveParticles)
             {
