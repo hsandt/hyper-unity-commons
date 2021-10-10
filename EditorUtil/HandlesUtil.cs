@@ -219,69 +219,63 @@ namespace CommonsHelper
 				Vector2 tempVec;
 	
 				// Draw center handle
-				EditorGUI.BeginChangeCheck ();
-				tempVec = DrawFreeMoveHandle(rect.center);
-				if (EditorGUI.EndChangeCheck ()) {
-					rect.center = tempVec;
+				using (var check = new EditorGUI.ChangeCheckScope()) {
+					tempVec = DrawFreeMoveHandle(rect.center);
+					if (check.changed) { rect.center = tempVec; }
 				}
 	
 				// Draw left handle
-				EditorGUI.BeginChangeCheck ();
-				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.center.y));
-				if (EditorGUI.EndChangeCheck ()) {
-					rect.xMin = tempVec.x;
+				using (var check = new EditorGUI.ChangeCheckScope()) {
+					tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.center.y));
+					if (check.changed) { rect.xMin = tempVec.x; }
 				}
-	
+
 				// Draw right handle
-				EditorGUI.BeginChangeCheck ();
-				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.center.y));
-				if (EditorGUI.EndChangeCheck ()) {
-					rect.xMax = tempVec.x;
+				using (var check = new EditorGUI.ChangeCheckScope()) {
+					tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.center.y));
+					if (check.changed) { rect.xMax = tempVec.x; }
 				}
-	
+
 				// Draw bottom handle
-				EditorGUI.BeginChangeCheck ();
-				tempVec = DrawFreeMoveHandle(new Vector3(rect.center.x, rect.yMin));
-				if (EditorGUI.EndChangeCheck ()) {
-					rect.yMin = tempVec.y;
+				using (var check = new EditorGUI.ChangeCheckScope()) {
+					tempVec = DrawFreeMoveHandle(new Vector3(rect.center.x, rect.yMin));
+					if (check.changed) { rect.yMin = tempVec.y; }
 				}
-	
+
 				// Draw top handle
-				EditorGUI.BeginChangeCheck ();
-				tempVec = DrawFreeMoveHandle(new Vector3(rect.center.x, rect.yMax));
-				if (EditorGUI.EndChangeCheck ()) {
-					rect.yMax = tempVec.y;
+				using (var check = new EditorGUI.ChangeCheckScope()) {
+					tempVec = DrawFreeMoveHandle(new Vector3(rect.center.x, rect.yMax));
+					if (check.changed) { rect.yMax = tempVec.y; }
 				}
-	
+
 				// Draw bottom-left handle
-				EditorGUI.BeginChangeCheck ();
-				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.yMin));
-				if (EditorGUI.EndChangeCheck ()) {
-					rect.min = tempVec;
+				using (var check = new EditorGUI.ChangeCheckScope()) {
+					tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.yMin));
+					if (check.changed) { rect.min = tempVec; }  // set xMin and yMin at once
 				}
-	
+
 				// Draw top-left handle
-				EditorGUI.BeginChangeCheck ();
-				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.yMax));
-				if (EditorGUI.EndChangeCheck ()) {
-					rect.xMin = tempVec.x;
-					rect.yMax = tempVec.y;
+				using (var check = new EditorGUI.ChangeCheckScope()) {
+					tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.yMax));
+					if (check.changed) {
+						rect.xMin = tempVec.x;
+						rect.yMax = tempVec.y;
+					}
 				}
-	
+
 				// Draw bottom-right handle
-				EditorGUI.BeginChangeCheck ();
-				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.yMin));
-				if (EditorGUI.EndChangeCheck ()) {
-					rect.xMax = tempVec.x;
-					rect.yMin = tempVec.y;
+				using (var check = new EditorGUI.ChangeCheckScope()) {
+					tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.yMin));
+					if (check.changed) {
+						rect.xMax = tempVec.x;
+						rect.yMin = tempVec.y;
+					}
 				}
-	
+
 				// Draw top-right handle
-				EditorGUI.BeginChangeCheck ();
-				tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.yMax));
-				if (EditorGUI.EndChangeCheck ()) {
-					rect.xMax = tempVec.x;
-					rect.yMax = tempVec.y;
+				using (var check = new EditorGUI.ChangeCheckScope()) {
+					tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.yMax));
+					if (check.changed) { rect.max = tempVec; }  // set xMax and yMax at once
 				}
 			}
 		}
@@ -327,7 +321,7 @@ namespace CommonsHelper
 	    public static void DrawCircleHandles (ref Vector2 center, ref float radius, Color color, Vector3 snap = default(Vector3), Handles.CapFunction centerCapFunction = null, float screenSizeScale = 1f) {
 		    using (new Handles.DrawingScope(color)) {
 				DrawFreeMoveHandle(ref center, color, snap, centerCapFunction, screenSizeScale);  // center
-				Handles.DrawWireDisc((Vector3)center, Vector3.forward, radius);                   // circle
+				Handles.DrawWireDisc((Vector3)center, Vector3.forward, radius);            // circle
 			    // RadiusHandle doesn't allow customizing cap function, it always uses DotHandleCap
 				radius = Handles.RadiusHandle(Quaternion.identity, center, radius);               // radius
 		    }
