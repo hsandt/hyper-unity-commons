@@ -36,6 +36,12 @@ namespace CommonsPattern
         public List<ParticleSystem> slaveParticles;
         
         
+        /* State */
+
+        // True iff this entity is paused
+        private bool m_IsPaused = false;
+        
+        
         private void Awake()
         {
             if (addSiblingComponentsAsSlaves)
@@ -142,6 +148,8 @@ namespace CommonsPattern
         /// Pause all slave behaviours
         public virtual void Pause()
         {
+            m_IsPaused = true;
+            
             foreach (Behaviour slaveBehaviour in slaveBehaviours)
             {
                 // Unlike Setup/Clear which tries to cast to ClearableBehaviour to delegate Setup/Clear,
@@ -167,6 +175,8 @@ namespace CommonsPattern
         /// Resume all slave behaviours
         public virtual void Resume()
         {
+            m_IsPaused = false;
+            
             foreach (Behaviour slaveBehaviour in slaveBehaviours)
             {
                 // Same remark as in Pause
@@ -180,6 +190,11 @@ namespace CommonsPattern
             {
                 if (slaveParticle != null && slaveParticle.isPaused) slaveParticle.Play();
             }
+        }
+
+        public bool IsPaused()
+        {
+            return m_IsPaused;
         }
 
         /// Pause event callback
