@@ -98,13 +98,14 @@ namespace CommonsHelper
 	    /// <param name="p1">Arrow start position</param>
 	    /// <param name="p2">Arrow end position</param>
 	    /// <param name="color">Draw color</param>
-	    public static void DrawArrow2D (Vector2 p1, Vector2 p2, Color color) {
+	    /// <param name="thickness">Draw thickness</param>
+	    public static void DrawArrow2D (Vector2 p1, Vector2 p2, Color color, float thickness = 0f) {
 		    using (new Handles.DrawingScope(color)) {
-			    Handles.DrawLine(p1, p2);
+			    Handles.DrawLine(p1, p2, thickness);
 			    Vector2 forward = (p2 - p1).normalized;
 			    Vector2 right = VectorUtil.Rotate90CW(forward);
-			    Handles.DrawLine(p2, p2 - 0.2f * forward - 0.2f * right);
-			    Handles.DrawLine(p2, p2 - 0.2f * forward + 0.2f * right);
+			    Handles.DrawLine(p2, p2 - 0.2f * forward - 0.2f * right, thickness);
+			    Handles.DrawLine(p2, p2 - 0.2f * forward + 0.2f * right, thickness);
 		    }
 	    }
 
@@ -114,12 +115,13 @@ namespace CommonsHelper
 	    /// <param name="position">Position of the extremity of the arrow head</param>
 	    /// <param name="direction">Direction the arrow head is pointing to. Will be normalized.</param>
 	    /// <param name="color">Draw color</param>
-	    public static void DrawArrowHead2D (Vector2 position, Vector2 direction, Color color) {
+	    /// <param name="thickness">Draw thickness</param>
+	    public static void DrawArrowHead2D (Vector2 position, Vector2 direction, Color color, float thickness = 0f) {
 	        using (new Handles.DrawingScope(color)) {
 				Vector2 forward = direction.normalized;
 				Vector2 right = VectorUtil.Rotate90CW(forward);
-				Handles.DrawLine(position, position - 0.2f * forward - 0.2f * right);
-				Handles.DrawLine(position, position - 0.2f * forward + 0.2f * right);
+				Handles.DrawLine(position, position - 0.2f * forward - 0.2f * right, thickness);
+				Handles.DrawLine(position, position - 0.2f * forward + 0.2f * right, thickness);
 			}
 	    }
 
