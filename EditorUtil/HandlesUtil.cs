@@ -316,6 +316,34 @@ namespace CommonsHelper
 		    }
 	    }
 
+		/// Draw handle to edit angle, by drawing a circle with a Free Move Handle that moves a point along the circle
+		/// The resulting angle is the signed angle between the referenceDirection and the radial vector to this moved point.
+	    public static void DrawAngleHandle (Vector2 center, float radius, Vector2 referenceDirection, ref float angle,
+				Color circleColor, Color handleColor, Handles.CapFunction centerCapFunction = null, float screenSizeScale = 1f, int? controlID = null) {
+			Vector2 direction = VectorUtil.Rotate(Vector2.left, angle);
+			Vector2 handlePosition = center + radius * direction;
+			
+			// Circle
+			using (new Handles.DrawingScope(circleColor)) {
+				Handles.DrawWireDisc(center, Vector3.forward, radius, 2f);
+			}
+
+	        EditorGUI.BeginChangeCheck();
+
+	        using (var check = new EditorGUI.ChangeCheckScope())
+	        {
+				// Angle point handle
+			    using (new Handles.DrawingScope(circleColor)) {
+				    // Snapping is not relevant when you move a point along a circle
+				    DrawFreeMoveHandle(ref handlePosition, handleColor, null, centerCapFunction, screenSizeScale, controlID);
+			    }
+			    
+			    if (check.changed) {
+			        angle = Vector2.SignedAngle(referenceDirection, handlePosition - center);
+			    }
+	        }
+	    }
+
 		/// Draw handles for a disc, allowing to move center and tune radius
 	    /// Proxy for DrawFreeMoveHandle + DrawWireDisc + RadiusHandle (without controlID) with 2D position by reference
 	    public static void DrawCircleHandles (ref Vector2 center, ref float radius, Color color, Vector3 snap = default(Vector3), Handles.CapFunction centerCapFunction = null, float screenSizeScale = 1f) {
