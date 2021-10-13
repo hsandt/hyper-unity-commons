@@ -1,0 +1,17 @@
+{
+  "name": "com.komehara.commons-visual-scripting",
+  "version": "1.0.0",
+  "displayName": "Commons Visual Scripting",
+  "description": "Collection of scripts for Visual Scripting",
+  "unity": "2021.1",
+  "unityRelease": "1f1",
+  "dependencies": {
+  },
+  "keywords": [
+  ],
+  "author": {
+    "name": "Long Nguyen Huu",
+    "email": "contact@longnguyenhuu.com",
+    "url": "http://longnguyenhuu.com"
+  }
+}
