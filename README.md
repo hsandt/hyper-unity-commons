@@ -1,29 +1,17 @@
-# README #
+# Unity Commons - Visual Scripting
 
-This README would normally document whatever steps are necessary to get your application up and running.
+A collection of helper scripts for Unity Visual Scripting.
 
-### What is this repository for? ###
+Requires the Visual Scripting (ex-Bolt) package installed in your project.
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+I keep this repository to use as Git submodule in my personal and team projects. I consider most scripts to be stable,
+but I regularly add features and update the API to fit new versions of Unity, or the needs of my current project;
+sometimes breaking compatibility with previous projects.
 
-### How do I get set up? ###
+For this reason, I recommend people who are interested in the scripts but not working directly with me to either
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+* download a frozen copy of master branch and stick to it for a given project
+* or download and adapt individual scripts as they need (just copy the MIT LICENSE along)
 
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+Improvement suggestions are welcome. I don't take pull requests at the moment, but you can reach me at
+hs@gamedesignshortcut.com.
