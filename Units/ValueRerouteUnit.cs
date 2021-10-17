@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace CommonsVisualScripting
 {
     [UnitCategory("Utility")]
     [UnitTitle("Value Reroute")]

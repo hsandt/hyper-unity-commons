@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace CommonsVisualScripting
 {
     /// Start coroutine and wait until it is over.
     [UnitCategory("Coroutine")]
