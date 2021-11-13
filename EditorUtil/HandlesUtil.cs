@@ -316,10 +316,11 @@ namespace CommonsHelper
 		    }
 	    }
 
-		/// Draw handle to edit angle, by drawing a circle with a Free Move Handle that moves a point along the circle
-		/// The resulting angle is the signed angle between the referenceDirection and the radial vector to this moved point.
+		/// Draw handle to edit angle, by drawing a circle with a Free Move Handle that moves a point along the circle,
+		/// and a solid arc from the reference direction.
+		/// The resulting angle is the signed angle between the reference direction and the radial vector to this moved point.
 	    public static void DrawAngleHandle (Vector2 center, float radius, Vector2 referenceDirection, ref float angle,
-				Color circleColor, Color handleColor, Handles.CapFunction centerCapFunction = null, float screenSizeScale = 1f, int? controlID = null) {
+				Color circleColor, Color handleColor, Color solidArcColor, Handles.CapFunction centerCapFunction = null, float screenSizeScale = 1f, int? controlID = null) {
 			Vector2 direction = VectorUtil.Rotate(Vector2.left, angle);
 			Vector2 handlePosition = center + radius * direction;
 			
@@ -328,15 +329,11 @@ namespace CommonsHelper
 				Handles.DrawWireDisc(center, Vector3.forward, radius, 2f);
 			}
 
-	        EditorGUI.BeginChangeCheck();
-
 	        using (var check = new EditorGUI.ChangeCheckScope())
 	        {
 				// Angle point handle
-			    using (new Handles.DrawingScope(circleColor)) {
-				    // Snapping is not relevant when you move a point along a circle
-				    DrawFreeMoveHandle(ref handlePosition, handleColor, null, centerCapFunction, screenSizeScale, controlID);
-			    }
+			    // Snapping is not relevant when you move a point along a circle
+			    DrawFreeMoveHandle(ref handlePosition, handleColor, null, centerCapFunction, screenSizeScale, controlID);
 			    
 			    if (check.changed) {
 			        angle = Vector2.SignedAngle(referenceDirection, handlePosition - center);
@@ -344,9 +341,52 @@ namespace CommonsHelper
 	        }
 	        
 	        // Draw semi-transparent Solid Arc from reference direction to selected angle direction to help visualization
-	        using (new Handles.DrawingScope(ColorUtil.quarterInvisibleWhite))
+	        using (new Handles.DrawingScope(solidArcColor))
 	        {
 				Handles.DrawSolidArc(center, Vector3.forward, (Vector3) referenceDirection, angle, radius);
+	        }
+		}
+
+		/// Draw handle to edit angle range (pair of start and end angle), by drawing a circle with a Free Move Handle that moves a point along the circle,
+		/// a line for the reference direction and a solid arc between the start and end angle.
+		/// For solidArcColor, we recommend a semi-transparent color like ColorUtil.quarterInvisibleWhite.
+	    public static void DrawAngleRangeHandle (Vector2 center, float radius, Vector2 referenceDirection, ref float startAngle, ref float endAngle,
+				Color circleColor, Color referenceLineColor, Color startHandleColor, Color endHandleColor, Color solidArcColor, Handles.CapFunction centerCapFunction = null, float screenSizeScale = 1f, int? controlID = null) {
+			Vector2 startDirection = VectorUtil.Rotate(Vector2.left, startAngle);
+			Vector2 startHandlePosition = center + radius * startDirection;
+			
+			Vector2 endDirection = VectorUtil.Rotate(Vector2.left, endAngle);
+			Vector2 endHandlePosition = center + radius * endDirection;
+			
+			// Circle
+			using (new Handles.DrawingScope(circleColor)) {
+				Handles.DrawWireDisc(center, Vector3.forward, radius, 2f);
+			}
+			
+			// Reference direction
+			// Unlike DrawAngleHandle, we must draw it as our solid arc is between start and end angle, so it doesn't
+			// show the reference direction at all.
+			using (new Handles.DrawingScope(referenceLineColor)) {
+				Handles.DrawDottedLine(center, center + referenceDirection, 2f);
+			}
+
+	        using (var check = new EditorGUI.ChangeCheckScope())
+	        {
+				// Angle point handles
+				// Snapping is not relevant when you move a point along a circle
+			    DrawFreeMoveHandle(ref startHandlePosition, startHandleColor, null, centerCapFunction, screenSizeScale, controlID);
+			    DrawFreeMoveHandle(ref endHandlePosition, endHandleColor, null, centerCapFunction, screenSizeScale, controlID);
+			    
+			    if (check.changed) {
+			        startAngle = Vector2.SignedAngle(referenceDirection, startHandlePosition - center);
+			        endAngle = Vector2.SignedAngle(referenceDirection, endHandlePosition - center);
+			    }
+	        }
+	        
+	        // Draw semi-transparent Solid Arc from reference direction to selected angle direction to help visualization
+	        using (new Handles.DrawingScope(solidArcColor))
+	        {
+				Handles.DrawSolidArc(center, Vector3.forward, (Vector3) (startHandlePosition - center), endAngle - startAngle, radius);
 	        }
 		}
 
