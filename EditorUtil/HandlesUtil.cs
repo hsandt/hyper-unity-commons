@@ -342,7 +342,13 @@ namespace CommonsHelper
 			        angle = Vector2.SignedAngle(referenceDirection, handlePosition - center);
 			    }
 	        }
-	    }
+	        
+	        // Draw semi-transparent Solid Arc from reference direction to selected angle direction to help visualization
+	        using (new Handles.DrawingScope(ColorUtil.quarterInvisibleWhite))
+	        {
+				Handles.DrawSolidArc(center, Vector3.forward, (Vector3) referenceDirection, angle, radius);
+	        }
+		}
 
 		/// Draw handles for a disc, allowing to move center and tune radius
 	    /// Proxy for DrawFreeMoveHandle + DrawWireDisc + RadiusHandle (without controlID) with 2D position by reference
