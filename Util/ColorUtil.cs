@@ -7,6 +7,8 @@ namespace CommonsHelper
 	public static class ColorUtil {
 
 		public static readonly Color invisibleWhite = new Color(1f, 1f, 1f, 0f);
+		public static readonly Color halfInvisibleWhite = new Color(1f, 1f, 1f, 0.5f);
+		public static readonly Color quarterInvisibleWhite = new Color(1f, 1f, 1f, 0.25f);
 		public static readonly Color orange = new Color32(233, 85, 0, 255); // HexToColor("e95500");
 		public static readonly Color gold = new Color(1f, 0.843f, 0f);
 		public static readonly Color pink = new Color(1f, 0.753f, 0.796f);
