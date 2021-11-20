@@ -42,6 +42,7 @@ namespace CommonsDebug.Editor
 			CodeTuning.Instance.bool2 = EditorGUILayout.Toggle("Bool 2", CodeTuning.Instance.bool2);
 			CodeTuning.Instance.float1 = EditorGUILayout.FloatField ("Float 1", CodeTuning.Instance.float1);
 			CodeTuning.Instance.float2 = EditorGUILayout.FloatField ("Float 2", CodeTuning.Instance.float2);
+			CodeTuning.Instance.float3 = EditorGUILayout.FloatField ("Float 3", CodeTuning.Instance.float3);
 			repaintScene = EditorGUILayout.Toggle(new GUIContent ("Repaint Scene on Change", "Check if the values are used in OnDrawGizmos / OneSceneGUI"), repaintScene);
 
 			if (EditorGUI.EndChangeCheck()) {
@@ -71,6 +72,9 @@ namespace CommonsDebug.Editor
 			if (EditorPrefs.HasKey("CodeTuning.float2"))
 				CodeTuning.Instance.float2 = EditorPrefs.GetFloat("CodeTuning.float2");
 
+			if (EditorPrefs.HasKey("CodeTuning.float3"))
+				CodeTuning.Instance.float3 = EditorPrefs.GetFloat("CodeTuning.float3");
+
 			if (EditorPrefs.HasKey("CodeTuning.repaintScene"))
 				repaintScene = EditorPrefs.GetBool("CodeTuning.repaintScene");
 		}
@@ -82,6 +86,7 @@ namespace CommonsDebug.Editor
 			EditorPrefs.SetBool("CodeTuning.bool2", CodeTuning.Instance.bool2);
 			EditorPrefs.SetFloat("CodeTuning.float1", CodeTuning.Instance.float1);
 			EditorPrefs.SetFloat("CodeTuning.float2", CodeTuning.Instance.float2);
+			EditorPrefs.SetFloat("CodeTuning.float3", CodeTuning.Instance.float3);
 			EditorPrefs.SetBool("CodeTuning.repaintScene", repaintScene);
 		}
 

@@ -36,6 +36,11 @@ namespace CommonsDebug
 			return TryGetValue<float> (Instance.float2, defaultValue);
 		}
 
+		public float float3;
+		public static float GetFloat3 (float defaultValue) {
+			return TryGetValue<float> (Instance.float3, defaultValue);
+		}
+
 		// singleton instance
 		static CodeTuning _instance;
 		public static CodeTuning Instance {
