@@ -125,6 +125,19 @@ namespace CommonsHelper
 			}
 	    }
 
+	    /// <summary>
+	    /// Draw a circle in the XY plane
+	    /// </summary>
+	    /// <param name="center">Center of the circle</param>
+	    /// <param name="radius">Radius of the circle</param>
+	    /// <param name="color">Color of the circle</param>
+	    /// <param name="thickness">Thickness of the circle</param>
+	    public static void DrawCircle2D(Vector2 center, float radius, Color color, float thickness = 0f) {
+		    using (new Handles.DrawingScope(color)) {
+			    Handles.DrawWireDisc((Vector3) center, Vector3.forward, radius, thickness);
+		    }
+	    }
+
 		#region Handle
 
 		const float defaultHandleScreenSize = 0.1f;
