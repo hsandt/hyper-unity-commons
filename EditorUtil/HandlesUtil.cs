@@ -434,50 +434,108 @@ namespace CommonsHelper
 
 		#region Text
 
-		/// Font size used when font factor size is 1 and camera resolution is minDrawCameraPixelsPerUnit. Also the size under which text is not drawn on screen.
-		const float BASE_FONT_SIZE = 11f;
+		/// Font size under which text is not drawn on screen.
+		private const float MIN_FONT_SIZE = 10f;
+		
+		/// Font size used when font factor size is 1 with fixed world font size,
+		/// or when font factor size is 1 and camera resolution is minDrawCameraPixelsPerUnit. 
+		/// This is the default value of GUI.skin.label.fontSize.
+		private const float BASE_FONT_SIZE = 12f;
 
-		/// Minimum camera resolution required to show text (to avoid too small characters), and also the resolution at which the BASE_FONT_SIZE * sizeFactor is used.
-		/// Also used to determine when to draw fixed size text.
-		const float minDrawTextCameraResolution = 35f;
+		/// Camera resolution reference at which text is drawn at size BASE_FONT_SIZE with fixed screen font size.
+		private const float BASE_DRAW_TEXT_CAMERA_RESOLUTION = 35f;
 
-		/// Temporary text GUI style, modified on each DrawVectorText call
-		static readonly GUIStyle textGuiStyle = new GUIStyle();
+		/// Return font size to draw text at fixed screen size if fixedFontSize is true,
+		/// fixed world size following BASE_DRAW_TEXT_CAMERA_RESOLUTION if fixedFontSize is false,
+		/// with factor sizeFactor, and following BASE_FONT_SIZE.
+		/// If computed size is less than MIN_FONT_SIZE, return 0 instead.
+		private static int ComputeFontSize(float pixelsPerUnit, float sizeFactor = 1f, bool fixedFontSize = false)
+		{
+			// We cannot define a 2D font size if not in orthographic view nor facing the XY plane, in which case
+			// pixelsPerUnit = 0, and we should just return 0.
+			if (pixelsPerUnit == 0f)
+			{
+				return 0;
+			}
 
+			float resolutionFactor = fixedFontSize ? 1f : pixelsPerUnit / BASE_DRAW_TEXT_CAMERA_RESOLUTION;
+			float finalSizeFactor = sizeFactor * resolutionFactor;
+			int fontSize = Mathf.FloorToInt(BASE_FONT_SIZE * finalSizeFactor);
+			
+			// Reject font size under the minimum allowed, to avoid drawing text too small
+			if (fontSize < MIN_FONT_SIZE)
+			{
+				return 0;
+			}
+			
+			return fontSize;
+		}
+		
+		/// Create and return Gui Style with computed font size and optional color.
+		/// pixelsPerUnit: if not already computed, pass Get2DPixelResolution()
+		/// Default sizeFactor: 1f
+		/// Default fixedFontSize: false (fixed world size)
+		/// Default color: white
+		private static GUIStyle CreateGuiStyle(float pixelsPerUnit, float sizeFactor = 1f, bool fixedFontSize = false, Color? color = null)
+		{
+			int fontSize = ComputeFontSize(pixelsPerUnit, sizeFactor, fixedFontSize);
+
+			if (fontSize == 0)
+			{
+				return null;
+			}
+
+			GUIStyle textGuiStyle = new GUIStyle(GUI.skin.label)
+			{
+				normal = {textColor = color ?? Color.white},
+				fontSize = fontSize,
+			};
+			
+			return textGuiStyle;
+		}
+		
 		[Obsolete("Use Label2D.")]
 		public static void DrawVectorText(Vector3 position, string text, float sizeFactor = 1f,
 			bool fixedFontSize = false, Color? color = null)
 		{
 			Label2D(position, text, sizeFactor, fixedFontSize, color);
 		}
-		
-		/// Draw vector text on a scene camera at a given position, size and color. If fixedFontSize is false, the size is constant in world space, else it is constant in screen space.
-		public static void Label2D(Vector3 position, string text, float sizeFactor = 1f, bool fixedFontSize = false, Color? color = null)
+
+		/// Draw vector text on a scene camera at a given position, size and color. If fixedFontSize is true, the size is constant in screen space, else it is constant in world space.
+		public static void Label2D(Vector2 position, string text, float sizeFactor = 1f, bool fixedFontSize = false, Color? color = null)
 		{
-			float pixelsPerUnit = Get2DPixelResolution();
+			GUIStyle textGuiStyle = CreateGuiStyle(Get2DPixelResolution(), sizeFactor, fixedFontSize, color);
+			if (textGuiStyle != null)
+			{
+				Handles.Label(position, text, textGuiStyle);
+			}
+		}
+		
+		/// Draw vector text with rectangle background and auto-padding at given position (used for background rectangle topleft),
+		/// size and color. If fixedFontSize is true, the size is constant in screen space, else it is constant in world space.
+		public static void DrawLabelWithBackground(Vector2 position, string text, float sizeFactor = 1f, bool fixedFontSize = false, Color? textColor = null, Color? backgroundColor = null)
+		{
+			GUIContent textContent = new GUIContent(text);
+			
+			// Background label
+			float pixelSize = Get2DPixelSize();
+			GUIStyle guiStyle = CreateGuiStyle(pixelSize, sizeFactor, fixedFontSize, textColor);
+			guiStyle.padding = new RectOffset(5, 5, 5, 5);
+			guiStyle.alignment = TextAnchor.UpperLeft;  // we'll offset label manually, it's more reliable than MiddleCenter
+			Vector2 textSize = guiStyle.CalcSize(textContent); // includes padding
+			Vector2 textWorldSize = textSize * pixelSize;
+			// Remember we work with y down, so height must be negative to work with top-left root position
+			Rect textContainerRect = new Rect(position, new Vector2(textWorldSize.x, -textWorldSize.y));
+			Handles.DrawSolidRectangleWithOutline(textContainerRect, backgroundColor ?? ColorUtil.halfInvisibleBlack, Color.clear);
 
-			// Do not draw text if not in orthographic view, facing world forward, nor if the camera has not been found.
-			// you can also check scene.in2DMode if you have access to the scene this camera belongs to, and you want to exclude manual orthographic view in 3D mode
-			// if you really need to, look at HandleUtility.GetHandleSize() implementation to get the general pixels per unit formula
-			if (pixelsPerUnit == 0f) return;
-
-			float resolutionFactor = fixedFontSize ? 1f : pixelsPerUnit / minDrawTextCameraResolution;
-			float finalSizeFactor = sizeFactor * resolutionFactor;
-
-			// For fixed font size, do not draw if resolution is too low
-			// For variable font size, do not draw if text is too small
-			// We can sum this up in one equivalent comparison
-			if (finalSizeFactor < 1f)
-				return;
-
-			// set color to white, or an optional overriding color
-			textGuiStyle.normal.textColor = color ?? Color.white;
-
-			// set text size depending on resolution
-			textGuiStyle.fontSize = (int) Mathf.Floor (BASE_FONT_SIZE * finalSizeFactor);
-
-			// draw label
-			Handles.Label(position, text, textGuiStyle);
+			// Label
+			// Magic number 1.5f was found by tuning to have the text touch the top then the bottom of the rectangle
+			// (tested with 0 padding), then pick the number right in the middle.
+			// It's not perfect, but aligns text vertically in most cases.
+			Vector2 labelPosition = position + new Vector2(
+				                        guiStyle.padding.left * pixelSize,
+				                        (-guiStyle.padding.top + 1.5f * sizeFactor) * pixelSize);
+			Handles.Label(labelPosition, textContent, guiStyle);
 		}
 
 		#endregion
