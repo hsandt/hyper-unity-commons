@@ -51,7 +51,7 @@ namespace CommonsPattern
 	If more than 1 instance is detected, any extra instance will self-destruct with a warning.
 	On game object/component destruction, the instance is cleared.
 	*/
-	public class SingletonManager<T> : MonoBehaviour where T : SingletonManager<T> {
+	public abstract class SingletonManager<T> : MonoBehaviour where T : SingletonManager<T> {
 
 		private static T _instance;
 		public static T Instance => _instance;
