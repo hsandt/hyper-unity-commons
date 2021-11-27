@@ -4,7 +4,11 @@
 // situations including replacing embedded prefabs.
 // Since them, many improvements were gradually added to the thread mentioned above. We've just added the most important
 // one: Keep Sibling Index. Make sure to check all the pages on the thread for potential improvements to merge in!
-// Or just grab the latest: https://forum.unity.com/threads/replace-game-object-with-prefab.24311/page-2#post-6506253
+// In the meantime I just grabbed the latest:
+// https://forum.unity.com/threads/replace-game-object-with-prefab.24311/page-2#post-6506253
+// and saved it besides this file as ReplaceWithPrefab.cs. However, this one only supports prefabs, so it should either
+// stay a separate script, or we should try a complex merge between my omni-object support system and the advanced
+// Replace with Prefab window.
 
 using UnityEditor;
 using UnityEngine;
