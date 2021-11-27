@@ -2,13 +2,13 @@
 // Elecman's version on page 1
 // Modified by huulong to improve usability, and in particular better supports prefabs and instance linking in various
 // situations including replacing embedded prefabs.
-// Since them, many improvements were gradually added to the thread mentioned above, such as Keep Place in Hierarchy
-// using SetSiblingIndex. Make sure to check all the pages on the thread for potential improvements to merge in!
+// Since them, many improvements were gradually added to the thread mentioned above. We've just added the most important
+// one: Keep Sibling Index. Make sure to check all the pages on the thread for potential improvements to merge in!
+// Or just grab the latest: https://forum.unity.com/threads/replace-game-object-with-prefab.24311/page-2#post-6506253
 
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 
@@ -21,6 +21,7 @@ namespace CommonsEditor
 		Vector2 scrollPosition;
 
 		GameObject replacingObject;
+		bool keepSiblingIndex = true;
 		bool keepName = false;
 		bool keepIcon = false;
 		bool keepRotation = false;
@@ -40,6 +41,7 @@ namespace CommonsEditor
 			// note that it will be cleared to null when leaving the scene/stage containing it
 			replacingObject = EditorGUILayout.ObjectField (replacingObject, typeof(GameObject), true) as GameObject;
 
+			keepSiblingIndex = EditorGUILayout.ToggleLeft ("Keep Sibling Index", keepSiblingIndex);
 			keepName = EditorGUILayout.ToggleLeft ("Keep Name", keepName);
 			keepIcon = EditorGUILayout.ToggleLeft ("Keep Icon", keepIcon);
 			keepRotation = EditorGUILayout.ToggleLeft ("Keep Rotation", keepRotation);
@@ -124,6 +126,9 @@ namespace CommonsEditor
 
 						if (keepScale)
 							newT.localScale = t.localScale;
+						
+						if (keepSiblingIndex)
+							newT.transform.SetSiblingIndex(t.GetSiblingIndex());
 
 						replacedObjects.Add (newT.gameObject);
 					}
