@@ -8,6 +8,16 @@ namespace CommonsHelper
 	[CreateAssetMenu(fileName = "BuildData", menuName = "Data/Build Data", order = 1)]
 	public class BuildData : ScriptableObject
 	{
+		// Copy of UnityEditor.ManagedStrippingLevel to avoid adding a UNITY_EDITOR-only
+		// member, so we can keep BuildData entirely runtime.
+		public enum ManagedStrippingLevel
+		{
+			Disabled,
+			Low,
+			Medium,
+			High,
+		}
+		
 		// Example: My App 3.0.27 (WIP)
 		// <= appName: "My App", majorVersion: 3, minorVersion: 0, stageVersion: 27, workInProgress: true
 		[Tooltip("Application name used in build path (may differ from product name)")]
@@ -27,6 +37,13 @@ namespace CommonsHelper
 		         "while not giving the impression that the next version is ready already. Uncheck for release.")]
 		public bool workInProgress = true;
 
+		[Tooltip("Managed stripping level used for the development build. If using Visual Scripting, set it to Low or less.")]
+		public ManagedStrippingLevel devBuildStrippingLevel = ManagedStrippingLevel.Medium;
+		
+		[Tooltip("Managed stripping level used for the release build. If using Visual Scripting, set it to Low or less. " +
+		         "Note that IL2CPP needs at least Low stripping.")]
+		public ManagedStrippingLevel releaseBuildStrippingLevel = ManagedStrippingLevel.High;
+		
 		public string GetVersionString()
 		{
 			string baseVersionString = $"v{majorVersion}.{minorVersion}.{stageVersion}";

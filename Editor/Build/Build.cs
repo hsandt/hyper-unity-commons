@@ -124,7 +124,7 @@ namespace CommonsHelper.Editor
 
 			if (developmentMode)
 			{
-				// Debug/Development build: do not optimize and only strip at Medium level for faster build iterations
+				// Debug/Development build: do not optimize for faster build iterations
 
 				if (buildTarget != BuildTarget.WebGL)
 				{
@@ -140,8 +140,14 @@ namespace CommonsHelper.Editor
 					// WebGL uses WebAssembly anyway, so at least set C++ config to debug
 					PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Debug);
 				}
-				
-				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, ManagedStrippingLevel.Medium);
+
+				// Pass stripping level for development build, which has been made tunable as different project
+				// setups allow different levels of stripping.
+				// Since we store stripping level with a custom enum in Build Data to make it compile for runtime,
+				// we must cast it to UnityEditor.ManagedStrippingLevel. It works, because enum values are ordered
+				// exactly the same way.
+				ManagedStrippingLevel managedStrippingLevel = (ManagedStrippingLevel) buildData.devBuildStrippingLevel;
+				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, managedStrippingLevel);
 			}
 			else
 			{
@@ -161,7 +167,7 @@ namespace CommonsHelper.Editor
 					// currently, we only know that a given editor platform supports itself as IL2CPP target,
 					//  and in addition, Windows can build IL2CPP for Linux (Unity 2020+)
 					// make sure to install any IL2CPP modules available for your version of Unity
-					bool shouldBuildILD2CPP;
+					bool shouldBuildIL2CPP;
 					
 					// Editor must be running on one of those, so editorPlatform should be defined
 #if UNITY_EDITOR_WIN
@@ -173,9 +179,9 @@ namespace CommonsHelper.Editor
 #elif UNITY_EDITOR_OSX
 					shouldBuildILD2CPP = buildTarget == BuildTarget.StandaloneOSX;
 #elif UNITY_EDITOR_LINUX
-					shouldBuildILD2CPP = buildTarget == BuildTarget.StandaloneLinux64;
+					shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneLinux64;
 #endif
-					if (shouldBuildILD2CPP)
+					if (shouldBuildIL2CPP)
 					{  
 						PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.IL2CPP);
 						useIL2CPP = true;
@@ -194,7 +200,17 @@ namespace CommonsHelper.Editor
 					PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Release);
 				}
 				
-				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, ManagedStrippingLevel.High);
+				// Same remark as with dev build, but we pass the release config this time
+				ManagedStrippingLevel managedStrippingLevel = (ManagedStrippingLevel) buildData.releaseBuildStrippingLevel;
+				
+				// IL2CPP needs at least Low stripping level
+				if (useIL2CPP && managedStrippingLevel == ManagedStrippingLevel.Disabled)
+				{
+					Debug.LogWarning("[Build] Release build done with IL2CPP, which needs at least Low stripping level, " +
+					                 "but stripping level is set to Disabled. Automatically setting it to Low.");
+					managedStrippingLevel = ManagedStrippingLevel.Low;
+				}
+				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, managedStrippingLevel);
 			}
 
 			// Note: at this point, PlayerSettings have been changed, so unlike passing BuildPlayerOptions this has
@@ -205,8 +221,8 @@ namespace CommonsHelper.Editor
 			Reporting.BuildReport buildReport = BuildPipeline.BuildPlayer(buildPlayerOptions);
 			Reporting.BuildSummary buildSummary = buildReport.summary;
 
-			Debug.LogFormat("Build result: {0} ({3:c} from {1} to {2})", buildSummary.result,
-				buildSummary.buildStartedAt, buildSummary.buildEndedAt, (buildSummary.buildEndedAt - buildSummary.buildStartedAt));
+			Debug.LogFormat(@"Build result: {0} (took {3:hh\:mm\:ss} from {1} to {2})", buildSummary.result,
+				buildSummary.buildStartedAt, buildSummary.buildEndedAt, buildSummary.buildEndedAt - buildSummary.buildStartedAt);
 
 			// restore original settings
 			if (buildTarget != BuildTarget.WebGL)
