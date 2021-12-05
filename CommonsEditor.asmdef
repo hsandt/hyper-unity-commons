@@ -1,6 +1,6 @@
 {
     "name": "CommonsEditor",
-    "rootNamespace": "",
+    "rootNamespace": "CommonsEditor",
     "references": [
         "CommonsHelper"
     ],
