@@ -1,7 +1,17 @@
 {
-	"name": "CommonsVIsualScripting",
-	"references": [
-		"GUID:21b0c8d1703a94250bfac916590cea4f",
-		"GUID:ea715009a4efd4c6cbc85be3ae097dd3"
-	]
+    "name": "CommonsVIsualScripting",
+    "rootNamespace": "CommonsVisualScripting",
+    "references": [
+        "GUID:21b0c8d1703a94250bfac916590cea4f",
+        "GUID:ea715009a4efd4c6cbc85be3ae097dd3"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
