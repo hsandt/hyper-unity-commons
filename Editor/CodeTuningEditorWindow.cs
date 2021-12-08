@@ -40,9 +40,12 @@ namespace CommonsDebug.Editor
 			CodeTuning.Instance.branchIndex = EditorGUILayout.IntSlider("Branch Index", CodeTuning.Instance.branchIndex, 0, 10);
 			CodeTuning.Instance.bool1 = EditorGUILayout.Toggle("Bool 1", CodeTuning.Instance.bool1);
 			CodeTuning.Instance.bool2 = EditorGUILayout.Toggle("Bool 2", CodeTuning.Instance.bool2);
-			CodeTuning.Instance.float1 = EditorGUILayout.FloatField ("Float 1", CodeTuning.Instance.float1);
-			CodeTuning.Instance.float2 = EditorGUILayout.FloatField ("Float 2", CodeTuning.Instance.float2);
-			CodeTuning.Instance.float3 = EditorGUILayout.FloatField ("Float 3", CodeTuning.Instance.float3);
+			CodeTuning.Instance.int1 = EditorGUILayout.IntField("Int 1", CodeTuning.Instance.int1);
+			CodeTuning.Instance.int2 = EditorGUILayout.IntField("Int 2", CodeTuning.Instance.int2);
+			CodeTuning.Instance.int3 = EditorGUILayout.IntField("Int 3", CodeTuning.Instance.int3);
+			CodeTuning.Instance.float1 = EditorGUILayout.FloatField("Float 1", CodeTuning.Instance.float1);
+			CodeTuning.Instance.float2 = EditorGUILayout.FloatField("Float 2", CodeTuning.Instance.float2);
+			CodeTuning.Instance.float3 = EditorGUILayout.FloatField("Float 3", CodeTuning.Instance.float3);
 			repaintScene = EditorGUILayout.Toggle(new GUIContent ("Repaint Scene on Change", "Check if the values are used in OnDrawGizmos / OneSceneGUI"), repaintScene);
 
 			if (EditorGUI.EndChangeCheck()) {
@@ -66,6 +69,15 @@ namespace CommonsDebug.Editor
 			if (EditorPrefs.HasKey("CodeTuning.bool2"))
 				CodeTuning.Instance.active = EditorPrefs.GetBool("CodeTuning.bool2");
 
+			if (EditorPrefs.HasKey("CodeTuning.int1"))
+				CodeTuning.Instance.int1 = EditorPrefs.GetInt("CodeTuning.int1");
+
+			if (EditorPrefs.HasKey("CodeTuning.int2"))
+				CodeTuning.Instance.int2 = EditorPrefs.GetInt("CodeTuning.int2");
+
+			if (EditorPrefs.HasKey("CodeTuning.int3"))
+				CodeTuning.Instance.int3 = EditorPrefs.GetInt("CodeTuning.int3");
+
 			if (EditorPrefs.HasKey("CodeTuning.float1"))
 				CodeTuning.Instance.float1 = EditorPrefs.GetFloat("CodeTuning.float1");
 
@@ -84,6 +96,9 @@ namespace CommonsDebug.Editor
 			EditorPrefs.SetInt("CodeTuning.branchIndex", CodeTuning.Instance.branchIndex);
 			EditorPrefs.SetBool("CodeTuning.bool1", CodeTuning.Instance.bool1);
 			EditorPrefs.SetBool("CodeTuning.bool2", CodeTuning.Instance.bool2);
+			EditorPrefs.SetFloat("CodeTuning.int1", CodeTuning.Instance.int1);
+			EditorPrefs.SetFloat("CodeTuning.int2", CodeTuning.Instance.int2);
+			EditorPrefs.SetFloat("CodeTuning.int3", CodeTuning.Instance.int3);
 			EditorPrefs.SetFloat("CodeTuning.float1", CodeTuning.Instance.float1);
 			EditorPrefs.SetFloat("CodeTuning.float2", CodeTuning.Instance.float2);
 			EditorPrefs.SetFloat("CodeTuning.float3", CodeTuning.Instance.float3);

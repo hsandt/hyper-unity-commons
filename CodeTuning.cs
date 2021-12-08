@@ -26,6 +26,21 @@ namespace CommonsDebug
 			return TryGetValue<bool> (Instance.bool2, defaultValue);
 		}
 
+		public int int1;
+		public static int GetInt1 (int defaultValue) {
+			return TryGetValue<int> (Instance.int1, defaultValue);
+		}
+
+		public int int2;
+		public static int GetInt2 (int defaultValue) {
+			return TryGetValue<int> (Instance.int2, defaultValue);
+		}
+
+		public int int3;
+		public static int GetInt3 (int defaultValue) {
+			return TryGetValue<int> (Instance.int3, defaultValue);
+		}
+
 		public float float1;
 		public static float GetFloat1 (float defaultValue) {
 			return TryGetValue<float> (Instance.float1, defaultValue);

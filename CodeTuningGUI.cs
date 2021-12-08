@@ -23,8 +23,12 @@ namespace CommonsDebug
 				IntEntry("branch index", ref CodeTuning.Instance.branchIndex);
 				ToggleEntry("bool 1", ref CodeTuning.Instance.bool1);
 				ToggleEntry("bool 2", ref CodeTuning.Instance.bool2);
+				IntEntry("int 1", ref CodeTuning.Instance.int1);
+				IntEntry("int 2", ref CodeTuning.Instance.int2);
+				IntEntry("int 3", ref CodeTuning.Instance.int3);
 				FloatEntry("float 1", ref CodeTuning.Instance.float1);
 				FloatEntry("float 2", ref CodeTuning.Instance.float2);
+				FloatEntry("float 3", ref CodeTuning.Instance.float3);
 			}
 
 			GUILayout.EndVertical();
