@@ -69,10 +69,10 @@ namespace CommonsHelper
 	    }
 	    
 	    /// <summary>
-	    /// Draw an open polyline from an array of points, using the current gizmos parameter
+	    /// Draw an open polyline from an array of points, using the current handles parameter
 	    /// </summary>
 	    /// <param name="points">Array of points of the polyline.</param>
-	    /// <param name="color">Optional draw color. Current gizmos color if not set.</param>
+	    /// <param name="color">Optional draw color. Current handles color if not set.</param>
 	    public static void DrawPolyLine (Vector3[] points, Color? color = null) {
 		    using (new Handles.DrawingScope(color ?? Handles.color)) {
 				for (int i = 0; i < points.Length - 1; ++i) {
@@ -82,10 +82,10 @@ namespace CommonsHelper
 	    }
 	    
 	    /// <summary>
-	    /// Draw an open polyline from an array of 2D points, using the current gizmos parameter
+	    /// Draw an open polyline from an array of 2D points, using the current handles parameter
 	    /// </summary>
 	    /// <param name="points">Array of 2D points of the polyline.</param>
-	    /// <param name="color">Optional draw color. Current gizmos color if not set.</param>
+	    /// <param name="color">Optional draw color. Current handles color if not set.</param>
 	    public static void DrawPolyLine2D (Vector2[] points2D, Color? color = null)
 	    {
 	        Vector3[] points = Array.ConvertAll(points2D, p2D => (Vector3) p2D);
@@ -143,12 +143,6 @@ namespace CommonsHelper
 		const float defaultHandleScreenSize = 0.1f;
 		static readonly Handles.CapFunction defaultHandleCap = Handles.CubeHandleCap;  // Unity 5.6
 
-		/// Minimum camera resolution required to show the rectangle at all
-		const float minDrawRectCameraResolution = 35f;
-
-		/// Minimum camera resolution required to show the handles at all (bigger than minDrawRectCameraResolution)
-		const float minDrawRectHandlesCameraResolution = 60f;
-		
 		/// Adapted from Handles.CircleHandleCap
 		/// Draws a circle with a cross inside so we can drag a wide circle while seeing the target position precisely
 		public static void CrossedCircleHandleCap(int controlID, Vector3 position, Quaternion rotation, float size, EventType eventType)
@@ -182,12 +176,38 @@ namespace CommonsHelper
 			}
 		}
 
-		public static void DrawRect (ref Rect rect, Transform owner, Color color) {
+		public static void DrawRect(Rect rect, Color color)
+		{
+			using (new Handles.DrawingScope(color))
+			{
+				// Draw rect edges
+				var points = new Vector3[]
+				{
+					new Vector3(rect.xMin, rect.yMin),
+					new Vector3(rect.xMax, rect.yMin),
+					new Vector3(rect.xMax, rect.yMax),
+					new Vector3(rect.xMin, rect.yMax),
+					new Vector3(rect.xMin, rect.yMin)
+				};
+				Handles.DrawPolyLine(points);
+			}
+		}
 
-	        float pixelResolution = GetPixelResolution(owner.position);
+		[Obsolete("Use DrawRectHandle")]
+		public static void DrawRect(ref Rect rect, Transform owner, Color color)
+		{
+			DrawRectHandle(ref rect, owner, color);
+		}
 
-			if (pixelResolution < minDrawRectCameraResolution) return;
-
+		/// <summary>
+		/// Draw rectangle with 4 handles, one on each edge
+		/// The rectangle follows the transform of its owner.
+		/// </summary>
+		/// <param name="rect">Rectangle to modify</param>
+		/// <param name="owner">Owner transform</param>
+	    /// <param name="color">Draw color</param>
+		public static void DrawRectHandle (ref Rect rect, Transform owner, Color color) {
+			
 			Color drawingColor;
 
 			// if the rectangle is reversed, change the color to notify the user
@@ -223,10 +243,6 @@ namespace CommonsHelper
 					new Vector3(rect.xMin, rect.yMin)
 				};
 				Handles.DrawPolyLine(points);
-	
-				if (pixelResolution < minDrawRectHandlesCameraResolution) {
-					return;
-				}
 	
 				// Prepare temporary vector for the 9 handles
 				Vector2 tempVec;

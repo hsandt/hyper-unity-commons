@@ -14,7 +14,7 @@ namespace CommonsHelper.Editor
 			RectContainer rectContainer = (RectContainer) target;
 
 			Undo.RecordObject(rectContainer, "Resized Rect");
-			HandlesUtil.DrawRect(ref rectContainer.rect, rectContainer.transform, rectContainer.drawColor);
+			HandlesUtil.DrawRectHandle(ref rectContainer.rect, rectContainer.transform, rectContainer.drawColor);
 		}
 
 	}
