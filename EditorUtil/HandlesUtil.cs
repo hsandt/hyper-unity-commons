@@ -492,7 +492,8 @@ namespace CommonsHelper
 		/// Default sizeFactor: 1f
 		/// Default fixedFontSize: false (fixed world size)
 		/// Default color: white
-		private static GUIStyle CreateGuiStyle(float pixelsPerUnit, float sizeFactor = 1f, bool fixedFontSize = false, Color? color = null)
+		/// Default padding: GUI.skin.label.padding
+		private static GUIStyle CreateGuiStyle(float pixelsPerUnit, float sizeFactor = 1f, bool fixedFontSize = false, Color? color = null, RectOffset padding = null)
 		{
 			int fontSize = ComputeFontSize(pixelsPerUnit, sizeFactor, fixedFontSize);
 
@@ -506,6 +507,11 @@ namespace CommonsHelper
 				normal = {textColor = color ?? Color.white},
 				fontSize = fontSize,
 			};
+
+			if (padding != null)
+			{
+				textGuiStyle.padding = padding;
+			}
 			
 			return textGuiStyle;
 		}
@@ -518,9 +524,9 @@ namespace CommonsHelper
 		}
 
 		/// Draw vector text on a scene camera at a given position, size and color. If fixedFontSize is true, the size is constant in screen space, else it is constant in world space.
-		public static void Label2D(Vector2 position, string text, float sizeFactor = 1f, bool fixedFontSize = false, Color? color = null)
+		public static void Label2D(Vector2 position, string text, float sizeFactor = 1f, bool fixedFontSize = false, Color? color = null, RectOffset padding = null)
 		{
-			GUIStyle textGuiStyle = CreateGuiStyle(Get2DPixelResolution(), sizeFactor, fixedFontSize, color);
+			GUIStyle textGuiStyle = CreateGuiStyle(Get2DPixelResolution(), sizeFactor, fixedFontSize, color, padding);
 			if (textGuiStyle != null)
 			{
 				Handles.Label(position, text, textGuiStyle);
