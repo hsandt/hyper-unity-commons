@@ -33,7 +33,7 @@ namespace CommonsVisualScripting
         protected override IEnumerator Await(Flow flow)
         {
             MonoBehaviour scriptInstanceValue = flow.GetValue<MonoBehaviour>(scriptInstance);
-            IEnumerator coroutineEnumeratorValue = flow.GetValue<IEnumerator>(this.coroutineEnumerator);
+            IEnumerator coroutineEnumeratorValue = flow.GetValue<IEnumerator>(coroutineEnumerator);
             yield return scriptInstanceValue.StartCoroutine(coroutineEnumeratorValue);
             yield return exit;
         }
