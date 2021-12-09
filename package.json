@@ -6,7 +6,9 @@
   "unity": "2021.1",
   "unityRelease": "1f1",
   "dependencies": {
+    "com.unity.visualscripting": "1.6.1"
   },
+  "resolutionStrategy": "highestMinor",
   "keywords": [
   ],
   "author": {
