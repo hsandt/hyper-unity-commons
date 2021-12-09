@@ -235,11 +235,7 @@ namespace CommonsHelper.Editor
 		}
 
 		/// Build Windows 64
-	# if UNITY_EDITOR_WIN
-		[MenuItem("Build/Build Windows 64 _F10")]
-	#else
 		[MenuItem("Build/Build Windows 64")]
-	#endif
 		static void BuildWindows64 () {
 			// safety check to avoid building by accident while playing
 			// (in particular because F10 is used as a debugging key in some IDEs)
@@ -256,11 +252,7 @@ namespace CommonsHelper.Editor
 		}
 
 		/// Build OS X
-	# if UNITY_EDITOR_OSX
-		[MenuItem("Build/Build OS X _F10")]
-	#else
 		[MenuItem("Build/Build OS X")]
-	#endif
 		static void BuildOSX () {
 			if (!Application.isPlaying)
 			{
@@ -275,11 +267,7 @@ namespace CommonsHelper.Editor
 		}
 
 		/// Build Linux
-		# if UNITY_EDITOR_LINUX
-		[MenuItem("Build/Build Linux 64 _F10")]
-		#else
 		[MenuItem("Build/Build Linux 64")]
-		#endif
 		static void BuildLinux64 () {
 			if (!Application.isPlaying)
 			{
