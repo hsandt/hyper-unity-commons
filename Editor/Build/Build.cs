@@ -43,7 +43,7 @@ namespace CommonsHelper.Editor
 			{ BuildTarget.StandaloneOSX, new BuildTargetDerivedData("OSX", "OSX", ".app") },
 			{ BuildTarget.StandaloneLinux64, new BuildTargetDerivedData("Linux", "Linux 64", ".x86_64") },
 			{ BuildTarget.Android, new BuildTargetDerivedData("Android", "Android", ".apk") },
-			{ BuildTarget.iOS, new BuildTargetDerivedData("iOS", "iOS", platformSpecificOptions: BuildOptions.SymlinkLibraries) },
+			{ BuildTarget.iOS, new BuildTargetDerivedData("iOS", "iOS", platformSpecificOptions: BuildOptions.SymlinkSources) },
 			{ BuildTarget.WebGL, new BuildTargetDerivedData("WebGL", "WebGL") },
 		};
 
