@@ -64,5 +64,32 @@ namespace CommonsPattern
                 "post-condition is not respected.", targetCount, parent);
             #endif
         }
+        
+        /// Get and activate available pooled widget without deactivating all the others
+        /// This is akin to the PoolManager system, as a lightweight alternative when not using it
+        /// Unlike PoolManager.GetObject, it cannot instantiate new objects (prefab not passed), so make sure to
+        /// call LazyInstantiateWidgets with enough count on Start/Setup
+        public static GameObject GetPooledWidget(Transform parent)
+        {
+            int currentWidgetsCount = parent.childCount;
+            
+            for (int i = 0; i < currentWidgetsCount; i++)
+            {
+                GameObject pooledWidget = parent.GetChild(i).gameObject;
+                if (!pooledWidget.activeSelf)
+                {
+                    pooledWidget.SetActive(true);
+                    return pooledWidget;
+                }
+            }
+    
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.LogWarningFormat("[UIPoolHelper] GetPooledWidget: pool is starving at size {1}. " +
+                "Consider increasing initial pool size used with LazyInstantiateWidgets to avoid this situation.",
+                currentWidgetsCount);
+            #endif
+
+            return null;
+        }
     }
 }
