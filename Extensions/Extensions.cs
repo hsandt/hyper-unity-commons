@@ -38,8 +38,13 @@ namespace CommonsHelper
 			// https://stackoverflow.com/questions/44991173/getcomponent-returning-null-instead-of-null
 			// Now it returns a proper null again, but for backward compatibility we still check the instance ID.
 	        if (component == null || component.GetInstanceID() == 0) {
-	            throw ExceptionsUtil.CreateExceptionFormat("GetComponentOrFail: no component of type {0} found on {1}",
-		            typeof(T), gameObject);
+		        #if UNITY_EDITOR || DEVELOPMENT_BUILD
+		        Debug.LogErrorFormat(gameObject, "GetComponentOrFail: no component of type {0} found on {1}", typeof(T), gameObject);
+		        throw new Exception("GetComponentOrFail failed, see error above");
+		        #else
+		        throw ExceptionsUtil.CreateExceptionFormat("GetComponentOrFail: no component of type {0} found on {1}",
+			        typeof(T), gameObject);
+				#endif
 	        }
 			return component;
 		}
