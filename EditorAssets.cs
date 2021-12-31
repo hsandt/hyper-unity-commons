@@ -11,7 +11,27 @@ namespace CommonsEditor
 	public static class EditorAssets
 	{
 
-		[MenuItem( "Assets/Safe Refresh %&a", false, 39)]
+		/// Mark all selected assets dirty
+		/// Use this to force resave and version upgrade
+		/// (e.g. after removing a member or renaming a member with FormerlySerializedAs) 
+		[MenuItem("Assets/Mark Dirty", false, 38)]
+		static void MarkDirty()
+		{
+			foreach (Object selectedObject in Selection.objects)
+			{
+				if (AssetDatabase.IsMainAsset(selectedObject))
+				{
+					EditorUtility.SetDirty(selectedObject);
+				}
+				else
+				{
+					Debug.LogErrorFormat("[EditorAssets] MarkDirty: selected object {0} is not a Main Asset, this tool is meant to re-save main assets only", selectedObject);
+				}
+			}
+		}
+
+		// Priority 39: just above Refresh
+		[MenuItem("Assets/Safe Refresh %&a", false, 39)]
 		static void RefreshSafe()
 		{
 			if (EditorApplication.isPlaying) {
