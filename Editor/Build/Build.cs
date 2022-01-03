@@ -172,12 +172,12 @@ namespace CommonsHelper.Editor
 					// Editor must be running on one of those, so editorPlatform should be defined
 #if UNITY_EDITOR_WIN
 #	if UNITY_2020_1_OR_NEWER
-					shouldBuildILD2CPP = buildTarget == BuildTarget.StandaloneWindows64 || buildTarget == BuildTarget.StandaloneLinux64;
+					shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneWindows64 || buildTarget == BuildTarget.StandaloneLinux64;
 #	else
-					shouldBuildILD2CPP = buildTarget == BuildTarget.StandaloneWindows64;
+					shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneWindows64;
 #	endif
 #elif UNITY_EDITOR_OSX
-					shouldBuildILD2CPP = buildTarget == BuildTarget.StandaloneOSX;
+					shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneOSX;
 #elif UNITY_EDITOR_LINUX
 					shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneLinux64;
 #endif
