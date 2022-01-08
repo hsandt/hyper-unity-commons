@@ -1,36 +1,44 @@
 ﻿// References
-// https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/ColliderEditorBase.cs
-// https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/EditMode.cs
-// https://answers.unity.com/questions/1396922/ugui-align-icons-in-the-inspector-how-to-recreate.html
+//
+// All source files can be found at
+// https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector
+//
+// EditMode system:
+// EditMode.cs
+//
+// How to use EditMode.DoEditModeInspectorModeButton:
+// ColliderEditorBase.cs, HingeJoint2DEditor.cs, OcclusionPortalEditor.cs, SkinnedMeshRendererEditor.cs
+// Note that ColliderEditorBase.InspectorEditButtonGUI seems not to be called anymore (at least not from C#),
+// and instead some magic (probably C++) adds a custom Edit Collider button in a property-like alignment
+// (label on the left, button on the right). Our button is closer to the 3 other editors, center-aligned.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;
 
 namespace CommonsHelper.Editor
 {
-    // Styles can only be statically constructed in non ScriptableObject class
-    public class GUIData
-    {
-        public static class Styles
-        {
-            public static readonly GUIStyle singleButtonStyle = "EditModeSingleButton";
-        }
-    }
-
     [CustomEditor(typeof(BezierPath2DComponent))]
     public class BezierPath2DComponentEditor : UnityEditor.Editor
     {
+        private static class Styles
+        {
+            public static readonly GUIContent editModeButton = new GUIContent(
+                EditorGUIUtility.IconContent("EditCollider").image,
+                "Edit Bezier path.\n\n - Hold Ctrl before clicking to delete the nearest control point."
+            );
+        }
+        
+        public bool editingCollider
+        {
+            get { return EditMode.editMode == EditMode.SceneViewEditMode.Collider && EditMode.IsOwner(this); }
+        }
+        
         /// Session State key for toggle that is true when editing a Bezier Path 2D with custom editor input
         private const string kBezierPath2DEditActiveKey = "BezierPath2DEditActive";
 
-        /// Padding around edit icon in toggle button
-        private const float toggleButtonPaddingX = 10f;
-
-        private const float toggleButtonPaddingY = 10f;
-        
         private static readonly Color pathColor = Color.cyan;
         private static readonly Color keyPointColor = Color.white;
         private static readonly Color tangentPointColor = ColorUtil.orange;
@@ -49,36 +57,10 @@ namespace CommonsHelper.Editor
 
         public override void OnInspectorGUI ()
         {
+            AddEditModeButton();
+            
             base.OnInspectorGUI();
-
-            // Draw toggle button using the same Edit icon as Unity's native collider components
-            GUIContent iconContent = EditorGUIUtility.IconContent("EditCollider");
-
-            // retrieve icon dimensions and compute wanted button size
-            float buttonWidth = iconContent.image.width + toggleButtonPaddingX * 2;
-            float buttonHeight = iconContent.image.height + toggleButtonPaddingY * 2;
-
-            // retrieve last edit state from Editor Session State
-            bool editActive = SessionState.GetBool(kBezierPath2DEditActiveKey, false);
-
-            EditorGUI.BeginChangeCheck();
-
-            // Draw toggle button and label
-            GUILayout.BeginHorizontal();
-
-            editActive = GUILayout.Toggle(editActive, EditorGUIUtility.IconContent("EditCollider"),
-                GUIData.Styles.singleButtonStyle, GUILayout.Width(buttonWidth), GUILayout.Height(buttonHeight));
-            GUILayout.Label("Edit Bezier Path");
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                SessionState.SetBool(kBezierPath2DEditActiveKey, editActive);
-                // repaint so the controls appear/disappear immediately in Scene View
-                SceneView.RepaintAll();
-            }
-
-            GUILayout.EndHorizontal();
-
+        
             if (GUILayout.Button("Add New Key Point at Origin"))
             {
                 Undo.RecordObject(script, "Add Key Point");
@@ -86,15 +68,34 @@ namespace CommonsHelper.Editor
                 SceneView.RepaintAll();
             }
         }
-
+        
+        protected void AddEditModeButton()
+        {
+            EditMode.DoEditModeInspectorModeButton(
+                EditMode.SceneViewEditMode.Collider,  // Not exactly a collider, but the closest
+                "Edit Path",
+                Styles.editModeButton,
+                // Slight difference with ColliderEditorBase: signature that skips getBoundsOfTargets is internal,
+                // so we cannot use it and must pass either bounds callback or null.
+                // The returned bounds seem only used by ChangeEditMode which does nothing with it,
+                // so don't bother and just pass null.
+                null,
+                this
+            );
+        }
+        
         void OnSceneGUI ()
         {
-            DrawEditablePath(script.isRelative);
+            if (script != null)
+            {
+                DrawEditablePath(script.isRelative);
+            }
         }
 
         private void DrawEditablePath (bool isRelative)
         {
-            bool editActive = SessionState.GetBool(kBezierPath2DEditActiveKey, false);
+            bool editActive = EditMode.editMode == EditMode.SceneViewEditMode.Collider &&
+                              EditMode.IsOwner(this);
             Vector2 offset = isRelative ? (Vector2)script.transform.position : Vector2.zero;
 
             if (editActive)

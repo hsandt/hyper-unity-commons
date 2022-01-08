@@ -50,6 +50,8 @@ namespace CommonsHelper
                 new Vector2(3f, 0f)
             };
         }
+        
+        #region PointAndCurveAccessors
 
         // Only allow access to the points via a conservative interface.
         // This is to prevent adding and removing points manually,
@@ -117,34 +119,6 @@ namespace CommonsHelper
             return nearestKeyPointIndex;
         }
 
-        /// Return the number of curves compounding this path (equal to the number of key points - 1)
-        public int GetCurvesCount()
-        {
-            return (controlPoints.Count - 1 ) / 3;
-        }
-
-        /// Return curve at given key index. A Bezier curve is a part of a Bezier path, compounded of 4 control points.
-        public Vector2[] GetCurve(int keyIndex)
-        {
-            return new[]
-            {
-                controlPoints[3 * keyIndex],
-                controlPoints[3 * keyIndex + 1],
-                controlPoints[3 * keyIndex + 2],
-                controlPoints[3 * keyIndex + 3]
-            };
-        }
-
-        /// Yield each curve of 4 control points compounding the path, from start to end.
-        public IEnumerable<Vector2[]> GetCurves()
-        {
-            int curvesCount = GetCurvesCount();
-            for (int keyIndex = 0; keyIndex < curvesCount; keyIndex++)
-            {
-                yield return GetCurve(keyIndex);
-            }
-        }
-
         /// Add a key point at the end of the path, automatically choosing smooth control points between the added
         /// key point and the previous one.
         public void AddKeyPoint(Vector2 newKeyPoint)
@@ -207,6 +181,38 @@ namespace CommonsHelper
                 controlPoints.RemoveRange(3 * keyIndex - 1, 3);
             }
         }
+        
+        /// Return the number of curves compounding this path (equal to the number of key points - 1)
+        public int GetCurvesCount()
+        {
+            return (controlPoints.Count - 1 ) / 3;
+        }
+
+        /// Return curve at given key index. A Bezier curve is a part of a Bezier path, compounded of 4 control points.
+        public Vector2[] GetCurve(int keyIndex)
+        {
+            return new[]
+            {
+                controlPoints[3 * keyIndex],
+                controlPoints[3 * keyIndex + 1],
+                controlPoints[3 * keyIndex + 2],
+                controlPoints[3 * keyIndex + 3]
+            };
+        }
+
+        /// Yield each curve of 4 control points compounding the path, from start to end.
+        public IEnumerable<Vector2[]> GetCurves()
+        {
+            int curvesCount = GetCurvesCount();
+            for (int keyIndex = 0; keyIndex < curvesCount; keyIndex++)
+            {
+                yield return GetCurve(keyIndex);
+            }
+        }
+        
+        #endregion
+        
+        #region Interpolation
         
         /// Return the position on the whole path at given cumulated parameter
         /// (0 for start, 1 for end of 1st curve, N for end of N-th curve)
@@ -320,7 +326,7 @@ namespace CommonsHelper
             Vector2[] curve = GetCurve(keyIndex);
             return InterpolateBezier(curve, t);
         }
-    
+        
+        #endregion
     }
-
 }
