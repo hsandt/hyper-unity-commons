@@ -164,8 +164,11 @@ namespace CommonsHelper.Editor
             List<Vector2> interpolatedPoints = InterpolatePath(path, offset);
             HandlesUtil.DrawPolyLine2D(interpolatedPoints.ToArray(), pathColor);
             
-            // add an arrow in the middle to show the orientation of the path
-            DrawArrowInPathMiddle(interpolatedPoints);
+            // if more than 1 point (most commonly), add an arrow in the middle to show the orientation of the path
+            if (interpolatedPoints.Count > 1)
+            {
+                DrawArrowInPathMiddle(interpolatedPoints);
+            }
         }
 
         /// Return a list of interpolated points over the given path, with offset
@@ -177,6 +180,10 @@ namespace CommonsHelper.Editor
             for (int i = 0; i < path.GetCurvesCount(); ++i)
             {
                 // TODO: camera pixel size
+                // must be high enough to get decent evaluation of curve length
+                // not as critical as the other parameters below, as increasing it will only add gradually
+                // more precision to curveLength (increasing it slightly), but CeilToInt will round all of that 
+                const int evaluateCurveLengthSegmentsCount = 10;
                 const float maxSegmentLength = 0.1f; // in world units
                 // to avoid freezing when interpolating a curve between points very far from each other
                 const int maxSegmentCount = 30; 
@@ -186,11 +193,14 @@ namespace CommonsHelper.Editor
                 // for curves that are not too crazy i.e. control points are not too far
                 Vector2[] curve = path.GetCurve(i);
 
-                Vector2 startToEnd = curve[3] - curve[0];
-                int segmentCount = Mathf.Min(Mathf.CeilToInt(startToEnd.magnitude / maxSegmentLength), maxSegmentCount);
-                for (int j = 0; j < segmentCount; ++j)
+                // Split curve in several segments, following the resolution given by maxSegmentLength,
+                // but never more than maxSegmentCount.
+                float curveLength = path.EvaluateCurveLength(i, evaluateCurveLengthSegmentsCount);
+                int segmentCount = Mathf.CeilToInt(curveLength / maxSegmentLength);
+                int clampedSegmentCount = Mathf.Min(segmentCount, maxSegmentCount);
+                for (int j = 0; j < clampedSegmentCount; ++j)
                 {
-                    float t = (float) j / (float) segmentCount;
+                    float t = (float) j / (float) clampedSegmentCount;
                     interpolatedPoints.Add(BezierPath2D.InterpolateBezier(curve[0], curve[1], curve[2], curve[3], t) + offset);
                 }
             }

@@ -87,7 +87,7 @@ namespace CommonsHelper
             return controlPoints[3 * keyIndex];
         }
         
-        /// Yield each curve of 4 control points compounding the path, from start to end.
+        /// Yield all key points
         public IEnumerable<Vector2> GetKeyPoints()
         {
             int keyPointsCount = GetKeyPointsCount();
@@ -209,7 +209,7 @@ namespace CommonsHelper
         }
         
         /// Return the position on the whole path at given cumulated parameter
-        /// (0 for start, 1 for end of 1st curve, N for end of N-th curve) 
+        /// (0 for start, 1 for end of 1st curve, N for end of N-th curve)
         public Vector2 InterpolatePathByParameter(float t)
         {
             // TODO: like InterpolatePathNormalized, but not normalized
@@ -218,12 +218,12 @@ namespace CommonsHelper
 
         /// Return the position on the whole path at given normalized parameter
         /// (0 for start, 1 for end)
-        /// Each curve is associated an equal range of values (1 / curvesCount)
-        /// but the computed position follows the usual Bezier expression of t
-        /// so the norm of the derivative of the returned Vector2 by pathRatio
-        /// is not guaranteed to be constant (if you pass normalized time as pathRatio
-        /// to move a point, the speed of that point may vary, like a Bezier animation)
-        /// RENAMED from InterpolatePathNormalized
+        /// Each curve is associated an equal range of values (1 / curvesCount),
+        /// so if normalizedT is increased at constant rate, the interpolated point
+        /// "spends" the same amount of time in every curve.
+        /// However, its speed may still vary inside a curve (due to Bezier derivative
+        /// not being constant) and between curves (longer curves will lead to faster
+        /// progression in average).
         public Vector2 InterpolatePathByNormalizedParameter(float normalizedT)
         {
             Debug.Assert(normalizedT >= 0f && normalizedT <= 1f);
@@ -275,7 +275,7 @@ namespace CommonsHelper
 
             for (int keyIndex = 0; keyIndex < curvesCount; ++keyIndex)
             {
-                length += EvaluateCurveLength(keyIndex, 100);
+                length += EvaluateCurveLength(keyIndex, segmentsCountPerCurve);
             }
 
             return length;
