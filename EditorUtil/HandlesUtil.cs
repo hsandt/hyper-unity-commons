@@ -69,27 +69,57 @@ namespace CommonsHelper
 	    }
 	    
 	    /// <summary>
-	    /// Draw an open polyline from an array of points, using the current handles parameter
+	    /// Draw an open polyline from an array of points specified with color
 	    /// </summary>
 	    /// <param name="points">Array of points of the polyline.</param>
 	    /// <param name="color">Optional draw color. Current handles color if not set.</param>
-	    public static void DrawPolyLine (Vector3[] points, Color? color = null) {
-		    using (new Handles.DrawingScope(color ?? Handles.color)) {
-				for (int i = 0; i < points.Length - 1; ++i) {
-					Handles.DrawLine(points[i], points[i + 1]);
-				}
+	    public static void DrawPolyLine (Vector3[] points, Color? color = null)
+	    {
+		    using (new Handles.DrawingScope(color ?? Handles.color))
+		    {
+				Handles.DrawPolyLine(points);
 		    }
 	    }
-	    
+
 	    /// <summary>
 	    /// Draw an open polyline from an array of 2D points, using the current handles parameter
 	    /// </summary>
-	    /// <param name="points">Array of 2D points of the polyline.</param>
+	    /// <param name="points2D">Array of 2D points of the polyline.</param>
 	    /// <param name="color">Optional draw color. Current handles color if not set.</param>
 	    public static void DrawPolyLine2D (Vector2[] points2D, Color? color = null)
 	    {
 	        Vector3[] points = Array.ConvertAll(points2D, p2D => (Vector3) p2D);
 	        DrawPolyLine(points, color);
+	    }
+	    
+	    /// <summary>
+	    /// Draw an open anti-aliased polyline from an array of points specified with width and color
+	    /// </summary>
+	    /// <param name="points">Array of points of the polyline.</param>
+	    /// <param name="width">The width of the polyline.</param>
+	    /// <param name="color">Optional draw color. Current handles color if not set.</param>
+	    public static void DrawAAPolyLine (Vector3[] points, float width, Color? color = null)
+	    {
+		    using (new Handles.DrawingScope(color ?? Handles.color))
+		    {
+			    Handles.DrawAAPolyLine(width, points);
+		    }
+	    }
+	    
+	    /// <summary>
+	    /// Draw an open anti-aliased polyline from an array of 2D points specified with width and color
+	    /// </summary>
+	    /// <param name="points2D">Array of 2D points of the polyline.</param>
+	    /// <param name="width">The width of the polyline.</param>
+	    /// <param name="color">Optional draw color. Current handles color if not set.</param>
+	    public static void DrawAAPolyLine2D (Vector2[] points2D, float width, Color? color = null)
+	    {
+		    Vector3[] points = Array.ConvertAll(points2D, p2D => (Vector3) p2D);
+		    
+		    using (new Handles.DrawingScope(color ?? Handles.color))
+		    {
+			    Handles.DrawAAPolyLine(width, points);
+		    }
 	    }
 
 	    /// <summary>
