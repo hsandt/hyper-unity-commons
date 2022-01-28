@@ -3,6 +3,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CommonsPattern
 {
@@ -18,7 +19,7 @@ namespace CommonsPattern
 		         "in override Init() but before base.Init().")]
 		public Transform poolTransform;
 
-		
+
 		[Header("Parameters")]
 
 		[SerializeField, Tooltip("Path of gameobject prefabs to load, starting just after Resources/")]
@@ -27,25 +28,25 @@ namespace CommonsPattern
 		[SerializeField, Tooltip("Initial number of objects to pool for each type (multi-pool total size is a multiple). " +
 		                         "More pooled objects may be instantiated dynamically if Instantiate New Object On Starvation is true.")]
 		protected int initialPoolSize = 10;
-		
+
 		[SerializeField, Tooltip("Should the manager instantiate a new pooled object in case of starvation? " +
 		                         "This will increase the pool size dynamically and may slow down on spawn, " +
 		                         "but avoids not spawning an object at all. Recommended for gameplay objects.")]
 		protected bool instantiateNewObjectOnStarvation = false;
-		
-		
+
+
 		/* Cached parameters */
-		
+
 		/// Dictionary of resource prefabs used to generate pooled objects, per name. Derived from resourcePrefabsPath.
 		protected readonly Dictionary<string, GameObject> prefabLibrary = new Dictionary<string, GameObject>();
-		
-		
+
+
 		/* State */
 
 		/// Dictionary of sub-pools managed internally, indexed by prefab name
 		protected readonly Dictionary<string, Pool<TPooledObject>> m_MultiPool = new Dictionary<string, Pool<TPooledObject>>();
 
-		
+
 		protected override void Init() {
 			// Load all prefabs from Resources
 			LoadAllPrefabs();
@@ -74,11 +75,11 @@ namespace CommonsPattern
 											prefab.name);
 				}
 #endif
-				
+
 #if DEBUG_MULTI_POOL_MANAGER
 				Debug.LogFormat("[MultiPoolManager] Adding {0}/{1} to prefab library", resourcePrefabsPath, prefab.name);
 #endif
-				
+
 				prefabLibrary.Add(prefab.name, prefab);
 			}
 		}
@@ -100,21 +101,15 @@ namespace CommonsPattern
 	        {
 		        return pool.GetObject(instantiateNewObjectOnStarvation);
 	        }
-			
+
 			Debug.LogErrorFormat(this, "Prefab '{0}' not found in multi pool dictionary of {1}", prefabName, name);
 			return null;
 		}
-		
+
 		/// Return an enumerable to all objects in use in all pools
 		public IEnumerable<TPooledObject> GetObjectsInUseInAllPools()
 		{
-			foreach (Pool<TPooledObject> pool in m_MultiPool.Values)
-			{
-				foreach (TPooledObject pooledObject in pool.GetObjectsInUse())
-				{
-					yield return pooledObject;
-				}
-			}
+			return m_MultiPool.Values.SelectMany(pool => pool.GetObjectsInUse());
 		}
 
 		/// Return true if any pooled object is in use
@@ -126,16 +121,9 @@ namespace CommonsPattern
 			//	or decrement in counter of objects in use, so we can directly answer
 			// ALTERNATIVE 2: two lists, one of objects released and one of objects in use
 			//	we can immediately check the length of the lists to know if any / all are used
-			foreach (Pool<TPooledObject> pool in m_MultiPool.Values)
-			{
-				if (pool.AnyInUse())
-				{
-					return true;
-				}
-			}
-			return false;
+			return m_MultiPool.Values.Any(pool => pool.AnyInUse());
 		}
-		
+
 		/// Release all objects in use in all sub-pools
 		public void ReleaseAllObjects()
 		{

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 using CommonsHelper;
@@ -10,20 +11,20 @@ namespace CommonsPattern
     public class Pool<TPooledObject> where TPooledObject : MonoBehaviour, IPooledObject
     {
         /* Parameters */
-		
+
         /// Pooled object prefab
         private readonly GameObject m_PooledObjectPrefab;
-        
+
         /// Parent under which all pooled objects will be created
         private readonly Transform m_PoolTransform;
 
-        
+
         /* State */
-        
+
         /// List of objects in the pool, active or inactive
         private List<TPooledObject> m_Objects;
 
-        
+
         /// Constructor.
         public Pool(GameObject pooledObjectPrefab, Transform poolTransform)
         {
@@ -35,13 +36,13 @@ namespace CommonsPattern
         public void Init(int initialPoolSize)
         {
             m_Objects = new List<TPooledObject>(initialPoolSize);
-            
+
             for (int i = 0; i < initialPoolSize; ++i)
             {
                 InstantiatePooledObject();
             }
         }
-        
+
         /// Instantiate new game object from prefab under poolTransform, initialises it,
         /// releases it (so it is ready for usage) and adds it to pooled objects list, then return reference to it.
         /// Fail if prefab has no TPooledObject component.
@@ -49,20 +50,20 @@ namespace CommonsPattern
         {
             // Instantiate prefab under pool transform
             GameObject prefabInstance = Object.Instantiate(m_PooledObjectPrefab, m_PoolTransform);
-            
+
             // Append count to name to make it easier to distinguish pooled objects
             // Ex: Projectile(Clone) 3 (we haven't added the object yet, so count starts at 0)
             prefabInstance.name += $" {m_Objects.Count}";
-            
+
             TPooledObject pooledObject = prefabInstance.GetComponentOrFail<TPooledObject>();
             pooledObject.InitPooled();
             pooledObject.Release();
-            
+
             m_Objects.Add(pooledObject);
-            
+
             return pooledObject;
         }
-        
+
         /// Try to return a released object
         /// If no objects are released, check instantiateNewObjectOnStarvation
         /// - if true, instantiate a new object (with initialisation) and return it
@@ -77,7 +78,7 @@ namespace CommonsPattern
                     return pooledObject;
                 }
             }
-			
+
             // Pool starvation: check how we should handle it
             // Performance note: if instantiating object, we are not "smart" (e.g. instantiating a batch of new objects
             // as a List allocation would do, by power of two). We really just instantiate what we need, 1 object.
@@ -93,23 +94,17 @@ namespace CommonsPattern
                 #endif
                 return InstantiatePooledObject();
             }
-            
+
             return null;
         }
-        
+
         /// Return an enumerable to all objects in use
         public IEnumerable<TPooledObject> GetObjectsInUse()
         {
             // O(n)
-            foreach (TPooledObject pooledObject in m_Objects)
-            {
-                if (pooledObject.IsInUse())
-                {
-                    yield return pooledObject;
-                }
-            }
+            return m_Objects.Where(pooledObject => pooledObject.IsInUse());
         }
-        
+
         /// Return true if any pooled object is in use
         public bool AnyInUse()
         {
@@ -119,16 +114,9 @@ namespace CommonsPattern
             //	or decrement in counter of objects in use, so we can directly answer
             // ALTERNATIVE 2: two lists, one of objects released and one of objects in use
             //	we can immediately check the length of the lists to know if any / all are used
-            foreach (TPooledObject pooledObject in m_Objects)
-            {
-                if (pooledObject.IsInUse())
-                {
-                    return true;
-                }
-            }
-            return false;
+            return m_Objects.Any(pooledObject => pooledObject.IsInUse());
         }
-        
+
         /// Release all objects in use
         public void ReleaseAllObjects()
         {
