@@ -68,7 +68,7 @@ namespace CommonsPattern
         /// If no objects are released, check instantiateNewObjectOnStarvation
         /// - if true, instantiate a new object (with initialisation) and return it
         /// - if false, return null
-        public TPooledObject GetObject(bool instantiateNewObjectOnStarvation)
+        public TPooledObject GetFreeObject(bool instantiateNewObjectOnStarvation)
         {
             // O(n)
             foreach (TPooledObject pooledObject in m_Objects)
@@ -87,7 +87,7 @@ namespace CommonsPattern
             if (instantiateNewObjectOnStarvation)
             {
                 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarningFormat("[Pool] GetObject: pool for prefab '{0}' is starving at size {1} but " +
+                Debug.LogWarningFormat("[Pool] GetFreeObject: pool for prefab '{0}' is starving at size {1} but " +
                     "instantiateNewObjectOnStarvation is true, so we will instantiate a new object as fallback. " +
                     "Consider increasing pool size to at least {2} to avoid this situation.",
                     m_PooledObjectPrefab, m_Objects.Count, m_Objects.Count + 1);

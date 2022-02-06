@@ -1,9 +1,10 @@
 ﻿//#define DEBUG_MULTI_POOL_MANAGER
 
-using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace CommonsPattern
 {
@@ -94,12 +95,18 @@ namespace CommonsPattern
 			m_MultiPool[prefabName].Init(initialPoolSize);  // includes call to InitPooled and Release on each object
 		}
 
-		/// Retrieve a released instance in the pool of objects called prefabName
+		[Obsolete("Use GetFreeObject")]
 		public TPooledObject GetObject(string prefabName)
+		{
+			return GetFreeObject(prefabName);
+		}
+
+		/// Retrieve a released instance in the pool of objects called prefabName
+		public TPooledObject GetFreeObject(string prefabName)
 		{
 			if (m_MultiPool.TryGetValue(prefabName, out Pool<TPooledObject> pool))
 	        {
-		        return pool.GetObject(instantiateNewObjectOnStarvation);
+		        return pool.GetFreeObject(instantiateNewObjectOnStarvation);
 	        }
 
 			Debug.LogErrorFormat(this, "Prefab '{0}' not found in multi pool dictionary of {1}", prefabName, name);
