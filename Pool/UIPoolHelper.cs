@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace CommonsPattern
 {
+    /// Helper to quickly generate and activate a certain number of UI widgets
+    /// under a parent, esp. a Layout. In production, it is recommended to switch to a proper pool
+    /// by adding a component inheriting from OrderedPoolContainer to your pool parent.
     public static class UIPoolHelper
     {
         /// Helper method to lazily instantiate and activate a minimum number targetCount of widget prefabs under parent.

@@ -38,13 +38,33 @@ namespace CommonsPattern
 		private void Awake()
 		{
 			m_Pool = new Pool<TPooledObject>(pooledObjectPrefab, transform);
-			m_Pool.Init(initialPoolSize);  // includes call to InitPooled and Release on each object
+			m_Pool.Init(initialPoolSize);
 		}
 
-		/// Lazily initialize [targetCount] pooled objects.
-		public void LazyInit(int targetCount)
+        /// Acquire the first [count] objects under pool transform,
+        /// release all the other ones, and return an enumerable to those [count] objects
+        /// Instantiate as many new objects as needed.
+		public IEnumerable<TPooledObject> AcquireOnlyFirstObjects(int count)
 		{
-			m_Pool.Init(targetCount);
+			return m_Pool.AcquireOnlyFirstObjects(count);
 		}
+
+        /// Return the count of all objects, active or inactive
+        public int CountAllObjects()
+        {
+	        return m_Pool.CountAllObjects();
+        }
+
+        /// Return the object at a given index (it may be active or inactive)
+        public TPooledObject GetObject(int index)
+        {
+	        return m_Pool.GetObject(index);
+        }
+
+        /// Release all objects in use
+        public void ReleaseAllObjects()
+        {
+	        m_Pool.ReleaseAllObjects();
+        }
 	}
 }

@@ -1,6 +1,7 @@
 ﻿namespace CommonsPattern
 {
 
+	/// Interface for objects managed by a Pool
 	public interface IPooledObject
 	{
 	    /// Acquire the object, making it considered used

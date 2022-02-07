@@ -187,6 +187,24 @@ namespace CommonsPattern
             return null;
         }
 
+        /// Return the count of all objects, active or inactive
+        public int CountAllObjects()
+        {
+            return m_Objects.Count;
+        }
+
+        /// Return the object at a given index (it may be active or inactive)
+        public TPooledObject GetObject(int index)
+        {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(index < m_Objects.Count,
+                "[Pool] GetObject: index {0} is out of bounds, as there are only {1} objects",
+                index, m_Objects.Count);
+            #endif
+
+            return m_Objects[index];
+        }
+
         /// Return an enumerable to all objects in use
         public IEnumerable<TPooledObject> GetObjectsInUse()
         {

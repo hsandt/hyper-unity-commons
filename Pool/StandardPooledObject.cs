@@ -19,10 +19,6 @@ namespace CommonsPattern
     {
         /* IPooledObject interface */
 
-        public void InitPooled()
-        {
-        }
-
         public void Acquire()
         {
             gameObject.SetActive(true);
