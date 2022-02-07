@@ -8,6 +8,7 @@ namespace CommonsPattern
     /// This component can be added directly to any pooled object considered active when game object is active
     /// (most of them work like that), and whose logic (including positioning on activation) is done elsewhere
     /// (via direct code or inside other components)
+    ///
     /// Usage:
     /// For each new type of Pooled Object that can work with this common implementation, create a new PoolManager:
     /// public class MyPoolManager : PoolManager&lt;StandardPooledObject, MyPoolManager> {}
@@ -22,6 +23,11 @@ namespace CommonsPattern
         {
         }
 
+        public void Acquire()
+        {
+            gameObject.SetActive(true);
+        }
+
         public bool IsInUse()
         {
             return gameObject.activeSelf;
@@ -30,14 +36,6 @@ namespace CommonsPattern
         public void Release()
         {
             gameObject.SetActive(false);
-        }
-
-
-        /* Own methods */
-
-        public void Activate()
-        {
-            gameObject.SetActive(true);
         }
     }
 }

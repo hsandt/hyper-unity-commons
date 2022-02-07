@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-using CommonsHelper;
-
 namespace CommonsPattern
 {
 

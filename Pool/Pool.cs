@@ -25,52 +25,135 @@ namespace CommonsPattern
         private List<TPooledObject> m_Objects;
 
 
-        /// Constructor.
+        /// Constructor
         public Pool(GameObject pooledObjectPrefab, Transform poolTransform)
         {
             m_PooledObjectPrefab = pooledObjectPrefab;
             m_PoolTransform = poolTransform;
         }
 
-        /// Initialise pool with [initialPoolSize] objects
+        /// Initialise pool with [initialPoolSize] free objects (not in use)
+        /// If the pool transform already contains sample objects (children), reuse them.
+        /// We expect the sample objects to be instances of m_PooledObjectPrefab
+        /// with no non-trivial property override, so they are really like new prefab
+        /// instances we would create at runtime if there were no sample objects.
+        /// We don't want to verify all of that, so we just throw if those objects
+        /// don't have a TPooledObject component, which is expected on m_PooledObjectPrefab.
         public void Init(int initialPoolSize)
         {
-            m_Objects = new List<TPooledObject>(initialPoolSize);
+            // 1. Create list with capacity = expected count
+            // (using the max now will avoid LazyInstantiatePooledObjects having to
+            // set capacity again to a greater value later)
+            int oldChildCount = m_PoolTransform.childCount;
+            m_Objects = new List<TPooledObject>(Mathf.Max(oldChildCount, initialPoolSize));
 
-            for (int i = 0; i < initialPoolSize; ++i)
+            // 2. Add all existing pooled objects to the objects list,
+            //    expecting instances of m_PooledObjectPrefab
+            // (if the pool parent starts empty, this does nothing)
+            foreach (Transform child in m_PoolTransform)
+            {
+                TPooledObject pooledObject = child.GetComponentOrFail<TPooledObject>();
+                m_Objects.Add(pooledObject);
+            }
+
+            // 3. Instantiate any remaining objects to reach [initialPoolSize]
+            // (this calls m_Objects.Add too)
+            LazyInstantiatePooledObjects(initialPoolSize);
+
+            // 4. Release all objects so we can use them later
+            ReleaseAllObjects();
+        }
+
+        /// Acquire the first [count] objects under pool transform,
+        /// release all the other ones, and return an enumerable to those [count] objects
+        /// Instantiate as many new objects as needed.
+        public IEnumerable<TPooledObject> AcquireOnlyFirstObjects(int count)
+        {
+            // 1. Instantiate any remaining objects to reach [count]
+            LazyInstantiatePooledObjects(count);
+
+            // Note: at this point, we have no assumption on whether an instantiated object
+            // should be in use or not, as it depends on TPooledObject type.
+            // In general, at that point they are in an intermediate state where they are
+            // ready to use, but really used.
+            // To make things clear, we will check IsInUse and Acquire/Release as needed.
+
+            // 2. Acquire all required pooled objects that are not already in use
+            for (int i = 0; i < count; i++)
+            {
+                if (!m_Objects[i].IsInUse())
+                {
+                    m_Objects[i].Acquire();
+                }
+            }
+
+            // 3. Release any extra objects in use that we don't need now
+            for (int i = count; i < m_Objects.Count; i++)
+            {
+                if (m_Objects[i].IsInUse())
+                {
+                    m_Objects[i].Release();
+                }
+            }
+
+            return m_Objects.Take(count);
+        }
+
+        /// Instantiate pooled objects until there are [targetPoolSize] of them
+        /// under the pool transform
+        /// This also registers created objects in the objects list.
+        private void LazyInstantiatePooledObjects(int targetPoolSize)
+        {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            int oldChildCount = m_PoolTransform.childCount;
+            Debug.AssertFormat(oldChildCount == m_Objects.Count,
+                "[Pool] LazyInstantiatePooledObjects: Pool transform has {0} children, whereas we registered {1} pooled objects. " +
+                "Make sure to register all created pooled objects, and not add objects of other types " +
+                "under the pool transform",
+                oldChildCount, m_Objects.Count);
+            #endif
+
+            // 1. Prepare capacity if needed
+            if (targetPoolSize > m_Objects.Capacity)
+            {
+                m_Objects.Capacity = targetPoolSize;
+            }
+
+            // 2. Instantiate just enough instances to reach targetCount
+            // (if we have enough objects, this does nothing)
+            for (int i = m_Objects.Count; i < targetPoolSize; i++)
             {
                 InstantiatePooledObject();
             }
         }
 
-        /// Instantiate new game object from prefab under poolTransform, initialises it,
-        /// releases it (so it is ready for usage) and adds it to pooled objects list, then return reference to it.
+        /// Instantiate new game object from prefab under poolTransform, initialise it
+        /// and add it to pooled objects list, then return reference to it
         /// Fail if prefab has no TPooledObject component.
+        /// The caller is responsible for Releasing/Acquiring the new object depending on the needs.
         private TPooledObject InstantiatePooledObject()
         {
             // Instantiate prefab under pool transform
             GameObject prefabInstance = Object.Instantiate(m_PooledObjectPrefab, m_PoolTransform);
 
             // Append count to name to make it easier to distinguish pooled objects
-            // Ex: Projectile(Clone) 3 (we haven't added the object yet, so count starts at 0)
+            // Ex: Projectile(Clone) 3
             prefabInstance.name += $" {m_Objects.Count}";
 
             TPooledObject pooledObject = prefabInstance.GetComponentOrFail<TPooledObject>();
-            pooledObject.InitPooled();
-            pooledObject.Release();
-
             m_Objects.Add(pooledObject);
 
             return pooledObject;
         }
 
-        /// Try to return a released object
-        /// If no objects are released, check instantiateNewObjectOnStarvation
+        /// Try to return a free object
+        /// If no objects are free, check instantiateNewObjectOnStarvation
         /// - if true, instantiate a new object (with initialisation) and return it
         /// - if false, return null
         public TPooledObject GetFreeObject(bool instantiateNewObjectOnStarvation)
         {
             // O(n)
+            // Consider improving performance by tracking list of free objects
             foreach (TPooledObject pooledObject in m_Objects)
             {
                 if (!pooledObject.IsInUse())
@@ -92,7 +175,13 @@ namespace CommonsPattern
                     "Consider increasing pool size to at least {2} to avoid this situation.",
                     m_PooledObjectPrefab, m_Objects.Count, m_Objects.Count + 1);
                 #endif
-                return InstantiatePooledObject();
+                TPooledObject pooledObject = InstantiatePooledObject();
+
+                // Legacy: for now, keep releasing new object, but usages showed that in fact,
+                // we want to Acquire them every time, so we'll do this in later commit.
+                pooledObject.Release();
+
+                return pooledObject;
             }
 
             return null;
@@ -102,6 +191,7 @@ namespace CommonsPattern
         public IEnumerable<TPooledObject> GetObjectsInUse()
         {
             // O(n)
+            // Consider improving performance by tracking list of objects in use
             return m_Objects.Where(pooledObject => pooledObject.IsInUse());
         }
 
