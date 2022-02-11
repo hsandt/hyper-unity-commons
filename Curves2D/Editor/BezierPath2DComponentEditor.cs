@@ -128,59 +128,50 @@ namespace CommonsHelper.Editor
 
             Event guiEvent = Event.current;
 
-            bool readyToDelete = false;
+            int keyPointToRemoveIndex = -1;
 
-            int nearestKeyPointIndex = -1;
-
-            // TODO: replace with more local using (new Handles.DrawingScope())
-            Handles.matrix = Matrix4x4.Translate(offset);
-
-            // Phase 3: draw the interpolated path to have a smooth visualization
-            DrawInterpolatedPath(interpolatedPoints.ToArray(), curveStartIndices, distanceToNearestCurve, nearestCurveIndex);
-
-            if (IsEditingCollider)
+            Matrix4x4 offsetMatrix = Matrix4x4.Translate(offset);
+            using (new Handles.DrawingScope(offsetMatrix))
             {
-                Undo.RecordObject(script, "Change Bezier Path");
+                // Phase 3: draw the interpolated path to have a smooth visualization
+                DrawInterpolatedPath(interpolatedPoints.ToArray(), curveStartIndices, distanceToNearestCurve, nearestCurveIndex);
 
-                // https://forum.unity.com/threads/how-a-control-keep-same-controlid-from-getcontrolid-in-a-dynamic-ui.836527/
-                // known issue: when clicking on control point 18 (key point), the 1st tangent point (control point 2) is highlighted in yellow
-                // it may be due to a ridiculous hashing collision, need to check
-                // but that should be an unrelated issue, due to Handle control id, limited to 18 unique entries, maybe?
-                // known issue 2: key point to remove is not colored in red anymore
-                int insertControlID = GUIUtility.GetControlID(s_InsertPointHash, FocusType.Passive);
-                int removeControlID = GUIUtility.GetControlID(s_RemovePointHash, FocusType.Passive);
-
-                float distanceToNearestKeyPoint = float.MaxValue;
-
-                if (guiEvent.control)
+                if (IsEditingCollider)
                 {
-                    // we only care about nearest key point when holding ctrl
-                    readyToDelete = true;
-                    distanceToNearestKeyPoint = GetMouseNearestKeyPointDistance(path, out nearestKeyPointIndex);
+                    Undo.RecordObject(script, "Change Bezier Path");
+
+                    // https://forum.unity.com/threads/how-a-control-keep-same-controlid-from-getcontrolid-in-a-dynamic-ui.836527/
+                    // known issue: when clicking on control point 18 (key point), the 1st tangent point (control point 2) is highlighted in yellow
+                    // it may be due to a ridiculous hashing collision, need to check
+                    // but that should be an unrelated issue, due to Handle control id, limited to 18 unique entries, maybe?
+                    // known issue 2: key point to remove is not colored in red anymore
+                    int insertControlID = GUIUtility.GetControlID(s_InsertPointHash, FocusType.Passive);
+                    int removeControlID = GUIUtility.GetControlID(s_RemovePointHash, FocusType.Passive);
+
+                    float distanceToNearestKeyPoint = float.MaxValue;
+
+                    if (guiEvent.control)
+                    {
+                        // we only care about nearest key point when holding ctrl
+                        distanceToNearestKeyPoint = GetMouseNearestKeyPointDistance(path, out keyPointToRemoveIndex);
+                    }
+
+                    DoLayout(insertControlID, removeControlID, distanceToNearestKeyPoint);
+
+                    if (!(guiEvent.control && HandleUtility.nearestControl == removeControlID))
+                    {
+                        keyPointToRemoveIndex = -1;
+                    }
+
+                    // Phase 2: in edit mode only, handle add/remove point input
+                    HandleEditInput(path, keyPointToRemoveIndex, insertControlID, removeControlID);
+
+                    // Phase 1: in edit mode only, draw control points to allow the user to edit them
+                    // The only reason we do that before HandleEditInput is to allow editing the control points
+                    // while detecting add/remove point input (as it uses a custom control ID and consumes all other events)
+                    DrawControlPoints(path, keyPointToRemoveIndex);
                 }
-
-                Layout(insertControlID, removeControlID, distanceToNearestKeyPoint);
-
-                if (guiEvent.control && HandleUtility.nearestControl == removeControlID)
-                {
-                    // we only care about nearest key point when holding ctrl
-                    readyToDelete = true;
-                }
-                else
-                {
-                    nearestKeyPointIndex = -1;
-                }
-
-                // Phase 2: in edit mode only, handle add/remove point input
-                HandleEditInput(path, offset, distanceToNearestCurve, nearestCurveIndex, nearestKeyPointIndex, insertControlID, removeControlID);
-
-                // Phase 1: in edit mode only, draw control points to allow the user to edit them
-                // The only reason we do that before HandleEditInput is to allow editing the control points
-                // while detecting add/remove point input (as it uses a custom control ID and consumes all other events)
-                DrawControlPoints(path, nearestKeyPointIndex);
             }
-
-            Handles.matrix = Matrix4x4.identity;
         }
 
         /// Return distance to nearest key point, and set out variable to index of that key point
@@ -190,6 +181,8 @@ namespace CommonsHelper.Editor
             // Inspired by HandleUtility.DistanceToPolyLine
             // It converts all positions to GUI points, which allows us to return nearestKeyPointDistance
             // also in GUI points, which is a more relevant unit for threshold comparison than world units.
+            // Note that the handleMatrix below is in fact the offsetMatrix defined for the scope
+            // GetMouseNearestKeyPointDistance is called in.
             Matrix4x4 handleMatrix = Handles.matrix;
             CameraProjectionCache cam = new CameraProjectionCache(Camera.current);
             Vector2 mousePosition = Event.current.mousePosition;
@@ -252,107 +245,70 @@ namespace CommonsHelper.Editor
             return distance;
         }
 
-        private void Layout(int insertControlID, int removeControlID, float distanceToNearestKeyPoint)
+        private void DoLayout(int insertControlID, int removeControlID, float distanceToNearestKeyPoint)
         {
             Event guiEvent = Event.current;
-
-            // Get unique control ID
             EventType eventType = guiEvent.type;
 
             if (eventType == EventType.Layout || eventType == EventType.MouseMove)
             {
-                // Required to catch event and avoid selecting object under cursor
-                // Update https://forum.unity.com/threads/what-does-handleutility-addcontrol-do-exactly.198137/
-                // works, but not clean, as we check a modifier meant for a mouse event, but we don't have that event here
-                // TODO: study other Bezier curve editors see how they work
                 if (guiEvent.shift)
                 {
+                    // Wherever we click, inserting key point is the prioritized action, so add it as default control
                     HandleUtility.AddDefaultControl(insertControlID);
                 }
                 else if (guiEvent.control)
                 {
-                    // grab control (avoids selecting background after ctrl+click to remove)
-                    // HandleUtility.AddDefaultControl(removeControlID);
-                    HandleUtility.AddControl(removeControlID, distanceToNearestKeyPoint > k_PointPickDistance ? distanceToNearestKeyPoint : 0f);
+                    // Control-click doesn't have priority if we are hovering some control point (including the one to remove)
+                    // but in any other case, up to k_PointPickDistance, it has priority, so just do a binary check:
+                    // if below that distance threshold, make key point to remove the default control.
+                    // Note that Unity somewhat manages to give priority to hovered handles, so we don't have to
+                    // manually check for them.
+                    if (distanceToNearestKeyPoint <= k_PointPickDistance)
+                    {
+                        HandleUtility.AddDefaultControl(removeControlID);
+                    }
                 }
             }
         }
 
-        private void HandleEditInput(BezierPath2D path, Vector2 offset, float distanceToNearestCurve, int nearestCurveIndex, int nearestKeyPointIndex, int insertControlID, int removeControlID)
+        private void HandleEditInput(BezierPath2D path, int nearestKeyPointIndex, int insertControlID, int removeControlID)
         {
-            // Known issue: when edit is active, user cannot click on other objects even when not holding modifier key
-            // Check PolygonCollider2DTool.cs and PolygonCollider2DEditor.cs in Unity repository for examples
-            // on how to handle mouse input to edit polygon without catching all mouse events
-
-            // TODO: fix this issue by checking distance to closest edge
-            // the public version returns distance (either for simple check),
-            // while the internal version also gives the index (will be needed later to add new point
-            // in the middle of closest edge, combined maybe with internal HandleUtility.CalcPositionOnConstraint or CalcParamOnConstraint)
-            // maybe need Handles.inverseMatrix.MultiplyPoint, need to check
-
-            // see LineHandle.cs used by EditablePath2D such as EdgeColliderPath
-            Vector3 v = Vector3.back;
-            Vector3[] points = new []{Vector3.back};
-
-            // Vector3[] interpolatedPoints3D = interpolatedPoints.Select(point2D => (Vector3) point2D).ToArray();
-            // float distanceToInterpolatedLine = HandleUtility.DistanceToPolyLine(interpolatedPoints3D);
-            //
-            // // Reflection code for HandleUtility.DistanceToPolyLine(v, false, points);
-            // // internal static float DistanceToPolyLine(Vector3[] points, bool loop, out int index)
-            //
-            // var distanceToPolyLineMethod = typeof(HandleUtility).GetMethod("DistanceToPolyLine",
-            //     new[] { typeof(Vector3), typeof(bool), typeof(Vector3[]) });
-            //
-            // if (distanceToPolyLineMethod != null)
-            // {
-            //     distanceToPolyLineMethod.Invoke(null, new object[] {v, false, points});
-            // }
-
             Event guiEvent = Event.current;
-
-            // Get unique control ID
             EventType eventType = guiEvent.type;
 
-
-            if (guiEvent.shift && eventType == EventType.MouseDown && guiEvent.button == 0)
+            // Detect hold shift and primary button click
+            // We check nearest control to be consistent with removeControlID more below, but in this case, since we use
+            // AddDefaultControl when shift-clicking in DoLayout, we always consider the insertControlID to be the nearest when this happens.
+            if (guiEvent.shift && eventType == EventType.MouseDown && guiEvent.button == 0 && HandleUtility.nearestControl == insertControlID)
             {
-                // add new key point at the end at mouse position
-                // Vector2 newKeyPoint = (Vector2) HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin - 2 * offset;
-                Vector2 newKeyPoint = (Vector2) HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin - offset;
-                // Vector2 newKeyPoint = (Vector2) HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin;
+                // Add new key point at the end of the path, at mouse position
+                // The mouse position includes any path offset, but the key point must be stored without offset,
+                // so we must subtract any path offset.
+                // We have set Handles.matrix to an offsetMatrix in the scope HandleEditInput is called in,
+                // so we can just apply the inverse matrix to the mouse position in world unit to subtract the offset.
+                Matrix4x4 subtractOffsetMatrix = Handles.inverseMatrix;
+                Vector2 newKeyPoint = (Vector2) subtractOffsetMatrix.MultiplyPoint3x4(HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin);
                 path.AddKeyPoint(newKeyPoint);
 
-                // HandleUtility.AddDefaultControl(insertControlID);
-
-                // consume event (AddDefaultControl is necessary and sufficient, but useful if other events in same control)
+                // Consume event
                 guiEvent.Use();
                 return;
             }
 
-
+            // Detect hold control and primary button click
+            // Also only react if key point to remove is nearest control, to handle removing it when hovering this key point
+            // or another control point
             if (guiEvent.control && eventType == EventType.MouseDown && guiEvent.button == 0 && HandleUtility.nearestControl == removeControlID)
-            // else if (guiEvent.control && eventType == EventType.MouseDown && guiEvent.button == 0)
             {
-                // TODO: study more LineHandle understand how they prevent control with correct distance
-                // actually it works now like Edge Collider: I need to be close to an edge
-                // but it's not what I want now, I should check for distance to key point
-                // problem, the required distance depends on the key modifier, which is checked not on Layout event
-                // which does the AddControl
-                //if ( GUIUtility.hotControl == 0)
-
-                // check if there are enough points for a removal
+                // Check if there are enough points for a removal
                 if (path.GetKeyPointsCount() > 2)
                 {
-                    // remove key point the nearest to mouse position
-                    // currently, it won't remove a point if you're hovering it, not just nearby, but it's convenient
-                    // to avoid removing a point by accident when you only wanted to snap by holding ctrl
-                    // Vector2 mousePoint = (Vector2) HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin - offset;
-                    // int index = path.GetNearestKeyPointIndex(mousePoint);
-                    // for now, no distance check
+                    // Remove key point the nearest to mouse position (it was precomputed)
                     path.RemoveKeyPoint(nearestKeyPointIndex);
                 }
 
-                // still consume event to avoid unwanted effects
+                // Consume event
                 guiEvent.Use();
             }
         }
