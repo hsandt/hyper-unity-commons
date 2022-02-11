@@ -42,6 +42,57 @@ namespace CommonsHelper.Editor
         }
 
 
+        /* Reflection helpers */
+
+        private static MethodInfo distanceToPolyLine3ArgsMethodInfo;
+
+        private static float DistanceToPolyLine(Vector3[] points, bool loop, out int index)
+        {
+            // Cache method info if not done yet
+            if (distanceToPolyLine3ArgsMethodInfo == null)
+            {
+                // We want to access the 3-parameter overload of HandleUtility.DistanceToPolyLine, which is internal:
+                // internal static float DistanceToPolyLine(Vector3[] points, bool loop, out int index)
+                // Normally, we can indicate overload parameters:
+                // typeof(HandleUtility).GetMethod("DistanceToPolyLine",
+                //     new[] { typeof(Vector3[]), typeof(bool), typeof(int).MakeByRefType() });
+                // but for some reason, this doesn't work. So instead, we're indicating flags (the most important flag
+                // is BindingFlags.NonPublic, which distinguishes the overload from the 1-parameter public overload)
+                distanceToPolyLine3ArgsMethodInfo = typeof(HandleUtility).GetMethod("DistanceToPolyLine",
+                    BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.NonPublic);
+            }
+
+            float distance = 0f;
+            index = -1;
+
+            if (distanceToPolyLine3ArgsMethodInfo != null)
+            {
+                // Invoke method, getting return value and setting out argument manually
+                object[] parameters = {points, loop, index};
+                distance = (float) distanceToPolyLine3ArgsMethodInfo.Invoke(null, parameters);
+                index = (int) parameters[2];
+            }
+
+            return distance;
+        }
+
+
+        // Number of segments a curve is split in for pre-interpolation curve length evaluation
+        // The segment count must be high enough to get decent evaluation of curve length.
+        // It is not as critical as the other parameters below, as increasing it will only add gradually
+        // more precision to curveLength (increasing it slightly), but CeilToInt will round all of that.
+        // Besides, this is only used for visual interpolation in the editor.
+        // At runtime, we can always call EvaluateCurveLength with a higher segment count.
+        private const int INTERPOLATION_EVALUATE_CURVE_LENGTH_SEGMENTS_COUNT = 10;
+
+        // Preferred segment length for path interpolation, to avoid too imprecise interpolation
+        // (in world units, which means it is not affected by zooming in the editor)
+        private const float INTERPOLATION_PREFERRED_SEGMENT_LENGTH = 0.1f;
+
+        // Max segment count allowed per curve interpolation. It takes priority over preferredSegmentLength,
+        // to avoid freezing when interpolating a curve between points very far from each other
+        private const int INTERPOLATION_MAX_SEGMENT_COUNT = 30;
+
         private const float k_PointPickDistance = 50f;
         // TODO: use those to insert new key point in the middle of a curve
         private const float k_LinePickDistance = 50f;
@@ -118,71 +169,91 @@ namespace CommonsHelper.Editor
             BezierPath2D path = script.Path;
             Vector2 offset = script.IsRelative ? (Vector2)script.transform.position : Vector2.zero;
 
-            // NEXT: inject offset in path so no need to use it everywhere
-
             // Pre-compute interpolated points, they are used for both edit (to detect if cursor is close
-            // to a curve) and drawing
+            // to a curve) and drawing. Those interpolated points do *not* integrate the path offset.
             (List<Vector2> interpolatedPoints, List<int> curveStartIndices) = InterpolatePath(path);
 
-            float distanceToNearestCurve = GetNearestCurve(interpolatedPoints, curveStartIndices, out int nearestCurveIndex);
-
-            Event guiEvent = Event.current;
-
-            int keyPointToRemoveIndex = -1;
-
+            // To take the path offset into account, so all the geometric methods below use the correct coordinates,
+            // we use a Handles matrix that translates everything by the path offset.
             Matrix4x4 offsetMatrix = Matrix4x4.Translate(offset);
             using (new Handles.DrawingScope(offsetMatrix))
             {
-                // Phase 3: draw the interpolated path to have a smooth visualization
+                float distanceToNearestCurve = GetNearestCurve(interpolatedPoints, curveStartIndices, out int nearestCurveIndex);
+
+                // Draw the interpolated path to have a smooth visualization
                 DrawInterpolatedPath(interpolatedPoints.ToArray(), curveStartIndices, distanceToNearestCurve, nearestCurveIndex);
 
                 if (IsEditingCollider)
                 {
                     Undo.RecordObject(script, "Change Bezier Path");
 
+                    Event guiEvent = Event.current;
+
+                    bool readyToInsertKeyPoint = false;
+                    int readyToRemoveKeyPointIndex = -1;
+
+                    if (guiEvent.shift)
+                    {
+                        readyToInsertKeyPoint = true;
+                    }
+                    else if (guiEvent.control)
+                    {
+                        // Check if there are enough key points to remove one
+                        if (path.GetKeyPointsCount() > 2)
+                        {
+                            // Find nearest key point with distance
+                            float distanceToNearestKeyPoint = FindMouseNearestKeyPointDistance(path, out int nearestKeyPointIndex);
+
+                            // Control-click doesn't have priority if we are hovering some control point (including the one to remove)
+                            // but in any other case, up to k_PointPickDistance, it has priority, so just do a binary check:
+                            // if below that distance threshold, make key point to remove the default control.
+                            if (distanceToNearestKeyPoint <= k_PointPickDistance)
+                            {
+                                // We are close enough to remove that key point
+                                readyToRemoveKeyPointIndex = nearestKeyPointIndex;
+                            }
+                        }
+                    }
+
+                    // To keep stable control IDs, we compute them at top-level then pass them to methods that need it
                     // https://forum.unity.com/threads/how-a-control-keep-same-controlid-from-getcontrolid-in-a-dynamic-ui.836527/
-                    // known issue: when clicking on control point 18 (key point), the 1st tangent point (control point 2) is highlighted in yellow
-                    // it may be due to a ridiculous hashing collision, need to check
-                    // but that should be an unrelated issue, due to Handle control id, limited to 18 unique entries, maybe?
-                    // known issue 2: key point to remove is not colored in red anymore
                     int insertControlID = GUIUtility.GetControlID(s_InsertPointHash, FocusType.Passive);
                     int removeControlID = GUIUtility.GetControlID(s_RemovePointHash, FocusType.Passive);
 
-                    float distanceToNearestKeyPoint = float.MaxValue;
+                    DoLayout(readyToInsertKeyPoint, readyToRemoveKeyPointIndex, insertControlID, removeControlID);
 
-                    if (guiEvent.control)
+                    // Manually ensure that hovered handles have priority over remove control,
+                    // by canceling remove action (including highlighting key point to remove)
+                    // if it is not the nearest control.
+                    // This way, holding ctrl with cursor over or very close to control point handles will not
+                    // highlight the nearest key point, and clicking will start dragging them (this is useful
+                    // when user holds ctrl before clicking, preparing for a snapping drag-and-drop).
+                    // Note that we do *not* do this for the insert action, as we want to allow the user
+                    // to add a new key point near an existing control point; and it is unlikely that the user
+                    // tries to hold shift before dragging a control point as it does nothing.
+                    if (readyToRemoveKeyPointIndex != -1 && HandleUtility.nearestControl != removeControlID)
                     {
-                        // we only care about nearest key point when holding ctrl
-                        distanceToNearestKeyPoint = GetMouseNearestKeyPointDistance(path, out keyPointToRemoveIndex);
+                        readyToRemoveKeyPointIndex = -1;
                     }
 
-                    DoLayout(insertControlID, removeControlID, distanceToNearestKeyPoint);
+                    // Handle add/remove point input
+                    HandleEditInput(path, readyToInsertKeyPoint, readyToRemoveKeyPointIndex);
 
-                    if (!(guiEvent.control && HandleUtility.nearestControl == removeControlID))
-                    {
-                        keyPointToRemoveIndex = -1;
-                    }
-
-                    // Phase 2: in edit mode only, handle add/remove point input
-                    HandleEditInput(path, keyPointToRemoveIndex, insertControlID, removeControlID);
-
-                    // Phase 1: in edit mode only, draw control points to allow the user to edit them
-                    // The only reason we do that before HandleEditInput is to allow editing the control points
-                    // while detecting add/remove point input (as it uses a custom control ID and consumes all other events)
-                    DrawControlPoints(path, keyPointToRemoveIndex);
+                    // Draw control points to allow the user to edit them
+                    DrawControlPointHandles(path, readyToRemoveKeyPointIndex);
                 }
             }
         }
 
         /// Return distance to nearest key point, and set out variable to index of that key point
         /// If no key points (which is invalid), return float.MaxValue with index -1.
-        private static float GetMouseNearestKeyPointDistance(BezierPath2D path, out int nearestKeyPointIndex)
+        private static float FindMouseNearestKeyPointDistance(BezierPath2D path, out int nearestKeyPointIndex)
         {
             // Inspired by HandleUtility.DistanceToPolyLine
             // It converts all positions to GUI points, which allows us to return nearestKeyPointDistance
             // also in GUI points, which is a more relevant unit for threshold comparison than world units.
             // Note that the handleMatrix below is in fact the offsetMatrix defined for the scope
-            // GetMouseNearestKeyPointDistance is called in.
+            // FindMouseNearestKeyPointDistance is called in.
             Matrix4x4 handleMatrix = Handles.matrix;
             CameraProjectionCache cam = new CameraProjectionCache(Camera.current);
             Vector2 mousePosition = Event.current.mousePosition;
@@ -212,75 +283,63 @@ namespace CommonsHelper.Editor
         {
             Vector3[] interpolatedPoints3D = interpolatedPoints.Select(point2D => (Vector3) point2D).ToArray();
 
-            // HandleUtility.DistanceToPolyLine
-            // Reflection code for HandleUtility.DistanceToPolyLine(v, false, points);
-            // internal static float DistanceToPolyLine(Vector3[] points, bool loop, out int index)
+            float distance = DistanceToPolyLine(interpolatedPoints3D, false, out int nearestInterpolatedPointIndex);
 
-            // var distanceToPolyLineMethod = typeof(HandleUtility).GetMethod("DistanceToPolyLine",
-            //     new[] { typeof(Vector3[]), typeof(bool), typeof(int).MakeByRefType() });
-            // For some reason, passing types new[] { typeof(Vector3[]), typeof(bool), typeof(int).MakeByRefType() } doesn't work
-            // the only recourse is to pass binding flags that distinguish it from the public, 1 param HandleUtility.DistanceToPolyLine
-            // so the most important flag is BindingFlags.NonPublic
-            var distanceToPolyLineMethod = typeof(HandleUtility).GetMethod("DistanceToPolyLine", BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.NonPublic);
-            float distance = 0f;
-            index = -1;
-            if (distanceToPolyLineMethod != null)
+            // Find index of curve that contains the nearest interpolated point index
+            int searchIndex = curveStartIndices.BinarySearch(nearestInterpolatedPointIndex);
+            if (searchIndex >= 0)
             {
-                object[] parameters = new object[] {interpolatedPoints3D, false, index};
-                distance = (float) distanceToPolyLineMethod.Invoke(null, parameters);
-                index = (int)parameters[2];
-
-                int searchIndex = curveStartIndices.BinarySearch(index);
-                if (searchIndex >= 0)
-                {
-                    index = searchIndex;
-                }
-                else
-                {
-                    // Binary Search could not find exact point, but found upper bound and complemented it
-                    index = ~searchIndex - 1;
-                }
+                // The nearest interpolated point was just a key point. If it's a middle key point,
+                // it belongs to 2 curves, but to simplify we just pick the curve that starts at this key point.
+                // Note that for convenience, curveStartIndices's last index is the last interpolated point index,
+                // so this includes the case where the nearest interpolated point is the last key point.
+                index = searchIndex;
+            }
+            else
+            {
+                // Binary Search could not find exact point, which means the interpolated point was not a key point,
+                // but a mid-curve interpolated point between two key points. In this case, BinarySearch returns
+                // the complement of the upper bound index, where the upper bound index is the index of the key point
+                // located at the *end* of the curve covering the interpolated point (if it is the last curve,
+                // it is curveStartIndices.Count, the index of the last key point).
+                // So we re-complement it to get the key point index, then subtract 1 to get the index of the *start*
+                // key point of that curve, to keep the same convention as above.
+                index = ~searchIndex - 1;
             }
 
             return distance;
         }
 
-        private void DoLayout(int insertControlID, int removeControlID, float distanceToNearestKeyPoint)
+        private void DoLayout(bool readyToInsertKeyPoint, int readyToRemoveKeyPointIndex,
+            int insertControlID, int removeControlID)
         {
             Event guiEvent = Event.current;
             EventType eventType = guiEvent.type;
 
             if (eventType == EventType.Layout || eventType == EventType.MouseMove)
             {
-                if (guiEvent.shift)
+                if (readyToInsertKeyPoint)
                 {
                     // Wherever we click, inserting key point is the prioritized action, so add it as default control
+                    // and flag action as ready (we still need to check for mouse button down)
                     HandleUtility.AddDefaultControl(insertControlID);
                 }
-                else if (guiEvent.control)
+                else if (readyToRemoveKeyPointIndex != -1)
                 {
-                    // Control-click doesn't have priority if we are hovering some control point (including the one to remove)
-                    // but in any other case, up to k_PointPickDistance, it has priority, so just do a binary check:
-                    // if below that distance threshold, make key point to remove the default control.
-                    // Note that Unity somewhat manages to give priority to hovered handles, so we don't have to
-                    // manually check for them.
-                    if (distanceToNearestKeyPoint <= k_PointPickDistance)
-                    {
-                        HandleUtility.AddDefaultControl(removeControlID);
-                    }
+                    HandleUtility.AddDefaultControl(removeControlID);
                 }
             }
         }
 
-        private void HandleEditInput(BezierPath2D path, int nearestKeyPointIndex, int insertControlID, int removeControlID)
+        private void HandleEditInput(BezierPath2D path, bool readyToInsertKeyPoint, int readyToRemoveKeyPointIndex)
         {
             Event guiEvent = Event.current;
             EventType eventType = guiEvent.type;
 
-            // Detect hold shift and primary button click
+            // Detect hold shift (readyToInsertKeyPoint) and primary button click
             // We check nearest control to be consistent with removeControlID more below, but in this case, since we use
             // AddDefaultControl when shift-clicking in DoLayout, we always consider the insertControlID to be the nearest when this happens.
-            if (guiEvent.shift && eventType == EventType.MouseDown && guiEvent.button == 0 && HandleUtility.nearestControl == insertControlID)
+            if (readyToInsertKeyPoint && eventType == EventType.MouseDown && guiEvent.button == 0)
             {
                 // Add new key point at the end of the path, at mouse position
                 // The mouse position includes any path offset, but the key point must be stored without offset,
@@ -296,17 +355,12 @@ namespace CommonsHelper.Editor
                 return;
             }
 
-            // Detect hold control and primary button click
-            // Also only react if key point to remove is nearest control, to handle removing it when hovering this key point
-            // or another control point
-            if (guiEvent.control && eventType == EventType.MouseDown && guiEvent.button == 0 && HandleUtility.nearestControl == removeControlID)
+            // Detect hold control near key point with at least 2 key points (readyToRemoveKeyPointIndex != -1) and
+            // primary button click
+            if (readyToRemoveKeyPointIndex != -1 && eventType == EventType.MouseDown && guiEvent.button == 0)
             {
-                // Check if there are enough points for a removal
-                if (path.GetKeyPointsCount() > 2)
-                {
-                    // Remove key point the nearest to mouse position (it was precomputed)
-                    path.RemoveKeyPoint(nearestKeyPointIndex);
-                }
+                // Remove key point the nearest to mouse position (it was precomputed)
+                path.RemoveKeyPoint(readyToRemoveKeyPointIndex);
 
                 // Consume event
                 guiEvent.Use();
@@ -316,16 +370,13 @@ namespace CommonsHelper.Editor
         /// Draw the interpolated path, without control points
         private void DrawInterpolatedPath(Vector2[] interpolatedPoints, List<int> curveStartIndices, float distanceToNearestCurve, int nearestCurveIndex)
         {
-            // Should it be done only
             Event guiEvent = Event.current;
-
-            // Get unique control ID
             EventType eventType = guiEvent.type;
+
             if (eventType == EventType.Repaint)
             {
                 HandlesUtil.DrawPolyLine2D(interpolatedPoints, pathColor);
 
-                // Highlight nearest curve, like Edge Collider 2D
                 if (distanceToNearestCurve < 100f)
                 {
                     // Inspired by LineHandle, draw the nearest curve in bold using Anti-Aliased polyline
@@ -335,7 +386,7 @@ namespace CommonsHelper.Editor
                     int curveStartIndex = curveStartIndices[nearestCurveIndex];
                     int curveEndIndex = curveStartIndices[nearestCurveIndex + 1];
                     // Remember that range .. is exclusive, but we must draw including the end point, hence + 1
-                    // HandlesUtil.DrawAAPolyLine2D(interpolatedPoints[curveStartIndex..(curveEndIndex + 1)], k_ActiveLineSegmentWidth, pathColor);
+                    HandlesUtil.DrawAAPolyLine2D(interpolatedPoints[curveStartIndex..(curveEndIndex + 1)], k_ActiveLineSegmentWidth, pathColor);
                 }
 
                 // if more than 1 point (most commonly), add an arrow in the middle to show the orientation of the path
@@ -352,36 +403,32 @@ namespace CommonsHelper.Editor
         ///                    ending with the index of the last interpolated point for convenience.
         private static (List<Vector2>, List<int>) InterpolatePath(BezierPath2D path)
         {
-            // interpolate each curve, and concatenate all of them into a smooth path
+            // Interpolate each curve, and concatenate all of them into a smooth path
             var interpolatedPoints = new List<Vector2>();
             var curveStartIndices = new List<int>();
 
             for (int i = 0; i < path.GetCurvesCount(); ++i)
             {
-                // must be high enough to get decent evaluation of curve length
-                // not as critical as the other parameters below, as increasing it will only add gradually
-                // more precision to curveLength (increasing it slightly), but CeilToInt will round all of that
-                const int evaluateCurveLengthSegmentsCount = 10;
-                const float maxSegmentLength = 0.1f; // in world units
-                // to avoid freezing when interpolating a curve between points very far from each other
-                const int maxSegmentCount = 30;
-
                 // Because we clamp the segment count to minimum 1, we know that we are adding at least one point for
                 // this curve, so we can guarantee that the current interpolated points count, i.e. the index
                 // of the next interpolated point added, will be the index of this curve's start.
                 curveStartIndices.Add(interpolatedPoints.Count);
 
-                // compute number of segments required to get appropriate resolution if the curve was linear
-                // we know that a Bezier curve has a curvilinear abscissa with higher derivative, but that will be enough
-                // for curves that are not too crazy i.e. control points are not too far
                 Vector2[] curve = path.GetCurve(i);
 
                 // Split curve in several segments, following the resolution given by maxSegmentLength,
                 // but never more than maxSegmentCount.
-                // Also make sure that there is at least one point for every curve, even if the curve length is 0.
-                float curveLength = path.EvaluateCurveLength(i, evaluateCurveLengthSegmentsCount);
-                int segmentCount = Mathf.CeilToInt(curveLength / maxSegmentLength);
-                int clampedSegmentCount = Mathf.Clamp(segmentCount, 1, maxSegmentCount);
+                // This is a recursive problem: to apply a resolution, we need to know the curve length.
+                // But to evaluate the curve length, we need to split the curve in a certain number of segments,
+                // which generally requires a resolution.
+                // To break the recursion, we arbitrarily pick a segments count, independently of resolution:
+                // evaluateCurveLengthSegmentsCount. Fortunately, unless we work with very cuspy curves,
+                // a medium segment count should be enough (see comment above constant for more details).
+                float evaluatedCurveLength = BezierPath2D.EvaluateCurveLength(curve, INTERPOLATION_EVALUATE_CURVE_LENGTH_SEGMENTS_COUNT);
+                int segmentCount = Mathf.CeilToInt(evaluatedCurveLength / INTERPOLATION_PREFERRED_SEGMENT_LENGTH);
+
+                // We make sure that there is at least one point for every curve, even if the curve length is 0.
+                int clampedSegmentCount = Mathf.Clamp(segmentCount, 1, INTERPOLATION_MAX_SEGMENT_COUNT);
                 for (int j = 0; j < clampedSegmentCount; ++j)
                 {
                     float t = (float) j / (float) clampedSegmentCount;
@@ -389,10 +436,10 @@ namespace CommonsHelper.Editor
                 }
             }
 
-            // last curve index is last interpolated point index, for convenience
+            // Last curve index is last interpolated point index, for convenience
             curveStartIndices.Add(interpolatedPoints.Count);
 
-            // last point
+            // Last point
             int lastIndex = path.GetControlPointsCount() - 1;
             Vector2 lastPoint = path.GetControlPoint(lastIndex);
             interpolatedPoints.Add(lastPoint);
@@ -413,9 +460,9 @@ namespace CommonsHelper.Editor
             HandlesUtil.DrawArrowHead2D(interpolatedPoints[midIndex], tangent, pathColor);
         }
 
-        /// Draw the control points of the given path, with segments between key points and non-key control points
+        /// Draw handles for the control points of the given path, with segments between key points and non-key control points
         /// to visualize tangents, with offset
-        private static void DrawControlPoints(BezierPath2D path, int nearestKeyPointIndex)
+        private static void DrawControlPointHandles(BezierPath2D path, int keyPointToRemoveIndex)
         {
             if (path.GetControlPointsCount() < 4)
             {
@@ -428,10 +475,12 @@ namespace CommonsHelper.Editor
 
             for (int i = 0; i < path.GetCurvesCount(); ++i)
             {
-                // before C# 7.0, we cannot use ref directly with GetCurve in an iteration or as return value of a getter
-                // try .NET 4.5 later
+                // List do not support slices like array in C# 8, so GetCurve returns a new array
+                // and we cannot work by reference with curves to update control points directly via Handles.
+                // Instead, we just chain Get and Set methods to draw handles for control points and move them.
+
                 var p0 = path.GetControlPoint(3 * i);
-                color = i == nearestKeyPointIndex ? keyPointToRemoveColor : keyPointColor;
+                color = (i == keyPointToRemoveIndex ? keyPointToRemoveColor : keyPointColor);
                 HandlesUtil.DrawFreeMoveHandle(ref p0, color);
                 path.SetControlPoint(3 * i, p0);
 
@@ -456,8 +505,9 @@ namespace CommonsHelper.Editor
             // draw last key point
             int lastControlPointIndex = path.GetControlPointsCount() - 1;
             var lastKeyPoint = path.GetControlPoint(lastControlPointIndex);
+
             // ! control point index is not key point index !
-            color = path.GetCurvesCount() == nearestKeyPointIndex ? keyPointToRemoveColor : keyPointColor;
+            color = (path.GetCurvesCount() == keyPointToRemoveIndex ? keyPointToRemoveColor : keyPointColor);
             HandlesUtil.DrawFreeMoveHandle(ref lastKeyPoint, color);
             path.SetControlPoint(lastControlPointIndex, lastKeyPoint);
         }

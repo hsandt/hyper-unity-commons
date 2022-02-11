@@ -331,7 +331,13 @@ namespace CommonsHelper
         public float EvaluateCurveLength(int keyIndex, int segmentsCount)
         {
             Vector2[] curve = GetCurve(keyIndex);
+            return EvaluateCurveLength(curve, segmentsCount);
+        }
 
+        /// Return an evaluation of the passed curve (array of points), as the sum of [segmentsCount] segment approximation
+        /// lengths
+        public static float EvaluateCurveLength(Vector2[] curve, int segmentsCount)
+        {
             // store end point of the previous iteration to reuse it as start point for the next one
             Vector2 previousPoint = curve[0];
 
@@ -342,7 +348,7 @@ namespace CommonsHelper
             {
                 // compute segment end point parameter on curve
                 // this is the next point after current i, hence i + 1
-                float nextT = (float)(i + 1) / (float)segmentsCount;
+                float nextT = (float) (i + 1) / (float) segmentsCount;
 
                 // locate segment end and add segment length to total length
                 Vector2 nextPoint = InterpolateBezier(curve, nextT);
