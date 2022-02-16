@@ -14,33 +14,60 @@ namespace CommonsHelper
     /// This works with both standard and TMP text.
     public class TextWithOutline : MonoBehaviour
     {
-        /* Cached child component references */
-        
-        private Text[] m_TextWidgets;
-        private TextMeshProUGUI[] m_TMPWidgets;
+        /* Child component references */
 
-        
-        void Awake ()
+        public Text coreLabel;
+        public TextMeshProUGUI coreTMPLabel;
+
+        public Text[] outlineLabels;
+        public TextMeshProUGUI[] outlineTMPLabels;
+
+
+        #if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private void Awake()
         {
-            m_TextWidgets = GetComponentsInChildren<Text>();
-            m_TMPWidgets = GetComponentsInChildren<TextMeshProUGUI>();
+            Debug.AssertFormat(coreLabel != null || coreTMPLabel != null, this, "No core label nor core TMP label defined on {0}", this);
         }
+        #endif
 
-        public void SetText (string text)
+        public void SetText(string text)
         {
-            // This method is agnostic to how the core text and outlines are set:
-            // it just changes all the text contents
-            
-            foreach (Text textWidget in m_TextWidgets)
+            // Change text on all labels
+
+            if (coreLabel != null)
             {
-                textWidget.text = text;
+                coreLabel.text = text;
             }
 
-            foreach (TextMeshProUGUI tmpWidget in m_TMPWidgets)
+            if (coreTMPLabel != null)
             {
-                tmpWidget.text = text;
+                coreTMPLabel.text = text;
+            }
+
+            foreach (Text outlineLabel in outlineLabels)
+            {
+                outlineLabel.text = text;
+            }
+
+            foreach (TextMeshProUGUI outlineTMPLabel in outlineTMPLabels)
+            {
+                outlineTMPLabel.text = text;
+            }
+        }
+
+        public void SetColor(Color color)
+        {
+            // Change color on core label only
+
+            if (coreLabel != null)
+            {
+                coreLabel.color = color;
+            }
+
+            if (coreTMPLabel != null)
+            {
+                coreTMPLabel.color = color;
             }
         }
     }
 }
-
