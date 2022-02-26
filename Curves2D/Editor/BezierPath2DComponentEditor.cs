@@ -93,7 +93,7 @@ namespace CommonsHelper.Editor
         // to avoid freezing when interpolating a curve between points very far from each other
         private const int INTERPOLATION_MAX_SEGMENT_COUNT = 30;
 
-        private const float k_PointPickDistance = 50f;
+        private const float k_PointPickDistance = 100f;
         // TODO: use those to insert new key point in the middle of a curve
         private const float k_LinePickDistance = 50f;
         private const float k_ActiveLineSegmentWidth = 5f;
