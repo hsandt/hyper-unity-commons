@@ -251,10 +251,34 @@ namespace CommonsHelper
 
         /// Return the position on the whole path at given cumulated parameter
         /// (0 for start, 1 for end of 1st curve, N for end of N-th curve)
-        public Vector2 InterpolatePathByParameter(float t)
+        public Vector2 InterpolatePathByParameter(float pathT)
         {
-            // TODO: like InterpolatePathNormalized, but not normalized
-            return Vector2.zero;
+            int curvesCount = GetCurvesCount();
+
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Assert(pathT >= 0f && pathT <= (float) curvesCount);
+            #endif
+
+            // handle edge cases (including cases that would normally assert)
+            if (pathT <= 0)
+            {
+                return m_ControlPoints[0];
+            }
+            if (pathT >= (float) curvesCount)
+            {
+                return m_ControlPoints[^1];
+            }
+
+            int keyIndex = Mathf.FloorToInt(pathT);
+
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // we have handled normalizedT == 1 case, so we cannot be right at the end
+            // and the keyIndex should never reach curvesCount
+            Debug.Assert(keyIndex < curvesCount);
+            #endif
+
+            float remainder = pathT - keyIndex;  // or pathT % 1f;
+            return InterpolateCurve(keyIndex, remainder);
         }
 
         /// Return the position on the whole path at given normalized parameter
@@ -271,29 +295,9 @@ namespace CommonsHelper
             Debug.Assert(normalizedT >= 0f && normalizedT <= 1f);
             #endif
 
-            // handle edge cases (including cases that would normally assert)
-            if (normalizedT <= 0)
-            {
-                return m_ControlPoints[0];
-            }
-            if (normalizedT >= 1)
-            {
-                return m_ControlPoints[m_ControlPoints.Count - 1];
-            }
-
             int curvesCount = GetCurvesCount();
-
             float pathT = normalizedT * curvesCount;
-            int keyIndex = Mathf.FloorToInt(pathT);
-
-            #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            // we have handled normalizedT == 1 case, so we cannot be right at the end
-            // and the keyIndex should never reach curvesCount
-            Debug.Assert(keyIndex < curvesCount);
-            #endif
-
-            float remainder = pathT - keyIndex;  // or pathT % 1f;
-            return InterpolateCurve(keyIndex, remainder);
+            return InterpolatePathByParameter(pathT);
         }
 
         /// Return the position on the whole path at given distance from the start
@@ -369,6 +373,7 @@ namespace CommonsHelper
 
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.AssertFormat(keyIndex >= 0 && keyIndex < curvesCount, "Invalid curve index: {0}. Expected index between 0 and {1}.", keyIndex, curvesCount - 1);
+            Debug.AssertFormat(0f <= t && t <= 1f, "Parameter t is {0}, expected number between 0 and 1.", t);
             #endif
 
             Vector2[] curve = GetCurve(keyIndex);
