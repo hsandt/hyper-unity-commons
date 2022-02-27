@@ -33,13 +33,16 @@ namespace CommonsPattern
         }
 
         /// Initialise pool with [initialPoolSize] free objects (not in use)
-        /// If the pool transform already contains sample objects (children), reuse them.
+        /// If the pool transform already contains sample objects (children),
+        /// reuse them. This part is mostly useful for OrderedPoolContainer used for UI, as we often want to test
+        /// layout in the editor so there are often sample pooled objects left in the scene.
         /// We expect the sample objects to be instances of m_PooledObjectPrefab
         /// with no non-trivial property override, so they are really like new prefab
         /// instances we would create at runtime if there were no sample objects.
         /// We don't want to verify all of that, so we just throw if those objects
         /// don't have a TPooledObject component, which is expected on m_PooledObjectPrefab.
-        public void Init(int initialPoolSize)
+        /// ! This is meant for Single Pool only !
+        public void InitCheckingExistingChildren(int initialPoolSize)
         {
             // 1. Create list with capacity = expected count
             // (using the max now will avoid LazyInstantiatePooledObjects having to
@@ -64,9 +67,28 @@ namespace CommonsPattern
             ReleaseAllObjects();
         }
 
+        /// Initialise pool with [initialPoolSize] free objects (not in use)
+        /// ! MultiPoolManager should use this to avoid incorrectly registering pooled objects of type A
+        ///   as pooled objects of type B !
+        public void InitIgnoringExistingChildren(int initialPoolSize)
+        {
+            // 1. Create list with capacity = expected count
+            m_Objects = new List<TPooledObject>(initialPoolSize);
+
+            // 2. Instantiate [initialPoolSize] pooled objects
+            for (int i = 0; i < initialPoolSize; i++)
+            {
+                InstantiatePooledObject();
+            }
+
+            // 3. Release all objects so we can use them later
+            ReleaseAllObjects();
+        }
+
         /// Acquire the first [count] objects under pool transform,
         /// release all the other ones, and return an enumerable to those [count] objects
         /// Instantiate as many new objects as needed.
+        /// ! This is meant for Single Pool only !
         public IEnumerable<TPooledObject> AcquireOnlyFirstObjects(int count)
         {
             // 1. Instantiate any remaining objects to reach [count]
@@ -102,6 +124,7 @@ namespace CommonsPattern
         /// Instantiate pooled objects until there are [targetPoolSize] of them
         /// under the pool transform
         /// This also registers created objects in the objects list.
+        /// ! This is meant for Single Pool only !
         private void LazyInstantiatePooledObjects(int targetPoolSize)
         {
             #if UNITY_EDITOR || DEVELOPMENT_BUILD

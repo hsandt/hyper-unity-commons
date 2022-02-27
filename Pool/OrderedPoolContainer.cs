@@ -38,7 +38,7 @@ namespace CommonsPattern
 		private void Awake()
 		{
 			m_Pool = new Pool<TPooledObject>(pooledObjectPrefab, transform);
-			m_Pool.Init(initialPoolSize);
+			m_Pool.InitCheckingExistingChildren(initialPoolSize);
 		}
 
         /// Acquire the first [count] objects under pool transform,

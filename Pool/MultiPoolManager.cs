@@ -92,7 +92,7 @@ namespace CommonsPattern
 			Debug.LogFormat("[MultiPoolManager] Setup prefab pool of size {0} for object type '{1}'", initialPoolSize, prefabName);
 #endif
 			m_MultiPool.Add(prefabName, new Pool<TPooledObject>(pooledObjectPrefab, poolTransform));
-			m_MultiPool[prefabName].Init(initialPoolSize);
+			m_MultiPool[prefabName].InitIgnoringExistingChildren(initialPoolSize);
 		}
 
 		[Obsolete("Use GetFreeObject")]

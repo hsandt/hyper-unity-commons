@@ -41,7 +41,7 @@ namespace CommonsPattern
 		protected override void Init ()
 		{
 			m_Pool = new Pool<TPooledObject>(pooledObjectPrefab, poolTransform);
-			m_Pool.Init(initialPoolSize);
+			m_Pool.InitCheckingExistingChildren(initialPoolSize);
 		}
 
 		[Obsolete("Use GetFreeObject")]
