@@ -169,11 +169,48 @@ namespace CommonsPattern
             return pooledObject;
         }
 
-        /// Try to return a free object
-        /// If no objects are free, check instantiateNewObjectOnStarvation
-        /// - if true, instantiate a new object (with initialisation) and return it
-        /// - if false, return null
+        [Obsolete("Use AcquireFreeObject instead, and remove Acquire/SetActive(true) call following this on the caller side")]
         public TPooledObject GetFreeObject(bool instantiateNewObjectOnStarvation)
+        {
+            return AcquireFreeObject(instantiateNewObjectOnStarvation);
+        }
+
+        /// Try to get a free object and Acquire it, if we got any
+        /// If no objects are free, check instantiateNewObjectOnStarvation
+        /// - if true, instantiate a new object (with initialisation), Acquire it and return it
+        /// - if false, return null
+        public TPooledObject AcquireFreeObject(bool instantiateNewObjectOnStarvation)
+        {
+            TPooledObject pooledObject = GetFreeObject();
+
+            if (pooledObject == null && instantiateNewObjectOnStarvation)
+            {
+                // Pool starvation, but we should instantiate a new object as it is considered important
+                // Performance note: we are not "smart" (e.g. instantiating a batch of new objects
+                // as a List allocation would do, by power of two). We really just instantiate what we need, 1 object.
+                // So in counterpart with log a warning, as generally such last minute instantiation is not intended and
+                // only a fallback, so we want to notify developer they may want to increase initial pool size instead.
+                #if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarningFormat("[Pool] AcquireFreeObject: pool for prefab '{0}' is starving at size {1} but " +
+                                       "instantiateNewObjectOnStarvation is true, so we will instantiate a new object as fallback. " +
+                                       "Consider increasing pool size to at least {2} to avoid this situation.",
+                    m_PooledObjectPrefab, m_Objects.Count, m_Objects.Count + 1);
+                #endif
+
+                pooledObject = InstantiatePooledObject();
+            }
+
+            if (pooledObject != null)
+            {
+                pooledObject.Acquire();
+            }
+
+            return pooledObject;
+        }
+
+
+        /// Return a free object if any, else null
+        private TPooledObject GetFreeObject()
         {
             // O(n)
             // Consider improving performance by tracking list of free objects
@@ -183,28 +220,6 @@ namespace CommonsPattern
                 {
                     return pooledObject;
                 }
-            }
-
-            // Pool starvation: check how we should handle it
-            // Performance note: if instantiating object, we are not "smart" (e.g. instantiating a batch of new objects
-            // as a List allocation would do, by power of two). We really just instantiate what we need, 1 object.
-            // So in counterpart with log a warning, as generally such last minute instantiation is not intended and
-            // only a fallback, so we want to notify developer they may want to increase initial pool size instead.
-            if (instantiateNewObjectOnStarvation)
-            {
-                #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarningFormat("[Pool] GetFreeObject: pool for prefab '{0}' is starving at size {1} but " +
-                    "instantiateNewObjectOnStarvation is true, so we will instantiate a new object as fallback. " +
-                    "Consider increasing pool size to at least {2} to avoid this situation.",
-                    m_PooledObjectPrefab, m_Objects.Count, m_Objects.Count + 1);
-                #endif
-                TPooledObject pooledObject = InstantiatePooledObject();
-
-                // Legacy: for now, keep releasing new object, but usages showed that in fact,
-                // we want to Acquire them every time, so we'll do this in later commit.
-                pooledObject.Release();
-
-                return pooledObject;
             }
 
             return null;

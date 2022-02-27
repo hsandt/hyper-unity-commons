@@ -44,15 +44,22 @@ namespace CommonsPattern
 			m_Pool.InitCheckingExistingChildren(initialPoolSize);
 		}
 
-		[Obsolete("Use GetFreeObject")]
+		[Obsolete("Use AcquireFreeObject (then no need to Acquire/activate manually)")]
 		public TPooledObject GetObject()
 		{
-			return GetFreeObject();
+			return AcquireFreeObject();
 		}
 
+		[Obsolete("Use AcquireFreeObject (then no need to Acquire/activate manually)")]
 		public TPooledObject GetFreeObject()
 		{
-			return m_Pool.GetFreeObject(instantiateNewObjectOnStarvation);
+			return AcquireFreeObject();
+		}
+
+		/// Retrieve a released instance in the pool of objects, acquire it and return it
+		public TPooledObject AcquireFreeObject()
+		{
+			return m_Pool.AcquireFreeObject(instantiateNewObjectOnStarvation);
 		}
 
 		/// Return an enumerable to all objects in use

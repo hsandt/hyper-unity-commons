@@ -95,18 +95,24 @@ namespace CommonsPattern
 			m_MultiPool[prefabName].InitIgnoringExistingChildren(initialPoolSize);
 		}
 
-		[Obsolete("Use GetFreeObject")]
+		[Obsolete("Use AcquireFreeObject (then no need to Acquire/activate manually)")]
 		public TPooledObject GetObject(string prefabName)
 		{
-			return GetFreeObject(prefabName);
+			return AcquireFreeObject(prefabName);
 		}
 
-		/// Retrieve a released instance in the pool of objects called prefabName
+		[Obsolete("Use AcquireFreeObject (then no need to Acquire/activate manually)")]
 		public TPooledObject GetFreeObject(string prefabName)
+		{
+			return AcquireFreeObject(prefabName);
+		}
+
+		/// Retrieve a released instance in the pool of objects called prefabName, acquire it and return it
+		public TPooledObject AcquireFreeObject(string prefabName)
 		{
 			if (m_MultiPool.TryGetValue(prefabName, out Pool<TPooledObject> pool))
 	        {
-		        return pool.GetFreeObject(instantiateNewObjectOnStarvation);
+		        return pool.AcquireFreeObject(instantiateNewObjectOnStarvation);
 	        }
 
 			Debug.LogErrorFormat(this, "Prefab '{0}' not found in multi pool dictionary of {1}", prefabName, name);
