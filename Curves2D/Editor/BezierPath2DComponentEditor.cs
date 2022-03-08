@@ -102,7 +102,7 @@ namespace CommonsHelper.Editor
         private static readonly int s_RemovePointHash = "s_RemovePointHash".GetHashCode();
 
         private static readonly Color pathColor = Color.cyan;
-        private static readonly Color keyPointColor = Color.white;
+        private static readonly Color keyPointColor = Color.cyan;
         private static readonly Color keyPointToRemoveColor = Color.red;
         private static readonly Color tangentPointColor = ColorUtil.orange;
         private static readonly Color tangentColor = Color.yellow;
