@@ -300,14 +300,16 @@ namespace CommonsHelper
             return InterpolatePathByParameter(pathT);
         }
 
-        /// Return the position on the whole path at given distance from the start
+        /// Return the position on the whole path at given distance from the start,
+        /// using arc-length parameterization
         public Vector2 InterpolatePathByDistance(float distance)
         {
             // TODO: split path in segments, accumulate segment lengths and evaluate point at given curvilinear abscissa
             return Vector2.zero;
         }
 
-        /// Return the position on the whole path at given distance ratio (on total path length) from the start
+        /// Return the position on the whole path at given distance ratio (on total path length) from the start,
+        /// using arc-length normalized parameterization
         public Vector2 InterpolatePathByNormalizedDistance(float normalizedDistance)
         {
             // TODO: split path in segments, accumulate segment lengths and evaluate point at given curvilinear abscissa
