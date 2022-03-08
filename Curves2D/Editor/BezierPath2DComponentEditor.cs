@@ -479,16 +479,46 @@ namespace CommonsHelper.Editor
                 // and we cannot work by reference with curves to update control points directly via Handles.
                 // Instead, we just chain Get and Set methods to draw handles for control points and move them.
 
+                // Moving key point also moves attached tangent in and out (if any), so track key point move delta
+                Vector2 keyPointDelta;
+                
                 var p0 = path.GetControlPoint(3 * i);
-                color = (i == keyPointToRemoveIndex ? keyPointToRemoveColor : keyPointColor);
-                HandlesUtil.DrawFreeMoveHandle(ref p0, color);
-                path.SetControlPoint(3 * i, p0);
+                
+                using (var check = new EditorGUI.ChangeCheckScope())
+                {
+                    var oldP0 = p0;
+                    color = (i == keyPointToRemoveIndex ? keyPointToRemoveColor : keyPointColor);
+                    HandlesUtil.DrawFreeMoveHandle(ref p0, color);
+                    keyPointDelta = p0 - oldP0;
+
+                    if (check.changed)
+                    {
+                        path.SetControlPoint(3 * i, p0);
+
+                        // Except for the first key point, there is an in tangent associated to this key point
+                        // that we should move along
+                        if (i > 0)
+                        {
+                            var previousInTangent = path.GetControlPoint(3 * i - 1);
+                            path.SetControlPoint(3 * i - 1, previousInTangent + keyPointDelta);
+                        }
+                    }
+                }
 
                 // draw out tangent point
                 var p1 = path.GetControlPoint(3 * i + 1);
-                HandlesUtil.DrawFreeMoveHandle(ref p1, tangentPointColor);
-                path.SetControlPoint(3 * i + 1, p1);
+                
+                using (var check = new EditorGUI.ChangeCheckScope())
+                {
+                    HandlesUtil.DrawFreeMoveHandle(ref p1, tangentPointColor);
 
+                    // Remember to add keyPointDelta to move tangent out along associated key point
+                    if (check.changed || keyPointDelta != Vector2.zero)
+                    {
+                        path.SetControlPoint(3 * i + 1, p1 + keyPointDelta);
+                    }
+                }
+                
                 // draw out tangent
                 HandlesUtil.DrawLine(p0, p1, tangentColor);
 
