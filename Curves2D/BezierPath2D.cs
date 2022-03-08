@@ -115,7 +115,21 @@ namespace CommonsHelper
         /// Return key point at given key index
         public Vector2 GetKeyPoint(int keyIndex)
         {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(keyIndex >= 0 && keyIndex < GetKeyPointsCount(), "Invalid keyIndex: {0}. Expected keyIndex between 0 and Key Points Count - 1 ({1})", keyIndex, GetKeyPointsCount() - 1);
+            #endif
+
             return m_ControlPoints[3 * keyIndex];
+        }
+
+        /// Move key point at given key index to given position
+        public void SetKeyPoint(int keyIndex, Vector2 controlPosition)
+        {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(keyIndex >= 0 && keyIndex < GetKeyPointsCount(), "Invalid keyIndex: {0}. Expected keyIndex between 0 and Key Points Count - 1 ({1})", keyIndex, GetKeyPointsCount() - 1);
+            #endif
+
+            m_ControlPoints[3 * keyIndex] = controlPosition;
         }
 
         /// Yield all key points
@@ -215,6 +229,50 @@ namespace CommonsHelper
             {
                 m_ControlPoints.RemoveRange(3 * keyIndex - 1, 3);
             }
+        }
+
+        /// Return in tangent control point at given key index
+        /// Key index must be between 1 and key points count - 1
+        public Vector2 GetInTangentPoint(int keyIndex)
+        {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(keyIndex >= 1 && keyIndex < GetKeyPointsCount(), "Invalid keyIndex: {0}. Expected keyIndex between 1 and Key Points Count - 1 ({1})", keyIndex, GetKeyPointsCount() - 1);
+            #endif
+
+            return m_ControlPoints[3 * keyIndex - 1];
+        }
+
+        /// Move in tangent control point at given key index to given position
+        /// Key index must be between 1 and key points count - 1
+        public void SetInTangentPoint(int keyIndex, Vector2 controlPosition)
+        {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(keyIndex >= 1 && keyIndex < GetKeyPointsCount(), "Invalid keyIndex: {0}. Expected keyIndex between 1 and Key Points Count - 1 ({1})", keyIndex, GetKeyPointsCount() - 1);
+            #endif
+
+            m_ControlPoints[3 * keyIndex - 1] = controlPosition;
+        }
+
+        /// Return out tangent control point at given key index
+        /// Key index must be between 0 and key points count - 2
+        public Vector2 GetOutTangentPoint(int keyIndex)
+        {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(keyIndex >= 0 && keyIndex < GetKeyPointsCount() - 1, "Invalid keyIndex: {0}. Expected keyIndex between 0 and Key Points Count - 2 ({1})", keyIndex, GetKeyPointsCount() - 2);
+            #endif
+
+            return m_ControlPoints[3 * keyIndex + 1];
+        }
+
+        /// Move out tangent control point at given key index to given position
+        /// Key index must be between 1 and key points count - 1
+        public void SetOutTangentPoint(int keyIndex, Vector2 controlPosition)
+        {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(keyIndex >= 0 && keyIndex < GetKeyPointsCount() - 1, "Invalid keyIndex: {0}. Expected keyIndex between 0 and Key Points Count - 2 ({1})", keyIndex, GetKeyPointsCount() - 2);
+            #endif
+
+            m_ControlPoints[3 * keyIndex + 1] = controlPosition;
         }
 
         /// Return the number of curves compounding this path (equal to the number of key points - 1)

@@ -466,80 +466,83 @@ namespace CommonsHelper.Editor
         {
             if (path.GetControlPointsCount() < 4)
             {
-                // do not log warning to avoid spamming console, but this is a defect, and we will see nothing
+                // Do not log warning to avoid spamming console, but this is a defect, and we will see nothing
                 // just add a new point manually to trigger the safety Init()
                 return;
             }
 
-            Color color;
-
-            for (int i = 0; i < path.GetCurvesCount(); ++i)
+            // Instead of iterating on curves, iterate on key points.
+            // This allows us to handle a key point and its 2 tangents (1 tangent for start and end key points)
+            // at the same time to move them along, making code more symmetrical than when handling the 2 unrelated
+            // in and out tangents of a given curve.
+            // With this, we also don't have to draw a last point after the loop.
+            int keyPointsCount = path.GetKeyPointsCount();
+            for (int i = 0; i < keyPointsCount; ++i)
             {
-                // List do not support slices like array in C# 8, so GetCurve returns a new array
-                // and we cannot work by reference with curves to update control points directly via Handles.
-                // Instead, we just chain Get and Set methods to draw handles for control points and move them.
-
                 // Moving key point also moves attached tangent in and out (if any), so track key point move delta
                 Vector2 keyPointDelta;
-                
-                var p0 = path.GetControlPoint(3 * i);
-                
+
+                var keyPoint = path.GetKeyPoint(i);
+
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    var oldP0 = p0;
-                    color = (i == keyPointToRemoveIndex ? keyPointToRemoveColor : keyPointColor);
-                    HandlesUtil.DrawFreeMoveHandle(ref p0, color);
-                    keyPointDelta = p0 - oldP0;
+                    var oldP0 = keyPoint;
+                    Color color = (i == keyPointToRemoveIndex ? keyPointToRemoveColor : keyPointColor);
+                    HandlesUtil.DrawFreeMoveHandle(ref keyPoint, color);
+                    keyPointDelta = keyPoint - oldP0;
 
                     if (check.changed)
                     {
-                        path.SetControlPoint(3 * i, p0);
+                        path.SetKeyPoint(i, keyPoint);
+                    }
+                }
 
-                        // Except for the first key point, there is an in tangent associated to this key point
-                        // that we should move along
-                        if (i > 0)
+                // draw in tangent point and line, if any
+                if (i > 0)
+                {
+                    // Do not add keyPointDelta here, it would double will the `+ keyPointDelta` in SetInTangentPoint
+                    var tangentInPoint = path.GetInTangentPoint(i);
+
+                    using (var check = new EditorGUI.ChangeCheckScope())
+                    {
+                        // draw in tangent point
+                        HandlesUtil.DrawFreeMoveHandle(ref tangentInPoint, tangentPointColor);
+
+                        // If user either moved in tangent point directly, or indirectly via the associated key point,
+                        // we must move the in tangent point accordingly
+                        if (check.changed || keyPointDelta != Vector2.zero)
                         {
-                            var previousInTangent = path.GetControlPoint(3 * i - 1);
-                            path.SetControlPoint(3 * i - 1, previousInTangent + keyPointDelta);
+                            path.SetInTangentPoint(i, tangentInPoint + keyPointDelta);
                         }
                     }
+
+                    // draw in tangent line
+                    HandlesUtil.DrawLine(keyPoint, tangentInPoint, tangentColor);
                 }
 
-                // draw out tangent point
-                var p1 = path.GetControlPoint(3 * i + 1);
-                
-                using (var check = new EditorGUI.ChangeCheckScope())
+                // draw out tangent point and line, if any
+                if (i < keyPointsCount - 1)
                 {
-                    HandlesUtil.DrawFreeMoveHandle(ref p1, tangentPointColor);
+                    // Do not add keyPointDelta here, it would double will the `+ keyPointDelta` in SetOutTangentPoint
+                    var tangentOutPoint = path.GetOutTangentPoint(i);
 
-                    // Remember to add keyPointDelta to move tangent out along associated key point
-                    if (check.changed || keyPointDelta != Vector2.zero)
+                    using (var check = new EditorGUI.ChangeCheckScope())
                     {
-                        path.SetControlPoint(3 * i + 1, p1 + keyPointDelta);
+                        // draw out tangent point
+                        HandlesUtil.DrawFreeMoveHandle(ref tangentOutPoint, tangentPointColor);
+
+                        // If user either moved out tangent point directly, or indirectly via the associated key point,
+                        // we must move the out tangent point accordingly
+                        if (check.changed || keyPointDelta != Vector2.zero)
+                        {
+                            path.SetOutTangentPoint(i, tangentOutPoint + keyPointDelta);
+                        }
                     }
+
+                    // draw out tangent line
+                    HandlesUtil.DrawLine(keyPoint, tangentOutPoint, tangentColor);
                 }
-                
-                // draw out tangent
-                HandlesUtil.DrawLine(p0, p1, tangentColor);
-
-                // draw in tangent point
-                var p2 = path.GetControlPoint(3 * i + 2);
-                HandlesUtil.DrawFreeMoveHandle(ref p2, tangentPointColor);
-                path.SetControlPoint(3 * i + 2, p2);
-
-                // draw in tangent
-                var p3 = path.GetControlPoint(3 * i + 3);
-                HandlesUtil.DrawLine(p2, p3, tangentColor);
             }
-
-            // draw last key point
-            int lastControlPointIndex = path.GetControlPointsCount() - 1;
-            var lastKeyPoint = path.GetControlPoint(lastControlPointIndex);
-
-            // ! control point index is not key point index !
-            color = (path.GetCurvesCount() == keyPointToRemoveIndex ? keyPointToRemoveColor : keyPointColor);
-            HandlesUtil.DrawFreeMoveHandle(ref lastKeyPoint, color);
-            path.SetControlPoint(lastControlPointIndex, lastKeyPoint);
         }
     }
 }
