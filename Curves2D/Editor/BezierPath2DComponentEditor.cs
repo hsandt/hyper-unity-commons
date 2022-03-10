@@ -98,6 +98,7 @@ namespace CommonsHelper.Editor
         private const float k_LinePickDistance = 50f;
         private const float k_ActiveLineSegmentWidth = 5f;
 
+        private static readonly int s_AddPointHash = "s_AddPointHash".GetHashCode();
         private static readonly int s_InsertPointHash = "s_InsertPointHash".GetHashCode();
         private static readonly int s_RemovePointHash = "s_RemovePointHash".GetHashCode();
 
@@ -172,16 +173,17 @@ namespace CommonsHelper.Editor
             // Pre-compute interpolated points, they are used for both edit (to detect if cursor is close
             // to a curve) and drawing. Those interpolated points do *not* integrate the path offset.
             (List<Vector2> interpolatedPoints, List<int> curveStartIndices) = InterpolatePath(path);
+            Vector2[] interpolatedPointsArray = interpolatedPoints.ToArray();
 
             // To take the path offset into account, so all the geometric methods below use the correct coordinates,
             // we use a Handles matrix that translates everything by the path offset.
             Matrix4x4 offsetMatrix = Matrix4x4.Translate(offset);
             using (new Handles.DrawingScope(offsetMatrix))
             {
-                float distanceToNearestCurve = GetNearestCurve(interpolatedPoints, curveStartIndices, out int nearestCurveIndex);
+                float distanceToNearestCurve = GetNearestCurve(interpolatedPoints, curveStartIndices, out int nearestCurveIndex, out int nearestInterpolatedPointIndex);
 
                 // Draw the interpolated path to have a smooth visualization
-                DrawInterpolatedPath(interpolatedPoints.ToArray(), curveStartIndices, distanceToNearestCurve, nearestCurveIndex);
+                DrawInterpolatedPath(interpolatedPointsArray);
 
                 if (IsEditingCollider)
                 {
@@ -189,12 +191,16 @@ namespace CommonsHelper.Editor
 
                     Event guiEvent = Event.current;
 
+                    // Check if we should preview any user action
+                    // If multiple actions are available, pick one with the following priority order:
+                    // Add > Remove > Insert
+                    bool readyToAddKeyPoint = false;
                     bool readyToInsertKeyPoint = false;
                     int readyToRemoveKeyPointIndex = -1;
 
                     if (guiEvent.shift)
                     {
-                        readyToInsertKeyPoint = true;
+                        readyToAddKeyPoint = true;
                     }
                     else if (guiEvent.control)
                     {
@@ -214,30 +220,45 @@ namespace CommonsHelper.Editor
                             }
                         }
                     }
+                    else if (distanceToNearestCurve <= k_LinePickDistance)
+                    {
+                        readyToInsertKeyPoint = true;
+                    }
 
                     // To keep stable control IDs, we compute them at top-level then pass them to methods that need it
                     // https://forum.unity.com/threads/how-a-control-keep-same-controlid-from-getcontrolid-in-a-dynamic-ui.836527/
+                    int addControlID = GUIUtility.GetControlID(s_AddPointHash, FocusType.Passive);
                     int insertControlID = GUIUtility.GetControlID(s_InsertPointHash, FocusType.Passive);
                     int removeControlID = GUIUtility.GetControlID(s_RemovePointHash, FocusType.Passive);
 
-                    DoLayout(readyToInsertKeyPoint, readyToRemoveKeyPointIndex, insertControlID, removeControlID);
+                    DoLayout(readyToAddKeyPoint, readyToInsertKeyPoint, readyToRemoveKeyPointIndex, addControlID, insertControlID, removeControlID);
 
-                    // Manually ensure that hovered handles have priority over remove control,
-                    // by canceling remove action (including highlighting key point to remove)
-                    // if it is not the nearest control.
-                    // This way, holding ctrl with cursor over or very close to control point handles will not
-                    // highlight the nearest key point, and clicking will start dragging them (this is useful
-                    // when user holds ctrl before clicking, preparing for a snapping drag-and-drop).
-                    // Note that we do *not* do this for the insert action, as we want to allow the user
+                    // Manually ensure that hovered handles have priority over insert/remove control,
+                    // by clearing the corresponding ready flag if it is not the nearest control.
+                    // This way, actions won't overlap and conflict:
+                    // - holding ctrl with cursor over or very close to control point handles will not
+                    // highlight the nearest key point, and clicking will start dragging them as expected
+                    // (this is useful when user holds ctrl before clicking, preparing for a snapping drag-and-drop)
+                    // - dragging an existing key point won't try to insert a new one
+                    // Note that we do *not* do this for the add action, as we want to allow the user
                     // to add a new key point near an existing control point; and it is unlikely that the user
                     // tries to hold shift before dragging a control point as it does nothing.
+                    // Code order note: while it seems odd that this happens before DrawControlPointHandles,
+                    // remember that DrawControlPointHandles was called last frame and set the layout for handles
+                    // during the Layout phase, which is still remembered this frame.
+                    // Since we need nearest
+                    if (readyToInsertKeyPoint && HandleUtility.nearestControl != insertControlID)
+                    {
+                        readyToInsertKeyPoint = false;
+                    }
                     if (readyToRemoveKeyPointIndex != -1 && HandleUtility.nearestControl != removeControlID)
                     {
                         readyToRemoveKeyPointIndex = -1;
                     }
 
-                    // Handle add/remove point input
-                    HandleEditInput(path, readyToInsertKeyPoint, readyToRemoveKeyPointIndex);
+                    // Handle add/insert/remove point input
+                    HandleEditInput(path, readyToAddKeyPoint, readyToRemoveKeyPointIndex, readyToInsertKeyPoint, insertControlID,
+                        interpolatedPointsArray, curveStartIndices, nearestCurveIndex, nearestInterpolatedPointIndex);
 
                     // Draw control points to allow the user to edit them
                     DrawControlPointHandles(path, readyToRemoveKeyPointIndex);
@@ -279,11 +300,21 @@ namespace CommonsHelper.Editor
             return nearestKeyPointIndex >= 0 ? Mathf.Sqrt(nearestKeyPointSqrDistance) : float.MaxValue;
         }
 
-        private float GetNearestCurve(IEnumerable<Vector2> interpolatedPoints, List<int> curveStartIndices, out int index)
+        /// <summary>
+        /// Return distance to nearest curve approximated as the distance to the full path interpolated polyline,
+        /// along with extra info via out parameters.
+        /// </summary>
+        /// <param name="interpolatedPoints">Pre-computed interpolated polyline points</param>
+        /// <param name="curveStartIndices">List of indices at which a new curve starts, ending with the last interpolated point index for convenience</param>
+        /// <param name="nearestCurveIndex">Index of nearest curve found</param>
+        /// <param name="nearestInterpolatedPointIndex">Index of nearest interpolated point found</param>
+        /// <returns></returns>
+        private float GetNearestCurve(IEnumerable<Vector2> interpolatedPoints, List<int> curveStartIndices,
+            out int nearestCurveIndex, out int nearestInterpolatedPointIndex)
         {
             Vector3[] interpolatedPoints3D = interpolatedPoints.Select(point2D => (Vector3) point2D).ToArray();
 
-            float distance = DistanceToPolyLine(interpolatedPoints3D, false, out int nearestInterpolatedPointIndex);
+            float distance = DistanceToPolyLine(interpolatedPoints3D, false, out nearestInterpolatedPointIndex);
 
             // Find index of curve that contains the nearest interpolated point index
             int searchIndex = curveStartIndices.BinarySearch(nearestInterpolatedPointIndex);
@@ -293,7 +324,7 @@ namespace CommonsHelper.Editor
                 // it belongs to 2 curves, but to simplify we just pick the curve that starts at this key point.
                 // Note that for convenience, curveStartIndices's last index is the last interpolated point index,
                 // so this includes the case where the nearest interpolated point is the last key point.
-                index = searchIndex;
+                nearestCurveIndex = searchIndex;
             }
             else
             {
@@ -304,42 +335,46 @@ namespace CommonsHelper.Editor
                 // it is curveStartIndices.Count, the index of the last key point).
                 // So we re-complement it to get the key point index, then subtract 1 to get the index of the *start*
                 // key point of that curve, to keep the same convention as above.
-                index = ~searchIndex - 1;
+                nearestCurveIndex = ~searchIndex - 1;
             }
 
             return distance;
         }
 
-        private void DoLayout(bool readyToInsertKeyPoint, int readyToRemoveKeyPointIndex,
-            int insertControlID, int removeControlID)
+        private void DoLayout(bool readyToAddKeyPoint, bool readyToInsertKeyPoint, int readyToRemoveKeyPointIndex,
+            int addControlID, int insertControlID, int removeControlID)
         {
             Event guiEvent = Event.current;
             EventType eventType = guiEvent.type;
 
             if (eventType == EventType.Layout || eventType == EventType.MouseMove)
             {
-                if (readyToInsertKeyPoint)
+                if (readyToAddKeyPoint)
                 {
-                    // Wherever we click, inserting key point is the prioritized action, so add it as default control
+                    // Wherever we click, adding key point is the prioritized action, so add it as default control
                     // and flag action as ready (we still need to check for mouse button down)
-                    HandleUtility.AddDefaultControl(insertControlID);
+                    HandleUtility.AddDefaultControl(addControlID);
                 }
                 else if (readyToRemoveKeyPointIndex != -1)
                 {
                     HandleUtility.AddDefaultControl(removeControlID);
                 }
+                else if (readyToInsertKeyPoint)
+                {
+                    HandleUtility.AddDefaultControl(insertControlID);
+                }
             }
         }
 
-        private void HandleEditInput(BezierPath2D path, bool readyToInsertKeyPoint, int readyToRemoveKeyPointIndex)
+        private void HandleEditInput(BezierPath2D path, bool readyToAddKeyPoint, int readyToRemoveKeyPointIndex,
+            bool readyToInsertKeyPoint, int insertControlID, Vector2[] interpolatedPoints, List<int> curveStartIndices,
+            int nearestCurveIndex, int nearestInterpolatedPointIndex)
         {
             Event guiEvent = Event.current;
             EventType eventType = guiEvent.type;
 
-            // Detect hold shift (readyToInsertKeyPoint) and primary button click
-            // We check nearest control to be consistent with removeControlID more below, but in this case, since we use
-            // AddDefaultControl when shift-clicking in DoLayout, we always consider the insertControlID to be the nearest when this happens.
-            if (readyToInsertKeyPoint && eventType == EventType.MouseDown && guiEvent.button == 0)
+            // Detect hold shift (readyToAddKeyPoint) and primary button click
+            if (readyToAddKeyPoint && eventType == EventType.MouseDown && guiEvent.button == 0)
             {
                 // Add new key point at the end of the path, at mouse position
                 // The mouse position includes any path offset, but the key point must be stored without offset,
@@ -365,10 +400,96 @@ namespace CommonsHelper.Editor
                 // Consume event
                 guiEvent.Use();
             }
+
+            // Detect cursor near curve (readyToInsertKeyPoint)
+            if (readyToInsertKeyPoint)
+            {
+                if (eventType == EventType.Repaint)
+                {
+                    if (nearestInterpolatedPointIndex > 0 && nearestInterpolatedPointIndex < interpolatedPoints.Length - 1)
+                    {
+                        // Draw nearest curve with glow
+                        // Inspired by LineHandle, draw the nearest curve in bold using Anti-Aliased polyline
+                        // For convenience, we made curveStartIndices end with the last point of path,
+                        // so curveStartIndices has path.GetCurvesCount() + 1 elements, and we don't have to handle the edge
+                        // case where nearestCurveIndex == path.GetCurvesCount() - 1
+                        int curveStartIndex = curveStartIndices[nearestCurveIndex];
+                        int curveEndIndex = curveStartIndices[nearestCurveIndex + 1];
+                        // Remember that range .. is exclusive, but we must draw including the end point, hence + 1
+                        HandlesUtil.DrawAAPolyLine2D(interpolatedPoints[curveStartIndex..(curveEndIndex + 1)],
+                            k_ActiveLineSegmentWidth, pathColor);
+
+                        // Preview split point to add on click
+                        Vector2 splitPointPosition = interpolatedPoints[nearestInterpolatedPointIndex];
+
+                        // We are passing insertControlID to the handle to be correct, but we cannot count on this alone
+                        // to make it the nearest control when readyToInsertKeyPoint is true when calling DoLayout.
+                        // Indeed, this block is only entered if readyToInsertKeyPoint is true to start with,
+                        // but we clear that flag if it's not the nearest control first, causing a vicious circle.
+                        // There, we AddDefaultControl(insertControlID) in DoLayout if readyToInsertKeyPoint,
+                        // just to make it the nearest control, enter this block and then we have a virtuous circle
+                        // where it keeps being drawn and is the nearest control (if the cursor is nearby indeed).
+                        HandlesUtil.DrawFreeMoveHandle(ref splitPointPosition, keyPointColor, controlID: insertControlID);
+                    }
+                }
+                else if (eventType == EventType.MouseDown && guiEvent.button == 0)
+                {
+                    if (nearestInterpolatedPointIndex > 0 && nearestInterpolatedPointIndex < interpolatedPoints.Length - 1)
+                    {
+                        Vector2 splitPointPosition = interpolatedPoints[nearestInterpolatedPointIndex];
+
+                        // Common
+                        // we still need to adjust the neighbour tangents by scaling by the split point parameter ratio on the current curve
+                        int curveStartIndex = curveStartIndices[nearestCurveIndex];
+                        int curveEndIndex = curveStartIndices[nearestCurveIndex + 1];
+
+                        // There are several ways to get nice tangents to preserve the path shape
+                        // Method A: approx tangent (cheap, but approx)
+                        // Must divide by curve length
+                        float curveLength = 0f;
+                        for (int i = curveStartIndex; i < curveEndIndex; i++)
+                        {
+                            curveLength += Vector2.Distance(interpolatedPoints[i + 1], interpolatedPoints[i]);
+                        }
+                        // Result: pretty good in the middle, but hard to find a good scale. Currently too weak (maybe due to curve length being underestimated)
+                        // and bad at the edges...
+                        Vector2 approxTangent = (interpolatedPoints[nearestInterpolatedPointIndex + 1] - interpolatedPoints[nearestInterpolatedPointIndex - 1]) / 2f * curveLength;
+                        Vector2 inTangentPoint = splitPointPosition - approxTangent;
+                        Vector2 outTangentPoint = splitPointPosition + approxTangent;
+
+                        // Method B: De CastleJau
+                        // https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm
+                        // https://math.stackexchange.com/questions/4172835/cubic-b%C3%A9zier-spline-multiple-split
+                        // TODO: will be much more stable
+
+                        // Common
+                        // we still need to adjust the neighbour tangents by scaling by the split point parameter ratio on the current curve
+                        float parameterRatio = (float)(nearestInterpolatedPointIndex - curveStartIndex) / (curveEndIndex - curveStartIndex);
+
+                        Vector2 previousKeyPoint = path.GetKeyPoint(nearestCurveIndex);
+                        Vector2 originalPreviousOutTangentPoint = path.GetOutTangentPoint(nearestCurveIndex);
+                        Vector2 adjustedPreviousOutTangentPoint = previousKeyPoint + (originalPreviousOutTangentPoint - previousKeyPoint) * parameterRatio;
+                        path.SetOutTangentPoint(nearestCurveIndex, adjustedPreviousOutTangentPoint);
+
+                        Vector2 nextKeyPoint = path.GetKeyPoint(nearestCurveIndex + 1);
+                        Vector2 originalNextInTangentPoint = path.GetInTangentPoint(nearestCurveIndex + 1);
+                        // Remember to complement the ratio, the tangent behave the other way on the next key point
+                        Vector2 adjustedNextInTangent = nextKeyPoint + (originalNextInTangentPoint - nextKeyPoint) * (1f - parameterRatio);
+                        path.SetInTangentPoint(nearestCurveIndex + 1, adjustedNextInTangent);
+
+                        // when inserting between key point indices i and i + 1, the new key point is at index i + 1
+                        path.InsertKeyPoint(nearestCurveIndex + 1, splitPointPosition, inTangentPoint, outTangentPoint);
+                    }
+                    else
+                    {
+                        Debug.LogFormat("nearestInterpolatedPointIndex is {0} / {1}, but inserting key point at start/end is not supported (need to define tangent)", nearestInterpolatedPointIndex, interpolatedPoints.Length);
+                    }
+                }
+            }
         }
 
         /// Draw the interpolated path, without control points
-        private void DrawInterpolatedPath(Vector2[] interpolatedPoints, List<int> curveStartIndices, float distanceToNearestCurve, int nearestCurveIndex)
+        private void DrawInterpolatedPath(Vector2[] interpolatedPoints)
         {
             Event guiEvent = Event.current;
             EventType eventType = guiEvent.type;
@@ -376,18 +497,6 @@ namespace CommonsHelper.Editor
             if (eventType == EventType.Repaint)
             {
                 HandlesUtil.DrawPolyLine2D(interpolatedPoints, pathColor);
-
-                if (distanceToNearestCurve < 100f)
-                {
-                    // Inspired by LineHandle, draw the nearest curve in bold using Anti-Aliased polyline
-                    // For convenience, we made curveStartIndices end with the last point of path,
-                    // so curveStartIndices has path.GetCurvesCount() + 1 elements, and we don't have to handle the edge
-                    // case where nearestCurveIndex == path.GetCurvesCount() - 1
-                    int curveStartIndex = curveStartIndices[nearestCurveIndex];
-                    int curveEndIndex = curveStartIndices[nearestCurveIndex + 1];
-                    // Remember that range .. is exclusive, but we must draw including the end point, hence + 1
-                    HandlesUtil.DrawAAPolyLine2D(interpolatedPoints[curveStartIndex..(curveEndIndex + 1)], k_ActiveLineSegmentWidth, pathColor);
-                }
 
                 // if more than 1 point (most commonly), add an arrow in the middle to show the orientation of the path
                 if (interpolatedPoints.Length > 1)

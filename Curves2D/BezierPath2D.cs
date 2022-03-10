@@ -203,6 +203,34 @@ namespace CommonsHelper
             m_ControlPoints.AddRange(new[] {newControlPointA, newControlPointB, newKeyPoint});
         }
 
+        /// Insert a key point in the middle of the path, at the given key point index, automatically choosing tangent
+        /// control points to preserve the current path as much as possible
+        /// keyIndex must be between 1 and Key Points Count - 1
+        /// keyIndex: 1 will insert a key point just after the first one
+        /// keyIndex: Key Points Count - 1 will insert a key point just before the last one
+        /// To add a key point at the end of the path, use AddKeyPoint.
+        public void InsertKeyPoint(int keyIndex, Vector2 newKeyPoint, Vector2 inTangentPoint, Vector2 outTangentPoint)
+        {
+            if (m_ControlPoints.Count < 4)
+            {
+                #if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarningFormat("Invalid initial state: only {0} points, expected at least 4. Reinitializing points.", m_ControlPoints.Count);
+                #endif
+
+                Init();
+            }
+
+            int keyPointsCount = GetKeyPointsCount();
+
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(keyIndex >= 1 && keyIndex < keyPointsCount, "Invalid key index: {0}. Expected index between 1 and {1}.", keyIndex, keyPointsCount - 1);
+            #endif
+
+            // We must insert 3 control points at once: the new key point, and its two surrounding tangent points.
+            // The first control point to add is the in tangent point, so we must insert at the same index as GetInTangentPoint: 3 * i - 1
+            m_ControlPoints.InsertRange(3 * keyIndex - 1, new[] {inTangentPoint, newKeyPoint, outTangentPoint});
+        }
+
         /// Remove key point at key index, also removing the surrounding tangent points (1 for the start and end point,
         /// 2 for a middle point).
         /// UB unless there are at least 3 key points, and the keyIndex is a valid key point index.
