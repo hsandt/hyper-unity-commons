@@ -175,8 +175,8 @@ namespace CommonsHelper
                 Init();
             }
 
-            Vector2 previousControlPointB = m_ControlPoints[m_ControlPoints.Count - 2];
-            Vector2 previousKeyPoint = m_ControlPoints[m_ControlPoints.Count - 1];
+            Vector2 previousControlPointB = m_ControlPoints[^2];
+            Vector2 previousKeyPoint = m_ControlPoints[^1];
             Vector2 startTangent = previousKeyPoint - previousControlPointB;
             if (startTangent.sqrMagnitude < Mathf.Epsilon)
             {
@@ -269,7 +269,8 @@ namespace CommonsHelper
             Vector2 splitPointViaInterpolateBezier = InterpolateBezier(curveControlPoints, parameterRatio);
             Debug.AssertFormat(splitPoint == splitPointViaInterpolateBezier,
                 "[BezierPath2D] SplitCurveAtParameterRatio: splitPoint {0} doesn't match " +
-                "InterpolateBezier(curveControlPoints, parameterRatio) {1}",
+                "InterpolateBezier(curveControlPoints, parameterRatio) {1} (if ratio is outside [0; 1], " +
+                "this is expected, fix the first assertion first)",
                 splitPoint, splitPointViaInterpolateBezier);
 
             // Adjust existing tangents by applying a factor of [parameterRatio] and [1-parameterRatio]
