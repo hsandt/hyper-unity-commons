@@ -46,6 +46,14 @@ namespace CommonsHelper.Editor
 
         private static MethodInfo distanceToPolyLine3ArgsMethodInfo;
 
+        /// <summary>
+        /// Return the distance to a polyline with optional loop flag, and out index of the nearest segment.
+        /// This uses Reflection to call a Unity internal method.
+        /// </summary>
+        /// <param name="points">Polyline points</param>
+        /// <param name="loop">If true, a last segment joins the last and the first point</param>
+        /// <param name="index">Out index of the nearest segment</param>
+        /// <returns></returns>
         private static float DistanceToPolyLine(Vector3[] points, bool loop, out int index)
         {
             // Cache method info if not done yet
@@ -98,6 +106,7 @@ namespace CommonsHelper.Editor
         private const float k_LinePickDistance = 50f;
         private const float k_ActiveLineSegmentWidth = 5f;
 
+        private static readonly int s_MovePointHash = "s_MovePointHash".GetHashCode();
         private static readonly int s_AddPointHash = "s_AddPointHash".GetHashCode();
         private static readonly int s_InsertPointHash = "s_InsertPointHash".GetHashCode();
         private static readonly int s_RemovePointHash = "s_RemovePointHash".GetHashCode();
@@ -180,7 +189,7 @@ namespace CommonsHelper.Editor
             Matrix4x4 offsetMatrix = Matrix4x4.Translate(offset);
             using (new Handles.DrawingScope(offsetMatrix))
             {
-                float distanceToNearestCurve = GetNearestCurve(interpolatedPoints, curveStartIndices, out int nearestCurveIndex, out int nearestInterpolatedPointIndex);
+                float distanceToNearestCurve = GetNearestCurve(interpolatedPoints, curveStartIndices, out int nearestCurveIndex, out float nearestPointParameterRatioOnCurve, out Vector2 nearestPoint);
 
                 // Draw the interpolated path to have a smooth visualization
                 DrawInterpolatedPath(interpolatedPointsArray);
@@ -220,7 +229,7 @@ namespace CommonsHelper.Editor
                             }
                         }
                     }
-                    else if (distanceToNearestCurve <= k_LinePickDistance)
+                    else if (distanceToNearestCurve <= k_LinePickDistance && nearestPointParameterRatioOnCurve > 0.01f && nearestPointParameterRatioOnCurve < 0.99f)
                     {
                         readyToInsertKeyPoint = true;
                     }
@@ -258,7 +267,7 @@ namespace CommonsHelper.Editor
 
                     // Handle add/insert/remove point input
                     HandleEditInput(path, readyToAddKeyPoint, readyToRemoveKeyPointIndex, readyToInsertKeyPoint, insertControlID,
-                        interpolatedPointsArray, curveStartIndices, nearestCurveIndex, nearestInterpolatedPointIndex);
+                        interpolatedPointsArray, curveStartIndices, nearestCurveIndex, nearestPointParameterRatioOnCurve, nearestPoint);
 
                     // Draw control points to allow the user to edit them
                     DrawControlPointHandles(path, readyToRemoveKeyPointIndex);
@@ -273,6 +282,7 @@ namespace CommonsHelper.Editor
             // Inspired by HandleUtility.DistanceToPolyLine
             // It converts all positions to GUI points, which allows us to return nearestKeyPointDistance
             // also in GUI points, which is a more relevant unit for threshold comparison than world units.
+            // So for once, we don't call GetMouseWorldPositionWithoutOffset and just get mousePosition instead.
             // Note that the handleMatrix below is in fact the offsetMatrix defined for the scope
             // FindMouseNearestKeyPointDistance is called in.
             Matrix4x4 handleMatrix = Handles.matrix;
@@ -300,24 +310,37 @@ namespace CommonsHelper.Editor
             return nearestKeyPointIndex >= 0 ? Mathf.Sqrt(nearestKeyPointSqrDistance) : float.MaxValue;
         }
 
+        private static Vector2 GetMouseWorldPositionWithoutOffset(Event guiEvent)
+        {
+            // It's easier to work with non-offset path positions, so when dealing with mouse world position,
+            // we subtract the BezierPath2DComponent offset.
+            // For this to work, we assume that the current Handles Matrix is the offset matrix in this scope,
+            // so we can just apply the inverse matrix to the mouse position in world unit to subtract the offset.
+            Matrix4x4 subtractOffsetMatrix = Handles.inverseMatrix;
+            Vector2 mouseWorldPositionWithoutOffset = (Vector2) subtractOffsetMatrix.MultiplyPoint3x4(HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin);
+            return mouseWorldPositionWithoutOffset;
+        }
+
         /// <summary>
-        /// Return distance to nearest curve approximated as the distance to the full path interpolated polyline,
-        /// along with extra info via out parameters.
+        /// Return distance to nearest curve, along with extra info via out parameters
         /// </summary>
         /// <param name="interpolatedPoints">Pre-computed interpolated polyline points</param>
         /// <param name="curveStartIndices">List of indices at which a new curve starts, ending with the last interpolated point index for convenience</param>
-        /// <param name="nearestCurveIndex">Index of nearest curve found</param>
-        /// <param name="nearestInterpolatedPointIndex">Index of nearest interpolated point found</param>
-        /// <returns></returns>
-        private float GetNearestCurve(IEnumerable<Vector2> interpolatedPoints, List<int> curveStartIndices,
-            out int nearestCurveIndex, out int nearestInterpolatedPointIndex)
+        /// <param name="nearestCurveIndex">Out index of nearest curve found</param>
+        /// <param name="nearestPointParameterRatioOnCurve">Out parameter ratio of nearest point found along nearest curve found</param>
+        /// <param name="nearestPoint">Out nearest point found</param>
+        /// <returns>Distance to nearest curve</returns>
+        private static float GetNearestCurve(IEnumerable<Vector2> interpolatedPoints, List<int> curveStartIndices,
+            out int nearestCurveIndex, out float nearestPointParameterRatioOnCurve, out Vector2 nearestPoint)
         {
             Vector3[] interpolatedPoints3D = interpolatedPoints.Select(point2D => (Vector3) point2D).ToArray();
 
-            float distance = DistanceToPolyLine(interpolatedPoints3D, false, out nearestInterpolatedPointIndex);
+            // Find the interpolated segment the nearest to the cursor
+            Debug.AssertFormat(interpolatedPoints3D.Length > 0, "[BezierPath2DComponentEditor] GetNearestCurve: No interpolated points");
+            float distance = DistanceToPolyLine(interpolatedPoints3D, false, out int nearestInterpolatedSegmentIndex);
 
-            // Find index of curve that contains the nearest interpolated point index
-            int searchIndex = curveStartIndices.BinarySearch(nearestInterpolatedPointIndex);
+            // Find index of curve that contains the nearest interpolated segment index
+            int searchIndex = curveStartIndices.BinarySearch(nearestInterpolatedSegmentIndex);
             if (searchIndex >= 0)
             {
                 // The nearest interpolated point was just a key point. If it's a middle key point,
@@ -337,6 +360,38 @@ namespace CommonsHelper.Editor
                 // key point of that curve, to keep the same convention as above.
                 nearestCurveIndex = ~searchIndex - 1;
             }
+
+            // We must now be more precise and find the point the nearest to the cursor on that segment.
+            // Unlike LineHandle.Do which works in GUI space, here we don't need to compare screen distances in pixels,
+            // so it's easier to just work in World space (projection is frame-agnostic anyway).
+            Vector3 segmentStart = interpolatedPoints3D[nearestInterpolatedSegmentIndex];
+            Vector3 segmentEnd = interpolatedPoints3D[nearestInterpolatedSegmentIndex + 1];
+            Vector2 mouseWorldPositionWithoutOffset = GetMouseWorldPositionWithoutOffset(Event.current);
+            nearestPoint = VectorUtil.PointToClosestPointOnSegment(mouseWorldPositionWithoutOffset,
+                segmentStart, segmentEnd, out float nearestPointParameterRatioOnSegment);
+
+            // We must also out the curve parameter ratio of that point.
+            // We already know the segment where it lies, so we can start with the parameter ratio of the segment start.
+            // Since segments are uniformly spaced across the curve (by parameter ratio), the parameter ratio of a
+            // segment start point is the ratio of the segment index on the total segments count.
+            int curveStartIndex = curveStartIndices[nearestCurveIndex];
+            int curveEndIndex = curveStartIndices[nearestCurveIndex + 1];
+            int curveInterpolatedSegmentsCount = curveEndIndex - curveStartIndex;
+            float segmentStartParameterRatioOnCurve = (float)(nearestInterpolatedSegmentIndex - curveStartIndex) / curveInterpolatedSegmentsCount;
+
+            // Now, we just need to add the small contribution of the progression on the segment itself.
+            // Each segment covers 1 / curveInterpolatedSegmentsCount of the full curve, and the point is located at
+            // [nearestPointParameterRatioOnSegment] across the current segment. So we must add:
+            // nearestPointParameterRatioOnSegment / curveInterpolatedSegmentsCount
+            nearestPointParameterRatioOnCurve = segmentStartParameterRatioOnCurve + nearestPointParameterRatioOnSegment / curveInterpolatedSegmentsCount;
+
+            // Note that nearestPoint is not a real curve point: it is just a point on the interpolated segment,
+            // so it may not be exactly on the curve.
+            // However, it is preferred to an actual curve point (that we would recompute with InterpolateBezier
+            // passing the curve control points and nearestPointParameterRatioOnCurve), because it will be drawn
+            // as a Handle on the curve, itself drawn via interpolation.
+            // So, it is better visually to drawn a nearest point following the approximate segments than a point
+            // following the invisible perfect curve, but leaving the trail of visible segments when zooming enough.
 
             return distance;
         }
@@ -368,7 +423,7 @@ namespace CommonsHelper.Editor
 
         private void HandleEditInput(BezierPath2D path, bool readyToAddKeyPoint, int readyToRemoveKeyPointIndex,
             bool readyToInsertKeyPoint, int insertControlID, Vector2[] interpolatedPoints, List<int> curveStartIndices,
-            int nearestCurveIndex, int nearestInterpolatedPointIndex)
+            int nearestCurveIndex, float nearestPointParameterRatioOnCurve, Vector2 nearestPoint)
         {
             Event guiEvent = Event.current;
             EventType eventType = guiEvent.type;
@@ -381,8 +436,7 @@ namespace CommonsHelper.Editor
                 // so we must subtract any path offset.
                 // We have set Handles.matrix to an offsetMatrix in the scope HandleEditInput is called in,
                 // so we can just apply the inverse matrix to the mouse position in world unit to subtract the offset.
-                Matrix4x4 subtractOffsetMatrix = Handles.inverseMatrix;
-                Vector2 newKeyPoint = (Vector2) subtractOffsetMatrix.MultiplyPoint3x4(HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition).origin);
+                Vector2 newKeyPoint = GetMouseWorldPositionWithoutOffset(guiEvent);
                 path.AddKeyPoint(newKeyPoint);
 
                 // Consume event
@@ -406,57 +460,38 @@ namespace CommonsHelper.Editor
             {
                 if (eventType == EventType.Repaint)
                 {
-                    if (nearestInterpolatedPointIndex > 0 && nearestInterpolatedPointIndex < interpolatedPoints.Length - 1)
-                    {
-                        // Draw nearest curve with glow
-                        // Inspired by LineHandle, draw the nearest curve in bold using Anti-Aliased polyline
-                        // For convenience, we made curveStartIndices end with the last point of path,
-                        // so curveStartIndices has path.GetCurvesCount() + 1 elements, and we don't have to handle the edge
-                        // case where nearestCurveIndex == path.GetCurvesCount() - 1
-                        int curveStartIndex = curveStartIndices[nearestCurveIndex];
-                        int curveEndIndex = curveStartIndices[nearestCurveIndex + 1];
-                        // Remember that range .. is exclusive, but we must draw including the end point, hence + 1
-                        HandlesUtil.DrawAAPolyLine2D(interpolatedPoints[curveStartIndex..(curveEndIndex + 1)],
-                            k_ActiveLineSegmentWidth, pathColor);
+                    // Draw nearest curve with glow
+                    // Inspired by LineHandle, draw the nearest curve in bold using Anti-Aliased polyline
+                    // For convenience, we made curveStartIndices end with the last point of path,
+                    // so curveStartIndices has path.GetCurvesCount() + 1 elements, and we don't have to handle the edge
+                    // case where nearestCurveIndex == path.GetCurvesCount() - 1
+                    int curveStartIndex = curveStartIndices[nearestCurveIndex];
+                    int curveEndIndex = curveStartIndices[nearestCurveIndex + 1];
+                    // Remember that range .. is exclusive, but we must draw including the end point, hence + 1
+                    HandlesUtil.DrawAAPolyLine2D(interpolatedPoints[curveStartIndex..(curveEndIndex + 1)],
+                        k_ActiveLineSegmentWidth, pathColor);
 
-                        // Preview split point to add on click
-                        Vector2 splitPointPosition = interpolatedPoints[nearestInterpolatedPointIndex];
+                    // Preview split point to add on click
+                    Vector2 splitPointPosition = nearestPoint;
 
-                        // We are passing insertControlID to the handle to be correct, but we cannot count on this alone
-                        // to make it the nearest control when readyToInsertKeyPoint is true when calling DoLayout.
-                        // Indeed, this block is only entered if readyToInsertKeyPoint is true to start with,
-                        // but we clear that flag if it's not the nearest control first, causing a vicious circle.
-                        // There, we AddDefaultControl(insertControlID) in DoLayout if readyToInsertKeyPoint,
-                        // just to make it the nearest control, enter this block and then we have a virtuous circle
-                        // where it keeps being drawn and is the nearest control (if the cursor is nearby indeed).
-                        HandlesUtil.DrawFreeMoveHandle(ref splitPointPosition, keyPointColor, controlID: insertControlID);
-                    }
+                    // We are passing insertControlID to the handle to be correct, but we cannot count on this alone
+                    // to make it the nearest control when readyToInsertKeyPoint is true when calling DoLayout.
+                    // Indeed, this block is only entered if readyToInsertKeyPoint is true to start with,
+                    // but we clear that flag if it's not the nearest control first, causing a vicious circle.
+                    // There, we AddDefaultControl(insertControlID) in DoLayout if readyToInsertKeyPoint,
+                    // just to make it the nearest control, enter this block and then we have a virtuous circle
+                    // where it keeps being drawn and is the nearest control (if the cursor is nearby indeed).
+                    HandlesUtil.DrawFreeMoveHandle(ref splitPointPosition, keyPointColor, controlID: insertControlID);
                 }
                 else if (eventType == EventType.MouseDown && guiEvent.button == 0)
                 {
-                    if (nearestInterpolatedPointIndex > 0 && nearestInterpolatedPointIndex < interpolatedPoints.Length - 1)
-                    {
-                        // Split curve in two parts by inserting key point near cursor with tangents calculated so that
-                        // we preserve the shape of the Bezier path (not velocity).
-                        // Note: we could get splitPointPosition = interpolatedPoints[nearestInterpolatedPointIndex]
-                        // immediately, but since SplitCurveAtParameterRatio requires a parameter ratio,
-                        // we will compute that ratio and let the method deduce splitPointPosition.
-                        // The parameter ratio is the nearest interpolation point/segment index divided by
-                        // the number of interpolated segments on that curve (since interpolated segments have all
-                        // the same length).
-                        int curveStartIndex = curveStartIndices[nearestCurveIndex];
-                        int curveEndIndex = curveStartIndices[nearestCurveIndex + 1];
-                        int curveInterpolatedSegmentsCount = curveEndIndex - curveStartIndex;
-                        float parameterRatio = (float)(nearestInterpolatedPointIndex - curveStartIndex) / curveInterpolatedSegmentsCount;
-
-                        path.SplitCurveAtParameterRatio(nearestCurveIndex, parameterRatio);
-                    }
-                    else
-                    {
-                        Debug.LogFormat("nearestInterpolatedPointIndex is {0} / {1}, but inserting key point at " +
-                            "start/end is not supported (need to define tangent)",
-                            nearestInterpolatedPointIndex, interpolatedPoints.Length);
-                    }
+                    // Split curve in two parts by inserting key point near cursor with tangents calculated so that
+                    // we preserve the shape of the Bezier path (not velocity).
+                    // Note: we could get splitPointPosition = nearestPoint
+                    // immediately, but since SplitCurveAtParameterRatio requires a parameter ratio,
+                    // we will compute that ratio and let the method deduce splitPointPosition.
+                    float parameterRatio = nearestPointParameterRatioOnCurve;
+                    path.SplitCurveAtParameterRatio(nearestCurveIndex, parameterRatio);
                 }
             }
         }
@@ -514,7 +549,7 @@ namespace CommonsHelper.Editor
                 for (int j = 0; j < clampedSegmentCount; ++j)
                 {
                     float t = (float) j / (float) clampedSegmentCount;
-                    interpolatedPoints.Add(BezierPath2D.InterpolateBezier(curve[0], curve[1], curve[2], curve[3], t));
+                    interpolatedPoints.Add(BezierPath2D.InterpolateBezier(curve, t));
                 }
             }
 
@@ -533,7 +568,9 @@ namespace CommonsHelper.Editor
         {
             // we need at least 2 points to get a middle point and a tangent
             int interpolatedPointsCount = interpolatedPoints.Count;
-            Debug.AssertFormat(interpolatedPointsCount >= 2, "interpolatedPoints.Count is {0}, expected at least 2 points", interpolatedPointsCount);
+            Debug.AssertFormat(interpolatedPointsCount >= 2,
+                "[BezierPath2DComponentEditor] DrawArrowInPathMiddle: interpolatedPoints.Count is {0}, " +
+                "expected at least 2 points", interpolatedPointsCount);
 
             // find the approximate middle point of the path (it depends on how the path is interpolated)
             int midIndex = interpolatedPointsCount / 2;
@@ -570,7 +607,12 @@ namespace CommonsHelper.Editor
                 {
                     var oldP0 = keyPoint;
                     Color color = (i == keyPointToRemoveIndex ? keyPointToRemoveColor : keyPointColor);
-                    HandlesUtil.DrawFreeMoveHandle(ref keyPoint, color);
+                    int keyPointControlID = GUIUtility.GetControlID(s_MovePointHash, FocusType.Passive);
+
+                    // Draw free move handle with a bigger size when hovered, to distinguish split point to add
+                    // from existing key point to move
+                    float screenSizeScale = HandleUtility.nearestControl == keyPointControlID ? 1.5f : 1f;
+                    HandlesUtil.DrawFreeMoveHandle(ref keyPoint, color, screenSizeScale: screenSizeScale, controlID: keyPointControlID);
                     keyPointDelta = keyPoint - oldP0;
 
                     if (check.changed)
