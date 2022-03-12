@@ -231,6 +231,57 @@ namespace CommonsHelper
             m_ControlPoints.InsertRange(3 * keyIndex - 1, new[] {inTangentPoint, newKeyPoint, outTangentPoint});
         }
 
+        /// Split curve in two parts by inserting a key at [parameterRatio] along the curve at [curveIndex]
+        /// with existing tangents adjusted, and new tangents calculated so that we preserve the shape of the Bezier path.
+        /// Note that this does not preserve the path velocity since we need to adjust tangent magnitudes (reducing speed)
+        /// and, in fact, when parameterRatio is not 0.5, the tangents of the inserted point are not even symmetrical,
+        /// so the path speed won't be continuous.
+        /// If moving an entity along this path, it is recommended to define a motion velocity separately, then call
+        /// InterpolatePathBy(Normalized)Distance to retrace the path at the wanted velocity, ignoring tangent magnitude.
+        public void SplitCurveAtParameterRatio(int curveIndex, float parameterRatio)
+        {
+            Debug.AssertFormat(parameterRatio >= 0f && parameterRatio <= 1f,
+                "[BezierPath2D] SplitCurveAtParameterRatio: parameterRatio is {0}, expected value between 0 and 1",
+                parameterRatio);
+
+            // We use De CastleJau subdivision at given parameter ratio
+            // https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm
+            // Illustration for parameter ratio = 0.5:
+            // https://stackoverflow.com/questions/18655135/divide-bezier-curve-into-two-equal-halves
+
+            // First, get the 4 control points (curve start, tangent out point, tangent in point, curve end)
+            Vector2[] curveControlPoints = GetCurve(curveIndex);
+
+            // 1st generation of Lerp, where the 1st and 3rd points are also the adjusted tangent points
+            Vector2 p10 = Vector2.Lerp(curveControlPoints[0], curveControlPoints[1], parameterRatio);
+            Vector2 p11 = Vector2.Lerp(curveControlPoints[1], curveControlPoints[2], parameterRatio);
+            Vector2 p12 = Vector2.Lerp(curveControlPoints[2], curveControlPoints[3], parameterRatio);
+
+            // 2nd generation of Lerp, which is also the inserted key point's in and out tangent points
+            Vector2 newInTangentPoint = Vector2.Lerp(p10, p11, parameterRatio);
+            Vector2 newOutTangentPoint = Vector2.Lerp(p11, p12, parameterRatio);
+
+            // Final Lerp gives the split point. It is the curve point at [parameterRatio],
+            // just computed via De Casteljau's algorithm instead of InterpolateBezier
+            Vector2 splitPoint = Vector2.Lerp(newInTangentPoint, newOutTangentPoint, parameterRatio);
+
+            // For assertion only
+            Vector2 splitPointViaInterpolateBezier = InterpolateBezier(curveControlPoints, parameterRatio);
+            Debug.AssertFormat(splitPoint == splitPointViaInterpolateBezier,
+                "[BezierPath2D] SplitCurveAtParameterRatio: splitPoint {0} doesn't match " +
+                "InterpolateBezier(curveControlPoints, parameterRatio) {1}",
+                splitPoint, splitPointViaInterpolateBezier);
+
+            // Adjust existing tangents by applying a factor of [parameterRatio] and [1-parameterRatio]
+            // to out and in tangents respectively. We have already calculated the result of such a shrink
+            // during De Casteljau's algorithm, in first generation
+            SetOutTangentPoint(curveIndex, p10);
+            SetInTangentPoint(curveIndex + 1, p12);
+
+            // When inserting between key point indices i and i + 1, the new key point is at index i + 1
+            InsertKeyPoint(curveIndex + 1, splitPoint, newInTangentPoint, newOutTangentPoint);
+        }
+
         /// Remove key point at key index, also removing the surrounding tangent points (1 for the start and end point,
         /// 2 for a middle point).
         /// UB unless there are at least 3 key points, and the keyIndex is a valid key point index.

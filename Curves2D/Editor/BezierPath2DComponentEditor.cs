@@ -436,53 +436,26 @@ namespace CommonsHelper.Editor
                 {
                     if (nearestInterpolatedPointIndex > 0 && nearestInterpolatedPointIndex < interpolatedPoints.Length - 1)
                     {
-                        Vector2 splitPointPosition = interpolatedPoints[nearestInterpolatedPointIndex];
-
-                        // Common
-                        // we still need to adjust the neighbour tangents by scaling by the split point parameter ratio on the current curve
+                        // Split curve in two parts by inserting key point near cursor with tangents calculated so that
+                        // we preserve the shape of the Bezier path (not velocity).
+                        // Note: we could get splitPointPosition = interpolatedPoints[nearestInterpolatedPointIndex]
+                        // immediately, but since SplitCurveAtParameterRatio requires a parameter ratio,
+                        // we will compute that ratio and let the method deduce splitPointPosition.
+                        // The parameter ratio is the nearest interpolation point/segment index divided by
+                        // the number of interpolated segments on that curve (since interpolated segments have all
+                        // the same length).
                         int curveStartIndex = curveStartIndices[nearestCurveIndex];
                         int curveEndIndex = curveStartIndices[nearestCurveIndex + 1];
+                        int curveInterpolatedSegmentsCount = curveEndIndex - curveStartIndex;
+                        float parameterRatio = (float)(nearestInterpolatedPointIndex - curveStartIndex) / curveInterpolatedSegmentsCount;
 
-                        // There are several ways to get nice tangents to preserve the path shape
-                        // Method A: approx tangent (cheap, but approx)
-                        // Must divide by curve length
-                        float curveLength = 0f;
-                        for (int i = curveStartIndex; i < curveEndIndex; i++)
-                        {
-                            curveLength += Vector2.Distance(interpolatedPoints[i + 1], interpolatedPoints[i]);
-                        }
-                        // Result: pretty good in the middle, but hard to find a good scale. Currently too weak (maybe due to curve length being underestimated)
-                        // and bad at the edges...
-                        Vector2 approxTangent = (interpolatedPoints[nearestInterpolatedPointIndex + 1] - interpolatedPoints[nearestInterpolatedPointIndex - 1]) / 2f * curveLength;
-                        Vector2 inTangentPoint = splitPointPosition - approxTangent;
-                        Vector2 outTangentPoint = splitPointPosition + approxTangent;
-
-                        // Method B: De CastleJau
-                        // https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm
-                        // https://math.stackexchange.com/questions/4172835/cubic-b%C3%A9zier-spline-multiple-split
-                        // TODO: will be much more stable
-
-                        // Common
-                        // we still need to adjust the neighbour tangents by scaling by the split point parameter ratio on the current curve
-                        float parameterRatio = (float)(nearestInterpolatedPointIndex - curveStartIndex) / (curveEndIndex - curveStartIndex);
-
-                        Vector2 previousKeyPoint = path.GetKeyPoint(nearestCurveIndex);
-                        Vector2 originalPreviousOutTangentPoint = path.GetOutTangentPoint(nearestCurveIndex);
-                        Vector2 adjustedPreviousOutTangentPoint = previousKeyPoint + (originalPreviousOutTangentPoint - previousKeyPoint) * parameterRatio;
-                        path.SetOutTangentPoint(nearestCurveIndex, adjustedPreviousOutTangentPoint);
-
-                        Vector2 nextKeyPoint = path.GetKeyPoint(nearestCurveIndex + 1);
-                        Vector2 originalNextInTangentPoint = path.GetInTangentPoint(nearestCurveIndex + 1);
-                        // Remember to complement the ratio, the tangent behave the other way on the next key point
-                        Vector2 adjustedNextInTangent = nextKeyPoint + (originalNextInTangentPoint - nextKeyPoint) * (1f - parameterRatio);
-                        path.SetInTangentPoint(nearestCurveIndex + 1, adjustedNextInTangent);
-
-                        // when inserting between key point indices i and i + 1, the new key point is at index i + 1
-                        path.InsertKeyPoint(nearestCurveIndex + 1, splitPointPosition, inTangentPoint, outTangentPoint);
+                        path.SplitCurveAtParameterRatio(nearestCurveIndex, parameterRatio);
                     }
                     else
                     {
-                        Debug.LogFormat("nearestInterpolatedPointIndex is {0} / {1}, but inserting key point at start/end is not supported (need to define tangent)", nearestInterpolatedPointIndex, interpolatedPoints.Length);
+                        Debug.LogFormat("nearestInterpolatedPointIndex is {0} / {1}, but inserting key point at " +
+                            "start/end is not supported (need to define tangent)",
+                            nearestInterpolatedPointIndex, interpolatedPoints.Length);
                     }
                 }
             }
