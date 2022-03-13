@@ -1,17 +1,17 @@
 {
-    "name": "CommonsHelper.DOTween",
-    "rootNamespace": "CommonsHelper.DOTween",
+    "name": "CommonsHelper.InputSystem",
+    "rootNamespace": "CommonsHelper.InputSystem",
     "references": [
-        "CommonsHelper"
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "COMMONS_HELPER_DOTWEEN"
+        "COMMONS_HELPER_INPUT_SYSTEM"
     ],
     "versionDefines": [],
     "noEngineReferences": false

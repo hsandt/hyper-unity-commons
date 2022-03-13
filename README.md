@@ -23,3 +23,5 @@ To define symbols in the project, go to Project Settings > Player > Script Compi
 Below is the list of symbols of define for each optional sub-assembly:
 
 * CommonsHelper.DOTween: To enable scripts in Extensions/DOTween, make sure to install DOTween, and define project symbol: COMMONS_HELPER_DOTWEEN
+
+* CommonsHelper.InputSystem: To enable scripts in InputSystem, make sure to import Unity's Input System package, and define project symbol: COMMONS_HELPER_INPUT_SYSTEM
