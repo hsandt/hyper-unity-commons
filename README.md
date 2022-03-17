@@ -13,3 +13,15 @@ For this reason, I recommend people who are interested in the scripts but not wo
 
 Improvement suggestions are welcome. I don't take pull requests at the moment, but you can reach me at
 hs@gamedesignshortcut.com.
+
+## Optional assemblies and Scripting Define Symbols
+
+To avoid breaking compilation due to scripts referencing assets/packages that have not been downloaded/imported in your project, we created sub-assemblies for scripts that reference other scripts/assemblies not present in all projects. Those sub-assemblies have Define Constraints, so that they are optional and only activate when certain symbols are defined in the project. This way, you can import the Unity Commons Helper package with no compilation errors, install assets and optional packages at your pacing, then define those symbols when you're ready, to start using the optional assemblies.
+
+To define symbols in the project, go to Project Settings > Player > Script Compilation > Scripting Define Symbols and enter them in the list.
+
+Below is the list of symbols of define for each optional sub-assembly:
+
+* CommonsHelper.DOTween: To enable scripts in Extensions/DOTween, make sure to install DOTween, and define project symbol: COMMONS_HELPER_DOTWEEN
+
+* CommonsHelper.InputSystem: To enable scripts in InputSystem, make sure to import Unity's Input System package, and define project symbol: COMMONS_HELPER_INPUT_SYSTEM
