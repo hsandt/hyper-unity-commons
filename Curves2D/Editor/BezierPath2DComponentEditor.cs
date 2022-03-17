@@ -481,7 +481,7 @@ namespace CommonsHelper.Editor
                     // There, we AddDefaultControl(insertControlID) in DoLayout if readyToInsertKeyPoint,
                     // just to make it the nearest control, enter this block and then we have a virtuous circle
                     // where it keeps being drawn and is the nearest control (if the cursor is nearby indeed).
-                    HandlesUtil.DrawFreeMoveHandle(ref splitPointPosition, keyPointColor, controlID: insertControlID);
+                    HandlesUtil.DrawSlider2D(ref splitPointPosition, keyPointColor, controlID: insertControlID);
                 }
                 else if (eventType == EventType.MouseDown && guiEvent.button == 0)
                 {
@@ -612,7 +612,7 @@ namespace CommonsHelper.Editor
                     // Draw free move handle with a bigger size when hovered, to distinguish split point to add
                     // from existing key point to move
                     float screenSizeScale = HandleUtility.nearestControl == keyPointControlID ? 1.5f : 1f;
-                    HandlesUtil.DrawFreeMoveHandle(ref keyPoint, color, screenSizeScale: screenSizeScale, controlID: keyPointControlID);
+                    HandlesUtil.DrawSlider2D(ref keyPoint, color, screenSizeScale: screenSizeScale, controlID: keyPointControlID);
                     keyPointDelta = keyPoint - oldP0;
 
                     if (check.changed)
@@ -630,7 +630,7 @@ namespace CommonsHelper.Editor
                     using (var check = new EditorGUI.ChangeCheckScope())
                     {
                         // draw in tangent point
-                        HandlesUtil.DrawFreeMoveHandle(ref tangentInPoint, tangentPointColor);
+                        HandlesUtil.DrawSlider2D(ref tangentInPoint, tangentPointColor);
 
                         // If user either moved in tangent point directly, or indirectly via the associated key point,
                         // we must move the in tangent point accordingly
@@ -653,7 +653,7 @@ namespace CommonsHelper.Editor
                     using (var check = new EditorGUI.ChangeCheckScope())
                     {
                         // draw out tangent point
-                        HandlesUtil.DrawFreeMoveHandle(ref tangentOutPoint, tangentPointColor);
+                        HandlesUtil.DrawSlider2D(ref tangentOutPoint, tangentPointColor);
 
                         // If user either moved out tangent point directly, or indirectly via the associated key point,
                         // we must move the out tangent point accordingly

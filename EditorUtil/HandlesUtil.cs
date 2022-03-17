@@ -384,12 +384,13 @@ namespace CommonsHelper
         }
 
         /// Proxy for FreeMoveHandle with 2D position
+        [Obsolete("Use DrawSlider2D instead")]
         public static Vector2 DrawFreeMoveHandle(Vector2 pos, Vector2? optionalSnap = null,
             Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null)
         {
             float size = HandleUtility.GetHandleSize((Vector3)pos) * defaultHandleScreenSize * screenSizeScale;
             Vector3 snap = optionalSnap ?? Vector3.one;
-            capFunction = capFunction ?? defaultHandleCap;
+            capFunction ??= defaultHandleCap;
 
             return controlID != null
                 ? (Vector2)Handles.FreeMoveHandle((int)controlID, (Vector3)pos, Quaternion.identity, size, snap,
@@ -403,14 +404,15 @@ namespace CommonsHelper
         {
             float size = HandleUtility.GetHandleSize((Vector3)pos) * defaultHandleScreenSize * screenSizeScale;
             Vector3 snap = optionalSnap ?? Vector3.one;
-            capFunction = capFunction ?? defaultHandleCap;
+            capFunction ??= defaultHandleCap;
 
             return controlID != null
                 ? (Vector2)Handles.FreeMoveHandle((int)controlID, pos, Quaternion.identity, size, snap, capFunction)
                 : (Vector2)Handles.FreeMoveHandle(pos, Quaternion.identity, size, snap, capFunction);
         }
 
-        /// Variant of DrawFreeMoveHandle (without controlID) with 2D position by reference
+        /// Variant of DrawFreeMoveHandle with 2D position by reference
+        [Obsolete("Use DrawSlider2D instead")]
         public static void DrawFreeMoveHandle(ref Vector2 pos, Color color, Vector2? snap = null,
             Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null)
         {
@@ -420,7 +422,7 @@ namespace CommonsHelper
             }
         }
 
-        /// Variant of DrawFreeMoveHandle (without controlID) with 3D position by reference
+        /// Variant of DrawFreeMoveHandle with 3D position by reference
         public static void DrawFreeMoveHandle(ref Vector3 pos, Color color, Vector3? snap = null,
             Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null)
         {
@@ -428,6 +430,31 @@ namespace CommonsHelper
             {
                 pos = DrawFreeMoveHandle(pos, snap, capFunction, screenSizeScale, controlID);
             }
+        }
+
+        /// Proxy for Slider2D with 2D position
+        private static Vector2 DrawSlider2D(Vector2 pos, Color color, Vector2? optionalSnap = null,
+            Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null)
+        {
+            using (new Handles.DrawingScope(color))
+            {
+                float size = HandleUtility.GetHandleSize((Vector3)pos) * defaultHandleScreenSize * screenSizeScale;
+                Vector2 snap = optionalSnap ?? Vector2.one;
+                capFunction ??= defaultHandleCap;
+
+                return controlID != null
+                    ? (Vector2)Handles.Slider2D((int)controlID, (Vector3)pos, Vector3.forward, Vector3.right,
+                        Vector3.up, size, capFunction, snap)
+                    : (Vector2)Handles.Slider2D((Vector3)pos, Vector3.forward, Vector3.right,
+                        Vector3.up, size, capFunction, snap);
+            }
+        }
+
+        /// Proxy for Slider2D with 2D position by reference
+        public static void DrawSlider2D(ref Vector2 pos, Color color, Vector2? optionalSnap = null,
+            Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null)
+        {
+            pos = DrawSlider2D(pos, color, optionalSnap, capFunction, screenSizeScale, controlID);
         }
 
         /// Draw handle to edit angle, by drawing a circle with a Free Move Handle that moves a point along the circle,
