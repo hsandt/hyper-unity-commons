@@ -57,28 +57,35 @@ namespace CommonsHelper.Tests
         }
 
         [Test]
-        public void ClosestPointOnSegmentToPoint_PointOnTheLeft_SegmentStart()
+        public void PointToClosestPointOnSegment_PointOnTheLeft_SegmentStart()
         {
-            Assert.AreEqual(origin, VectorUtil.ClosestPointOnSegmentToPoint(origin, u, new Vector2(-2f, 0f)));
+            Vector2 closestPointOnSegment = VectorUtil.PointToClosestPointOnSegment(new Vector2(-2f, 0f), origin, u, out float parameterRatio);
+            Assert.AreEqual(origin, closestPointOnSegment);
+            Assert.AreEqual(0f, parameterRatio);
         }
 
         [Test]
-        public void ClosestPointOnSegmentToPoint_PointToSegmentDistance_PointProjectedNearTheMiddle_SegmentNearMiddle()
+        public void PointToClosestPointOnSegment_PointToSegmentDistance_PointProjectedNearTheMiddle_SegmentNearMiddle()
         {
-            Assert.AreEqual(new Vector2(0.4f, 0f),
-                VectorUtil.ClosestPointOnSegmentToPoint(origin, u, new Vector2(0.4f, 1f)));
+            Vector2 closestPointOnSegment = VectorUtil.PointToClosestPointOnSegment(new Vector2(0.4f, 1f), origin, u, out float parameterRatio);
+            Assert.AreEqual(new Vector2(0.4f, 0f), closestPointOnSegment);
+            Assert.AreEqual(0.4f, parameterRatio);
         }
 
         [Test]
-        public void ClosestPointOnSegmentToPoint_PointOnTheRight_SegmentEnd()
+        public void PointToClosestPointOnSegment_PointOnTheRight_SegmentEnd()
         {
-            Assert.AreEqual(u, VectorUtil.ClosestPointOnSegmentToPoint(origin, u, new Vector2(2f, 1f)));
+            Vector2 closestPointOnSegment = VectorUtil.PointToClosestPointOnSegment(new Vector2(2f, 1f), origin, u, out float parameterRatio);
+            Assert.AreEqual(u, closestPointOnSegment);
+            Assert.AreEqual(1f, parameterRatio);
         }
 
         [Test]
-        public void ClosestPointOnSegmentToPoint_SegmentReducedToPoint_SegmentUniquePoint()
+        public void PointToClosestPointOnSegment_SegmentReducedToPoint_SegmentUniquePoint()
         {
-            Assert.AreEqual(u, VectorUtil.ClosestPointOnSegmentToPoint(u, u, new Vector2(10f, -5f)));
+            Vector2 closestPointOnSegment = VectorUtil.PointToClosestPointOnSegment(new Vector2(10f, -5f), u, u, out float parameterRatio);
+            Assert.AreEqual(u, closestPointOnSegment);
+            Assert.AreEqual(0f, parameterRatio);  // convention
         }
 
         [Test]
@@ -140,7 +147,7 @@ namespace CommonsHelper.Tests
         {
             Assert.AreEqual(new Vector2(1.5f, -1f), VectorUtil.RoundVector2(new Vector2(1.26f, -1.25f), 0.5f));
         }
-        
+
         [Test]
         public void RoundVector3()
         {

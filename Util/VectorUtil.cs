@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections;
 
@@ -62,9 +63,38 @@ namespace CommonsHelper
 			return new Vector2(-vector.y, vector.x);
 		}
 
+		/// Return the closest point to the passed [point] on a segment defined by [segmentStart] and [segmentEnd]
+		/// Set out [parameterRatio] to the fraction of the closest point's position along the segment,
+		/// from start (0) to end (1).
+		public static Vector2 PointToClosestPointOnSegment(Vector2 point, Vector2 segmentStart, Vector2 segmentEnd, out float parameterRatio)
+		{
+			Vector2 segmentDelta = segmentEnd - segmentStart;
+			float segmentSqrMagnitude = segmentDelta.sqrMagnitude;
+
+			if (Mathf.Approximately(segmentSqrMagnitude, 0f))
+			{
+				// Segment is reduced to a point, closest point is trivial
+				// We must choose a convention here, so say that parameterRatio = 0
+				parameterRatio = 0f;
+				return segmentStart;
+			}
+
+			// Coordinate ratio r of point p on oriented segment e: r = <p - e[0], e> / ||e||^2
+			// Also clamp between 0 and 1 to make sure the resulting point is on the segment
+			// (it will snap to start if 0, end if 1)
+			Vector2 vector = point - segmentStart;
+			float normalizedParam = Vector2.Dot(vector, segmentDelta) / segmentSqrMagnitude;
+			parameterRatio = Mathf.Clamp01(normalizedParam);
+
+			return Vector2.Lerp(segmentStart, segmentEnd, parameterRatio);
+		}
+
 		/// Return the closest point on a segment to another point
+		[Obsolete("Use PointToClosestPointOnSegment instead, changing parameter order and passing " +
+		          "out float parameterRatio even if you don't use it")]
 		public static Vector2 ClosestPointOnSegmentToPoint(Vector2 segmentStart, Vector2 segmentEnd, Vector2 point)
 		{
+			return PointToClosestPointOnSegment(point, segmentStart, segmentEnd, out float _);
 			Vector2 segmentDelta = segmentEnd - segmentStart;
 			float segmentSqrMagnitude = segmentDelta.sqrMagnitude;
 
@@ -107,7 +137,7 @@ namespace CommonsHelper
 			paramDistance = Mathf.Clamp(Vector2.Dot(vector, segmentDelta) / segmentMagnitude, 0f, segmentMagnitude);
 			return Vector2.Distance(point, Vector2.Lerp(segmentStart, segmentEnd, paramDistance / segmentMagnitude));
 		}
-		
+
 		/// Return a 2D vector with each coordinate rounded to a multiple of snapValue
 		public static Vector2 RoundVector2(Vector2 vector, float snapValue)
 		{
@@ -116,7 +146,7 @@ namespace CommonsHelper
 			roundedPosition.y = MathUtil.Round(vector.y, snapValue);
 			return roundedPosition;
 		}
-		
+
 		/// Return a 3D vector with each coordinate rounded to a multiple of snapValue
 		public static Vector3 RoundVector3(Vector3 vector, float snapValue)
 		{
