@@ -9,7 +9,7 @@ namespace CommonsHelper
     /// Component containing a BezierPath2D
     public class BezierPath2DComponent : MonoBehaviour
     {
-        [Tooltip("Is the path relative to the game object's position?")]
+        [SerializeField, Tooltip("Is the path relative to the game object's position?")]
         [FormerlySerializedAs("isRelative")]
         private bool m_IsRelative = true;
         public bool IsRelative => m_IsRelative;
