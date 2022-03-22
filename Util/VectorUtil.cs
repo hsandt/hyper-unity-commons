@@ -95,27 +95,12 @@ namespace CommonsHelper
 		public static Vector2 ClosestPointOnSegmentToPoint(Vector2 segmentStart, Vector2 segmentEnd, Vector2 point)
 		{
 			return PointToClosestPointOnSegment(point, segmentStart, segmentEnd, out float _);
-			Vector2 segmentDelta = segmentEnd - segmentStart;
-			float segmentSqrMagnitude = segmentDelta.sqrMagnitude;
-
-			if (Mathf.Approximately(segmentSqrMagnitude, 0f))
-			{
-				// Segment is reduced to a point, closest point is trivial
-				return segmentStart;
-			}
-
-			// Coordinate ratio r of point p on oriented segment e: r = <p - e[0], e> / ||e||^2 -> clamp between 0 and 1
-			Vector2 vector = point - segmentStart;
-			float ratio =
-				Mathf.Clamp01(Vector2.Dot(vector, segmentDelta) /
-								segmentSqrMagnitude); // immediately clamp to get segment start/end if point is "sided"
-			return Vector2.Lerp(segmentStart, segmentEnd, ratio);
 		}
 
 		/// Return the distance between a point and a segment
 		public static float PointToSegmentDistance(Vector2 point, Vector2 segmentStart, Vector2 segmentEnd)
 		{
-			return Vector2.Distance(point, ClosestPointOnSegmentToPoint(segmentStart, segmentEnd, point));
+			return PointToSegmentDistance(point, segmentStart, segmentEnd, out float _);
 		}
 
 		/// Return the distance between a point and a segment, and out the parametric distance of the closest position of the point on the segment
