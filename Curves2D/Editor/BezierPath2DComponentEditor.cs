@@ -124,6 +124,25 @@ namespace CommonsHelper.Editor
                                           EditMode.IsOwner(this);
 
 
+        private bool HasFrameBounds()
+        {
+            return true;
+        }
+
+        public Bounds OnGetFrameBounds()
+        {
+            var script = (BezierPath2DComponent) target;
+
+            Vector2 offset = script.IsRelative ? (Vector2)script.transform.position : Vector2.zero;
+            Matrix4x4 offsetMatrix = Matrix4x4.Translate(offset);
+
+            // Tangent points are not exact bounds, but the path should be contained within a polygon containing the tangents,
+            // and we should have the tangent points in view to edit them anyway, so just take the bounds of all control points,
+            // key points and tangent points
+            Bounds bounds = GeometryUtility.CalculateBounds(script.Path.ControlPoints.Select(p2D => (Vector3) p2D).ToArray(), offsetMatrix);
+            return bounds;
+        }
+
         public override void OnInspectorGUI()
         {
             var script = (BezierPath2DComponent) target;
@@ -155,11 +174,13 @@ namespace CommonsHelper.Editor
                 EditMode.SceneViewEditMode.Collider,
                 "Edit Path",
                 Styles.editModeButton,
-                // Slight difference with ColliderEditorBase: signature that skips getBoundsOfTargets is internal,
-                // so we cannot use it and must pass either bounds callback or null.
-                // The returned bounds seem only used by ChangeEditMode which does nothing with it,
-                // so don't bother and just pass null.
-                null,
+                // BUG: EditMode.ChangeEditMode ignores its bounds parameters, calculated via the callback passed below
+                // We cannot just pass null and count on Editor.GetWorldBoundsOfTarget as fallback either, because
+                // it is internal virtual, so we cannot override it in this assembly.
+                // Once this bug is fixed, this callback will work and the user will be able to focus on / frame
+                // the complete path just by clicking on the Edit Mode button. Until then, user will have to
+                // double-click on the game object that has the path component instead.
+                OnGetFrameBounds,
                 this
             );
         }
