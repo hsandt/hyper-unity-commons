@@ -45,15 +45,5 @@ namespace CommonsHelper
             Vector2 offset = m_IsRelative ? (Vector2)transform.position : Vector2.zero;
             return m_Path.InterpolatePathByNormalizedParameter(normalizedT) + offset;
         }
-        public Vector2 InterpolatePathByDistance(float distance)
-        {
-            Vector2 offset = m_IsRelative ? (Vector2)transform.position : Vector2.zero;
-            return m_Path.InterpolatePathByDistance(distance) + offset;
-        }
-        public Vector2 InterpolatePathByNormalizedDistance(float normalizedDistance)
-        {
-            Vector2 offset = m_IsRelative ? (Vector2)transform.position : Vector2.zero;
-            return m_Path.InterpolatePathByNormalizedDistance(normalizedDistance) + offset;
-        }
     }
 }

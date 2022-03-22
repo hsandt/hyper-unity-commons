@@ -420,7 +420,7 @@ namespace CommonsHelper
         }
 
         /// Return the position on the whole path at given normalized parameter
-        /// (0 for start, 1 for end)
+        /// (0 for start, 1 for end of path)
         /// Each curve is associated an equal range of values (1 / curvesCount),
         /// so if normalizedT is increased at constant rate, the interpolated point
         /// "spends" the same amount of time in every curve.
@@ -436,22 +436,6 @@ namespace CommonsHelper
             int curvesCount = GetCurvesCount();
             float pathT = normalizedT * curvesCount;
             return InterpolatePathByParameter(pathT);
-        }
-
-        /// Return the position on the whole path at given distance from the start,
-        /// using arc-length parameterization
-        public Vector2 InterpolatePathByDistance(float distance)
-        {
-            // TODO: split path in segments, accumulate segment lengths and evaluate point at given curvilinear abscissa
-            return Vector2.zero;
-        }
-
-        /// Return the position on the whole path at given distance ratio (on total path length) from the start,
-        /// using arc-length normalized parameterization
-        public Vector2 InterpolatePathByNormalizedDistance(float normalizedDistance)
-        {
-            // TODO: split path in segments, accumulate segment lengths and evaluate point at given curvilinear abscissa
-            return Vector2.zero;
         }
 
         /// Return an evaluation of the length, as the sum of evaluated curve lengths,
