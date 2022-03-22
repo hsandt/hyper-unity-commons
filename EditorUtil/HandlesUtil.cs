@@ -292,7 +292,7 @@ namespace CommonsHelper
                 // Draw center handle
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    tempVec = DrawFreeMoveHandle(rect.center);
+                    tempVec = DrawSlider2D(rect.center);
                     if (check.changed)
                     {
                         rect.center = tempVec;
@@ -302,7 +302,7 @@ namespace CommonsHelper
                 // Draw left handle
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.center.y));
+                    tempVec = DrawSlider2D(new Vector3(rect.xMin, rect.center.y));
                     if (check.changed)
                     {
                         rect.xMin = tempVec.x;
@@ -312,7 +312,7 @@ namespace CommonsHelper
                 // Draw right handle
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.center.y));
+                    tempVec = DrawSlider2D(new Vector3(rect.xMax, rect.center.y));
                     if (check.changed)
                     {
                         rect.xMax = tempVec.x;
@@ -322,7 +322,7 @@ namespace CommonsHelper
                 // Draw bottom handle
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    tempVec = DrawFreeMoveHandle(new Vector3(rect.center.x, rect.yMin));
+                    tempVec = DrawSlider2D(new Vector3(rect.center.x, rect.yMin));
                     if (check.changed)
                     {
                         rect.yMin = tempVec.y;
@@ -332,7 +332,7 @@ namespace CommonsHelper
                 // Draw top handle
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    tempVec = DrawFreeMoveHandle(new Vector3(rect.center.x, rect.yMax));
+                    tempVec = DrawSlider2D(new Vector3(rect.center.x, rect.yMax));
                     if (check.changed)
                     {
                         rect.yMax = tempVec.y;
@@ -342,7 +342,7 @@ namespace CommonsHelper
                 // Draw bottom-left handle
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.yMin));
+                    tempVec = DrawSlider2D(new Vector3(rect.xMin, rect.yMin));
                     if (check.changed)
                     {
                         rect.min = tempVec;
@@ -352,7 +352,7 @@ namespace CommonsHelper
                 // Draw top-left handle
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    tempVec = DrawFreeMoveHandle(new Vector3(rect.xMin, rect.yMax));
+                    tempVec = DrawSlider2D(new Vector3(rect.xMin, rect.yMax));
                     if (check.changed)
                     {
                         rect.xMin = tempVec.x;
@@ -363,7 +363,7 @@ namespace CommonsHelper
                 // Draw bottom-right handle
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.yMin));
+                    tempVec = DrawSlider2D(new Vector3(rect.xMax, rect.yMin));
                     if (check.changed)
                     {
                         rect.xMax = tempVec.x;
@@ -374,7 +374,7 @@ namespace CommonsHelper
                 // Draw top-right handle
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    tempVec = DrawFreeMoveHandle(new Vector3(rect.xMax, rect.yMax));
+                    tempVec = DrawSlider2D(new Vector3(rect.xMax, rect.yMax));
                     if (check.changed)
                     {
                         rect.max = tempVec;
@@ -433,31 +433,45 @@ namespace CommonsHelper
         }
 
         /// Proxy for Slider2D with 2D position
+        private static Vector2 DrawSlider2D(Vector2 pos, Vector2? optionalSnap = null,
+            Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null)
+        {
+            float size = HandleUtility.GetHandleSize((Vector3)pos) * defaultHandleScreenSize * screenSizeScale;
+            Vector2 snap = optionalSnap ?? Vector2.one;
+            capFunction ??= defaultHandleCap;
+
+            return controlID != null
+                ? (Vector2)Handles.Slider2D((int)controlID, (Vector3)pos, Vector3.forward, Vector3.right,
+                    Vector3.up, size, capFunction, snap)
+                : (Vector2)Handles.Slider2D((Vector3)pos, Vector3.forward, Vector3.right,
+                    Vector3.up, size, capFunction, snap);
+        }
+
+        /// Proxy for Slider2D with 2D position and color
         private static Vector2 DrawSlider2D(Vector2 pos, Color color, Vector2? optionalSnap = null,
             Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null)
         {
             using (new Handles.DrawingScope(color))
             {
-                float size = HandleUtility.GetHandleSize((Vector3)pos) * defaultHandleScreenSize * screenSizeScale;
-                Vector2 snap = optionalSnap ?? Vector2.one;
-                capFunction ??= defaultHandleCap;
-
-                return controlID != null
-                    ? (Vector2)Handles.Slider2D((int)controlID, (Vector3)pos, Vector3.forward, Vector3.right,
-                        Vector3.up, size, capFunction, snap)
-                    : (Vector2)Handles.Slider2D((Vector3)pos, Vector3.forward, Vector3.right,
-                        Vector3.up, size, capFunction, snap);
+                return DrawSlider2D(pos, optionalSnap, capFunction, screenSizeScale, controlID);
             }
         }
 
         /// Proxy for Slider2D with 2D position by reference
+        public static void DrawSlider2D(ref Vector2 pos, Vector2? optionalSnap = null,
+            Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null)
+        {
+            pos = DrawSlider2D(pos, optionalSnap, capFunction, screenSizeScale, controlID);
+        }
+
+        /// Proxy for Slider2D with 2D position by reference and color
         public static void DrawSlider2D(ref Vector2 pos, Color color, Vector2? optionalSnap = null,
             Handles.CapFunction capFunction = null, float screenSizeScale = 1f, int? controlID = null)
         {
             pos = DrawSlider2D(pos, color, optionalSnap, capFunction, screenSizeScale, controlID);
         }
 
-        /// Draw handle to edit angle, by drawing a circle with a Free Move Handle that moves a point along the circle,
+        /// Draw handle to edit angle, by drawing a circle with a Slider2D Handle that moves a point along the circle,
         /// and a solid arc from the reference direction.
         /// The resulting angle is the signed angle between the reference direction and the radial vector to this moved point.
         public static void DrawAngleHandle(Vector2 center, float radius, Vector2 referenceDirection, ref float angle,
@@ -477,7 +491,7 @@ namespace CommonsHelper
             {
                 // Angle point handle
                 // Snapping is not relevant when you move a point along a circle
-                DrawFreeMoveHandle(ref handlePosition, handleColor, null, centerCapFunction, screenSizeScale,
+                DrawSlider2D(ref handlePosition, handleColor, null, centerCapFunction, screenSizeScale,
                     controlID);
 
                 if (check.changed)
@@ -493,7 +507,7 @@ namespace CommonsHelper
             }
         }
 
-        /// Draw handle to edit angle range (pair of start and end angle), by drawing a circle with a Free Move Handle that moves a point along the circle,
+        /// Draw handle to edit angle range (pair of start and end angle), by drawing a circle with a Slider2D Handle that moves a point along the circle,
         /// a line for the reference direction and a solid arc between the start and end angle.
         /// For solidArcColor, we recommend a semi-transparent color like ColorUtil.quarterInvisibleWhite.
         public static void DrawAngleRangeHandle(Vector2 center, float radius, Vector2 referenceDirection,
@@ -526,9 +540,9 @@ namespace CommonsHelper
             {
                 // Angle point handles
                 // Snapping is not relevant when you move a point along a circle
-                DrawFreeMoveHandle(ref startHandlePosition, startHandleColor, null, centerCapFunction, screenSizeScale,
+                DrawSlider2D(ref startHandlePosition, startHandleColor, null, centerCapFunction, screenSizeScale,
                     controlID);
-                DrawFreeMoveHandle(ref endHandlePosition, endHandleColor, null, centerCapFunction, screenSizeScale,
+                DrawSlider2D(ref endHandlePosition, endHandleColor, null, centerCapFunction, screenSizeScale,
                     controlID);
 
                 if (check.changed)
@@ -547,13 +561,13 @@ namespace CommonsHelper
         }
 
         /// Draw handles for a disc, allowing to move center and tune radius
-        /// Proxy for DrawFreeMoveHandle + DrawWireDisc + RadiusHandle (without controlID) with 2D position by reference
+        /// Proxy for DrawSlider2D + DrawWireDisc + RadiusHandle (without controlID) with 2D position by reference
         public static void DrawCircleHandles(ref Vector2 center, ref float radius, Color color,
             Vector3 snap = default(Vector3), Handles.CapFunction centerCapFunction = null, float screenSizeScale = 1f)
         {
             using (new Handles.DrawingScope(color))
             {
-                DrawFreeMoveHandle(ref center, color, snap, centerCapFunction, screenSizeScale); // center
+                DrawSlider2D(ref center, color, snap, centerCapFunction, screenSizeScale); // center
                 Handles.DrawWireDisc((Vector3)center, Vector3.forward, radius); // circle
                 // RadiusHandle doesn't allow customizing cap function, it always uses DotHandleCap
                 radius = Handles.RadiusHandle(Quaternion.identity, center, radius); // radius
