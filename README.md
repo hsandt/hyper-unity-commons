@@ -9,3 +9,11 @@ The StagPoint and UnityToolbag folders contain partial copies of unmaintained pr
 ## Dependencies
 
 None
+
+## License
+
+See [LICENSE](LICENSE) for all original scripts.
+
+Some scripts are based on code snippets found online, sometimes with multiple contributors before myself. In this case, known contributors are listed at the beginning of the file, and the code license effective on the platform at the time the code snippet was posted applies instead (for instance, CC BY-SA 4.0 on Stack Overflow).
+
+The StagPoint and UnityToolbag folders have their own LICENSE. StagPoint uses a copyright, but considering their tool, Immediate Window, was freely available before development stopped and it was abandoned and made unavailable, I considered it fair use to keep a copy here.
