@@ -113,6 +113,19 @@ namespace CommonsHelper
             }
         }
 
+        public void SubtractFirstKeyPointOffset()
+        {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(m_ControlPoints.Count > 0, "[BezierPath2D] SubtractFirstKeyPointOffset: m_ControlPoints.Count is 0.");
+            #endif
+
+            Vector2 offset = m_ControlPoints[0];
+            for (int i = 0; i < m_ControlPoints.Count; i++)
+            {
+                m_ControlPoints[i] -= offset;
+            }
+        }
+
         #region PointAndCurveAccessors
 
         // Only allow access to the points via a conservative interface.

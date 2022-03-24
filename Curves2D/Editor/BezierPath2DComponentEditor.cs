@@ -167,6 +167,16 @@ namespace CommonsHelper.Editor
                 path.AddKeyPoint(Vector2.zero);
                 SceneView.RepaintAll();
             }
+
+            if (GUILayout.Button("Subtract First Key Point Offset"))
+            {
+                BezierPath2D path = script.Path;
+                Undo.RecordObject(script, "Subtract First Key Point Offset");
+
+                path.SanitizePath();
+                path.SubtractFirstKeyPointOffset();
+                SceneView.RepaintAll();
+            }
         }
 
         private void AddEditModeButton()
