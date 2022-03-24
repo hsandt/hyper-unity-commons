@@ -194,22 +194,38 @@ namespace CommonsHelper.Tests
         [Test]
         public void AddKeyPoint_Add1KeyPointOnTheRight()
         {
-            // arrange last control points
-            path.SetControlPoint(2, new Vector2(2f, -1f));
-            path.SetControlPoint(3, new Vector2(3f, 0f));
-
             // add new key point
-            path.AddKeyPoint(new Vector2(5f, 0));
+            path.AddKeyPoint(new Vector2(6f, 0));
 
             // verify added control points
             Assert.AreEqual(new[] {
                 new Vector2(4f, 1f),
-                new Vector2(4f, 1f),
-                new Vector2(5f, 0f)
+                new Vector2(5f, 1f),
+                new Vector2(6f, 0f)
             }, new[] {
                 path.GetControlPoint(4),
                 path.GetControlPoint(5),
                 path.GetControlPoint(6)
+            });
+        }
+
+        [Test]
+        public void InsertKeyPointAtStart_Insert1KeyPointOnTheLeft()
+        {
+            // add new key point at the beginning
+            path.InsertKeyPointAtStart(new Vector2(-3f, 0));
+
+            // verify added control points, and also that the existing first point was moved correctly
+            Assert.AreEqual(new[] {
+                new Vector2(-3f, 0f),
+                new Vector2(-2f, -1f),
+                new Vector2(-1f, -1f),
+                new Vector2(0f, 0f)
+            }, new[] {
+                path.GetControlPoint(0),
+                path.GetControlPoint(1),
+                path.GetControlPoint(2),
+                path.GetControlPoint(3)
             });
         }
 

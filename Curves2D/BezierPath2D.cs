@@ -202,40 +202,76 @@ namespace CommonsHelper
         }
 
         /// Add a key point at the end of the path, automatically choosing smooth control points between the added
-        /// key point and the previous one.
+        /// key point and the previous one (the former end).
         public void AddKeyPoint(Vector2 newKeyPoint)
         {
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.AssertFormat(IsValid(), "[BezierPath2D] AddKeyPoint: Path is invalid: m_ControlPoints.Count is {0}," +
-                "which is not in the form 3*n + 1 with n >= 1. Don't do anything.", m_ControlPoints.Count);
+                "which is not in the form 3*n + 1 with n >= 1.", m_ControlPoints.Count);
             #endif
 
             Vector2 previousControlPointB = m_ControlPoints[^2];
             Vector2 previousKeyPoint = m_ControlPoints[^1];
-            Vector2 startTangent = previousKeyPoint - previousControlPointB;
-            if (startTangent.sqrMagnitude < Mathf.Epsilon)
+            CalculateSmoothTangentPointsBetween(newKeyPoint, previousKeyPoint, previousControlPointB,
+                out Vector2 newInTangentPoint, out Vector2 newOutTangentPoint);
+            m_ControlPoints.AddRange(new[] {newOutTangentPoint, newInTangentPoint, newKeyPoint});
+        }
+
+        /// Insert a key point at the start of the path, automatically choosing smooth control points between the insert
+        /// key point and the next one (the former start).
+        public void InsertKeyPointAtStart(Vector2 newKeyPoint)
+        {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(IsValid(), "[BezierPath2D] InsertKeyPointAtStart: Path is invalid: m_ControlPoints.Count is {0}," +
+                "which is not in the form 3*n + 1 with n >= 1.", m_ControlPoints.Count);
+            #endif
+
+            Vector2 firstKeyPoint = m_ControlPoints[0];
+            Vector2 firstOutTangentPoint = m_ControlPoints[1];
+            CalculateSmoothTangentPointsBetween(newKeyPoint, firstKeyPoint, firstOutTangentPoint,
+                out Vector2 newOutTangentPoint, out Vector2 newInTangentPoint);
+            m_ControlPoints.InsertRange(0, new[] {newKeyPoint, newOutTangentPoint, newInTangentPoint});
+        }
+
+        /// <summary>
+        /// From a new key point to (A) insert at the start or (B) add at the end, an existing key point on that
+        /// extremity, and its unique tangent point so far, deduce the second tangent point to associate to this
+        /// existing key point (as it won't be an extremity anymore) and the unique tangent point to associate to the
+        /// new key point (which is the new extremity) so that the first two tangents are symmetrical, and the previous
+        /// extreme key point has symmetrical tangent (continuous derivative at this point).
+        /// </summary>
+        /// <param name="newExtremeKeyPoint">The new key point to insert at an extremity</param>
+        /// <param name="previousExtremeKeyPoint">The existing key point at the extremity</param>
+        /// <param name="previousExtremeTangentPoint">The unique tangent point of the existing key point so far</param>
+        /// <param name="outTangentPointOfNewExtremeKeyPoint">Calculated unique tangent point of the new key point</param>
+        /// <param name="outSecondTangentPointOfPreviousExtremeKeyPoint">Calculated second tangent point of the previous extreme key point, in the direction of the new key point</param>
+        private static void CalculateSmoothTangentPointsBetween(Vector2 newExtremeKeyPoint, Vector2 previousExtremeKeyPoint,
+            Vector2 previousExtremeTangentPoint, out Vector2 outTangentPointOfNewExtremeKeyPoint, out Vector2 outSecondTangentPointOfPreviousExtremeKeyPoint)
+        {
+            Vector2 existingTangent = previousExtremeTangentPoint - previousExtremeKeyPoint;
+            if (existingTangent.sqrMagnitude < Mathf.Epsilon)
             {
                 // fallback to keep control point visible
-                startTangent = Vector2.up;
+                existingTangent = Vector2.up;
             }
 
-            // mirror the position of the control point before the current last key point
-            Vector2 newControlPointA = previousKeyPoint + startTangent;
+            // mirror the position of the tangent point before the first point for a symmetrical tangent (continuous
+            // parametric derivative)
+            outSecondTangentPointOfPreviousExtremeKeyPoint = previousExtremeKeyPoint - existingTangent;
 
             // mirror the first new control point to get a second one that makes the curve come back smoothly to the added key point
             // (note that if the new key point is on the opposite direction of the last tangent, it may produce a spiral pattern)
             // reflecting off a normal is the same as reflecting off a tangent and opposing
 
-            Vector2 previousToNewVector = newKeyPoint - previousKeyPoint;
+            Vector2 previousToNewVector = newExtremeKeyPoint - previousExtremeKeyPoint;
             if (previousToNewVector.sqrMagnitude < Mathf.Epsilon)
             {
                 // fallback to allow mirroring
                 previousToNewVector = Vector2.right;
             }
 
-            Vector2 endTangent = VectorUtil.Mirror(startTangent, previousToNewVector);
-            Vector2 newControlPointB = newKeyPoint - endTangent;
-            m_ControlPoints.AddRange(new[] {newControlPointA, newControlPointB, newKeyPoint});
+            Vector2 tangentOfNewExtremePoint = VectorUtil.Mirror(existingTangent, previousToNewVector);
+            outTangentPointOfNewExtremeKeyPoint = newExtremeKeyPoint + tangentOfNewExtremePoint;
         }
 
         /// Insert a key point in the middle of the path, at the given key point index, automatically choosing tangent
@@ -248,7 +284,7 @@ namespace CommonsHelper
         {
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.AssertFormat(IsValid(), "[BezierPath2D] InsertKeyPoint: Path is invalid: m_ControlPoints.Count is {0}," +
-                "which is not in the form 3*n + 1 with n >= 1. Don't do anything.", m_ControlPoints.Count);
+                "which is not in the form 3*n + 1 with n >= 1.", m_ControlPoints.Count);
             #endif
 
             int keyPointsCount = GetKeyPointsCount();
@@ -321,7 +357,7 @@ namespace CommonsHelper
         {
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.AssertFormat(IsValid(), "[BezierPath2D] RemoveKeyPoint: Path is invalid: m_ControlPoints.Count is {0}," +
-                "which is not in the form 3*n + 1 with n >= 1. Don't do anything.", m_ControlPoints.Count);
+                "which is not in the form 3*n + 1 with n >= 1.", m_ControlPoints.Count);
             #endif
 
             int keyPointsCount = GetKeyPointsCount();

@@ -37,7 +37,8 @@ namespace CommonsHelper.Editor
             public static readonly GUIContent editModeButton = new GUIContent(
                 EditorGUIUtility.IconContent("EditCollider").image,
                 "Edit Bezier path.\n\n - Hold Ctrl before clicking to remove the nearest key point.\n" +
-                "- Hold Shift before clicking to place a new key point, along with 2 control points (tangents)."
+                "- Hold Shift before clicking to place a new key point at the end, along with 2 smooth control points (tangents).\n" +
+                "- Hold Ctrl and Shift before clicking to place a new key point at the start, along with 2 smooth control points (tangents)."
             );
         }
 
@@ -467,7 +468,20 @@ namespace CommonsHelper.Editor
                 // We have set Handles.matrix to an offsetMatrix in the scope HandleEditInput is called in,
                 // so we can just apply the inverse matrix to the mouse position in world unit to subtract the offset.
                 Vector2 newKeyPoint = GetMouseWorldPositionWithoutOffset(guiEvent);
-                path.AddKeyPoint(newKeyPoint);
+
+                // As a variant of adding key point at the end, by holding control AND shift, user can insert a
+                // key point at the beginning of the path. This is not handled in the readyToInsertKeyPoint group
+                // because the latter is meant for insertion in the middle of a curve via curve split.
+                // Instead, both Add (at end) and Insert at start add a key point at an extremity, calculating
+                // smooth tangents, so they were put together.
+                if (guiEvent.control)
+                {
+                    path.InsertKeyPointAtStart(newKeyPoint);
+                }
+                else
+                {
+                    path.AddKeyPoint(newKeyPoint);
+                }
 
                 // Consume event
                 guiEvent.Use();
