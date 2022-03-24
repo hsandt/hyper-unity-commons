@@ -160,8 +160,9 @@ namespace CommonsHelper.Editor
             if (GUILayout.Button("Add New Key Point at Origin"))
             {
                 BezierPath2D path = script.Path;
-
                 Undo.RecordObject(script, "Add Key Point");
+
+                path.SanitizePath();
                 path.AddKeyPoint(Vector2.zero);
                 SceneView.RepaintAll();
             }
@@ -198,6 +199,14 @@ namespace CommonsHelper.Editor
         private void DrawEditablePath(BezierPath2DComponent script)
         {
             BezierPath2D path = script.Path;
+
+            if (!path.IsValid())
+            {
+                // Path is invalid, sanitize it now
+                Undo.RecordObject(script, "Sanitize Bezier Path");
+                path.SanitizePath();
+            }
+
             Vector2 offset = script.IsRelative ? (Vector2)script.transform.position : Vector2.zero;
 
             // Pre-compute interpolated points, they are used for both edit (to detect if cursor is close

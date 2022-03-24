@@ -46,7 +46,7 @@ namespace CommonsHelper
 
         public BezierPath2D(IReadOnlyCollection<Vector2> controlPoints)
         {
-            if ((controlPoints.Count - 1) % 3 == 0)
+            if (IsListOfControlPointsValid(controlPoints))
             {
                 m_ControlPoints = controlPoints.ToList();
             }
@@ -54,7 +54,7 @@ namespace CommonsHelper
             else
             {
                 Debug.LogErrorFormat("[BezierPath2D] Constructor taking controlPoints is used, " +
-                    "but controlPoints.Count is {0}, which is not in the form 3*n + 1. " +
+                    "but m_ControlPoints.Count is {0}, which is not in the form 3*n + 1 with n >= 1. " +
                     "Falling back to default initialization.",
                     controlPoints.Count);
                 Init();
@@ -72,6 +72,45 @@ namespace CommonsHelper
                 new Vector2(2f, -1f),
                 new Vector2(3f, 0f)
             };
+        }
+
+        public bool IsValid()
+        {
+            return IsListOfControlPointsValid(m_ControlPoints);
+        }
+
+        private static bool IsListOfControlPointsValid(IReadOnlyCollection<Vector2> controlPoints)
+        {
+            // We need at least one curve, and then each curve adds 3 points,
+            // so control points count should be in the form 3*n + 1 with n >= 1
+            return controlPoints.Count >= 4 && (controlPoints.Count - 1) % 3 == 0;
+        }
+
+        public void SanitizePath()
+        {
+            if (m_ControlPoints.Count < 4)
+            {
+                #if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarningFormat("Path is invalid: m_ControlPoints.Count is {0}," +
+                    "expected at least 4 points. Reinitializing points.",
+                    m_ControlPoints.Count);
+                #endif
+
+                Init();
+                return;
+            }
+
+            int countModulo = (m_ControlPoints.Count - 1) % 3;
+            if (countModulo > 0)
+            {
+                #if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarningFormat("Path is invalid: m_ControlPoints.Count is {0}," +
+                    "which is not in the form 3*n + 1 with n >= 1. Cutting {1} extra points.",
+                    m_ControlPoints.Count, countModulo);
+                #endif
+
+                m_ControlPoints.RemoveRange(m_ControlPoints.Count - countModulo, countModulo);
+            }
         }
 
         #region PointAndCurveAccessors
@@ -166,14 +205,10 @@ namespace CommonsHelper
         /// key point and the previous one.
         public void AddKeyPoint(Vector2 newKeyPoint)
         {
-            if (m_ControlPoints.Count < 4)
-            {
-                #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarningFormat("Invalid initial state: only {0} points, expected at least 4. Reinitializing points.", m_ControlPoints.Count);
-                #endif
-
-                Init();
-            }
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(IsValid(), "[BezierPath2D] AddKeyPoint: Path is invalid: m_ControlPoints.Count is {0}," +
+                "which is not in the form 3*n + 1 with n >= 1. Don't do anything.", m_ControlPoints.Count);
+            #endif
 
             Vector2 previousControlPointB = m_ControlPoints[^2];
             Vector2 previousKeyPoint = m_ControlPoints[^1];
@@ -211,14 +246,10 @@ namespace CommonsHelper
         /// To add a key point at the end of the path, use AddKeyPoint.
         public void InsertKeyPoint(int keyIndex, Vector2 newKeyPoint, Vector2 inTangentPoint, Vector2 outTangentPoint)
         {
-            if (m_ControlPoints.Count < 4)
-            {
-                #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarningFormat("Invalid initial state: only {0} points, expected at least 4. Reinitializing points.", m_ControlPoints.Count);
-                #endif
-
-                Init();
-            }
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(IsValid(), "[BezierPath2D] InsertKeyPoint: Path is invalid: m_ControlPoints.Count is {0}," +
+                "which is not in the form 3*n + 1 with n >= 1. Don't do anything.", m_ControlPoints.Count);
+            #endif
 
             int keyPointsCount = GetKeyPointsCount();
 
@@ -288,6 +319,11 @@ namespace CommonsHelper
         /// UB unless there are at least 3 key points, and the keyIndex is a valid key point index.
         public void RemoveKeyPoint(int keyIndex)
         {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(IsValid(), "[BezierPath2D] RemoveKeyPoint: Path is invalid: m_ControlPoints.Count is {0}," +
+                "which is not in the form 3*n + 1 with n >= 1. Don't do anything.", m_ControlPoints.Count);
+            #endif
+
             int keyPointsCount = GetKeyPointsCount();
 
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -362,14 +398,21 @@ namespace CommonsHelper
         }
 
         /// Return curve at given key index. A Bezier curve is a part of a Bezier path, compounded of 4 control points.
-        public Vector2[] GetCurve(int keyIndex)
+        public Vector2[] GetCurve(int curveIndex)
         {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            int curvesCount = GetCurvesCount();
+            Debug.AssertFormat(curveIndex < curvesCount, "[BezierPath2D] GetCurve: invalid curveIndex {0}, " +
+                "should be less than curves count {1}.",
+                curveIndex, curvesCount);
+            #endif
+
             return new[]
             {
-                m_ControlPoints[3 * keyIndex],
-                m_ControlPoints[3 * keyIndex + 1],
-                m_ControlPoints[3 * keyIndex + 2],
-                m_ControlPoints[3 * keyIndex + 3]
+                m_ControlPoints[3 * curveIndex],
+                m_ControlPoints[3 * curveIndex + 1],
+                m_ControlPoints[3 * curveIndex + 2],
+                m_ControlPoints[3 * curveIndex + 3]
             };
         }
 
