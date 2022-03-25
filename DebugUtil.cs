@@ -1,11 +1,154 @@
+using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 using CommonsHelper;
 
 namespace CommonsDebug
 {
+	public static class DebugUtil
+	{
+		#region LogProxy
 
-	public static class DebugUtil {
+		// Proxy for logging methods, stripped unless UNITY_EDITOR || DEVELOPMENT_BUILD
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void Log(object message)
+		{
+			Debug.Log(message);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void Log(object message, Object context)
+		{
+			Debug.Log(message, context);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void LogFormat(string format, params object[] args)
+		{
+			Debug.LogFormat(format, args);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void LogFormat(Object context, string format, params object[] args)
+		{
+			Debug.LogFormat(context, format, args);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void LogWarning(object message)
+		{
+			Debug.LogWarning(message);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void LogWarning(object message, Object context)
+		{
+			Debug.LogWarning(message, context);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void LogWarningFormat(string format, params object[] args)
+		{
+			Debug.LogWarningFormat(format, args);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void LogWarningFormat(Object context, string format, params object[] args)
+		{
+			Debug.LogWarningFormat(context, format, args);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void LogError(object message)
+		{
+			Debug.LogError(message);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void LogError(object message, Object context)
+		{
+			Debug.LogError(message, context);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void LogErrorFormat(string format, params object[] args)
+		{
+			Debug.LogErrorFormat(format, args);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void LogErrorFormat(Object context, string format, params object[] args)
+		{
+			Debug.LogWarningFormat(context, format, args);
+		}
+
+		#endregion
+
+		#region AssertProxy
+
+		// Proxy for assert methods, stripped unless UNITY_EDITOR || DEVELOPMENT_BUILD
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void Assert(bool condition)
+		{
+			Debug.Assert(condition);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void Assert(bool condition, object message)
+		{
+			Debug.Assert(condition, message);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void Assert(bool condition, object message, Object context)
+		{
+			Debug.Assert(condition, message, context);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void AssertFormat(bool condition, string format, params object[] args)
+		{
+			Debug.AssertFormat(condition, format, args);
+		}
+
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void AssertFormat(bool condition, Object context, string format, params object[] args)
+		{
+			Debug.AssertFormat(condition, context, format, args);
+		}
+
+		#endregion
+
+		/// <summary>
+		/// Assert that passed list/array is not null, and that no elements are null
+		/// </summary>
+		/// <param name="list">List list/array to verify</param>
+		/// <param name="context">Object owning the list/array, if any. Used as context for the Debug Console.</param>
+		/// <param name="listName">Name of list/array variable for debug</param>
+		/// <typeparam name="T">Type of elements in the list/array</typeparam>
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void AssertListElementsNotNull<T>(IReadOnlyList<T> list, Object context, string listName)
+		{
+			if (list != null)
+			{
+				// Assert on null entry, but not on absence of entry:
+				// entries may be added later by code
+				for (int i = 0; i < list.Count; i++)
+				{
+					Debug.AssertFormat(list[i] != null, context, "{0}[{1}] is null on {2}", listName, i, context);
+				}
+			}
+			else
+			{
+				Debug.LogErrorFormat(context, "{0} is null on {1}", listName, context);
+			}
+		}
+
+		#region GeometricalDebug
 
 		/// <summary>
 		/// Draw a 2D line at the given Z, with given color, for given duration.
@@ -144,6 +287,6 @@ namespace CommonsDebug
 			Debug.DrawLine(topLeft, bottomLeft, color, duration, depthTest);
 		}
 
+		#endregion
 	}
-
 }
