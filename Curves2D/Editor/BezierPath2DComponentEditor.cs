@@ -102,8 +102,8 @@ namespace CommonsHelper.Editor
         // to avoid freezing when interpolating a curve between points very far from each other
         private const int INTERPOLATION_MAX_SEGMENT_COUNT = 30;
 
+        // Naming case differs because copied from LineHandle.cs
         private const float k_PointPickDistance = 100f;
-        // TODO: use those to insert new key point in the middle of a curve
         private const float k_LinePickDistance = 50f;
         private const float k_ActiveLineSegmentWidth = 5f;
 
@@ -112,12 +112,16 @@ namespace CommonsHelper.Editor
         private static readonly int s_InsertPointHash = "s_InsertPointHash".GetHashCode();
         private static readonly int s_RemovePointHash = "s_RemovePointHash".GetHashCode();
 
-        private static readonly Color pathColor = Color.cyan;
-        private static readonly Color keyPointColor = Color.cyan;
-        private static readonly Color keyPointToRemoveColor = Color.red;
-        private static readonly Color tangentPointColor = ColorUtil.orange;
-        private static readonly Color tangentColor = Color.yellow;
+        private static readonly Color s_PathColor = Color.cyan;
+        private static readonly Color s_KeyPointColor = Color.cyan;
+        private static readonly Color s_KeyPointToRemoveColor = Color.red;
+        private static readonly Color s_TangentPointColor = ColorUtil.orange;
+        private static readonly Color s_TangentColor = Color.yellow;
 
+        /// Index of inserted point, useful to track inserted point and immediately chain with handle dragging
+        /// This is only set to a valid index after actually inserting a key point, while dragging, until user stopped
+        /// dragging it (Mouse Up)
+        private int m_InsertedPointIndex = -1;
 
         /// True when the Edit Path button is clicked, i.e. edit mode is set to Collider, and it is
         /// the button on this custom inspector that was clicked
@@ -293,11 +297,16 @@ namespace CommonsHelper.Editor
                     // Note that we do *not* do this for the add action, as we want to allow the user
                     // to add a new key point near an existing control point; and it is unlikely that the user
                     // tries to hold shift before dragging a control point as it does nothing.
+
+                    // In addition, if dragging a newly inserted key point, also clear flag
+                    // Physically, user cannot really insert a key point while dragging since the mouse button is
+                    // already down, but it's still important to clear it to avoid feedbacking readyToInsertKeyPoint
+                    // visually (it would show the nearest curve with glow and even the nearest point for future split).
+
                     // Code order note: while it seems odd that this happens before DrawControlPointHandles,
                     // remember that DrawControlPointHandles was called last frame and set the layout for handles
                     // during the Layout phase, which is still remembered this frame.
-                    // Since we need nearest
-                    if (readyToInsertKeyPoint && HandleUtility.nearestControl != insertControlID)
+                    if (readyToInsertKeyPoint && (HandleUtility.nearestControl != insertControlID || m_InsertedPointIndex != -1))
                     {
                         readyToInsertKeyPoint = false;
                     }
@@ -307,11 +316,11 @@ namespace CommonsHelper.Editor
                     }
 
                     // Handle add/insert/remove point input
-                    HandleEditInput(path, readyToAddKeyPoint, readyToRemoveKeyPointIndex, readyToInsertKeyPoint, insertControlID,
+                    HandleEditInput(path, readyToAddKeyPoint, readyToRemoveKeyPointIndex, readyToInsertKeyPoint,
                         interpolatedPointsArray, curveStartIndices, nearestCurveIndex, nearestPointParameterRatioOnCurve, nearestPoint);
 
                     // Draw control points to allow the user to edit them
-                    DrawControlPointHandles(path, readyToRemoveKeyPointIndex);
+                    DrawControlPointHandles(path, readyToRemoveKeyPointIndex, insertControlID);
                 }
             }
         }
@@ -463,7 +472,7 @@ namespace CommonsHelper.Editor
         }
 
         private void HandleEditInput(BezierPath2D path, bool readyToAddKeyPoint, int readyToRemoveKeyPointIndex,
-            bool readyToInsertKeyPoint, int insertControlID, Vector2[] interpolatedPoints, List<int> curveStartIndices,
+            bool readyToInsertKeyPoint, Vector2[] interpolatedPoints, List<int> curveStartIndices,
             int nearestCurveIndex, float nearestPointParameterRatioOnCurve, Vector2 nearestPoint)
         {
             Event guiEvent = Event.current;
@@ -523,19 +532,26 @@ namespace CommonsHelper.Editor
                     int curveEndIndex = curveStartIndices[nearestCurveIndex + 1];
                     // Remember that range .. is exclusive, but we must draw including the end point, hence + 1
                     HandlesUtil.DrawAAPolyLine2D(interpolatedPoints[curveStartIndex..(curveEndIndex + 1)],
-                        k_ActiveLineSegmentWidth, pathColor);
+                        k_ActiveLineSegmentWidth, s_PathColor);
 
                     // Preview split point to add on click
                     Vector2 splitPointPosition = nearestPoint;
 
-                    // We are passing insertControlID to the handle to be correct, but we cannot count on this alone
-                    // to make it the nearest control when readyToInsertKeyPoint is true when calling DoLayout.
-                    // Indeed, this block is only entered if readyToInsertKeyPoint is true to start with,
-                    // but we clear that flag if it's not the nearest control first, causing a vicious circle.
-                    // There, we AddDefaultControl(insertControlID) in DoLayout if readyToInsertKeyPoint,
-                    // just to make it the nearest control, enter this block and then we have a virtuous circle
-                    // where it keeps being drawn and is the nearest control (if the cursor is nearby indeed).
-                    HandlesUtil.DrawSlider2D(ref splitPointPosition, keyPointColor, controlID: insertControlID);
+                    // We could call HandlesUtil.DrawSlider2D since EventType.Repaint cannot really move handles anyway,
+                    // but to show our intention to only show a preview of the future split point, we extracted
+                    // the visual parts of HandlesUtil.DrawSlider2D, namely capFunction(...) with color.
+                    const float defaultHandleScreenSize = 0.1f;
+                    float size = HandleUtility.GetHandleSize((Vector3)splitPointPosition) * defaultHandleScreenSize;
+                    using (new Handles.DrawingScope(s_KeyPointColor))
+                    {
+                        // controlID is ignored for EventType.Repaint, so we don't pass insertControlID at all.
+                        // It still works, because here, we are just drawing a purely visual point that looks like the
+                        // future inserted key point, and it's not even a handle.
+                        // Instead, after inserting a new key point at split position (below in EventType.MouseDown),
+                        // the new key point will automatically catch the mouse click and further mouse move (dragging)
+                        // with its own control ID.
+                        Handles.CubeHandleCap(0, splitPointPosition, Quaternion.identity, size, EventType.Repaint);
+                    }
                 }
                 else if (eventType == EventType.MouseDown && guiEvent.button == 0)
                 {
@@ -546,7 +562,23 @@ namespace CommonsHelper.Editor
                     // we will compute that ratio and let the method deduce splitPointPosition.
                     float parameterRatio = nearestPointParameterRatioOnCurve;
                     path.SplitCurveAtParameterRatio(nearestCurveIndex, parameterRatio);
+
+                    // Track inserted point index (key point just after split curve start)
+                    // so user can immediately chain with handle drag as a normal key point
+                    m_InsertedPointIndex = nearestCurveIndex + 1;
+
+                    // Do NOT consume event with guiEvent.Use() here, it would prevent the newly created key point
+                    // to catch mouse click, preventing user from chaining with handle dragging!
                 }
+            }
+
+            // If event Mouse Up is detected, always clear m_InsertedPointIndex (if any)
+            // (inspired by LineHandle.cs > s_InsertedIndex = -1)
+            // Don't do this in the if (readyToInsertKeyPoint) block above, since during inserted key point dragging,
+            // we are in Move mode (key point handle), so readyToInsertKeyPoint is false.
+            if (eventType == EventType.MouseUp)
+            {
+                m_InsertedPointIndex = -1;
             }
         }
 
@@ -558,7 +590,7 @@ namespace CommonsHelper.Editor
 
             if (eventType == EventType.Repaint)
             {
-                HandlesUtil.DrawPolyLine2D(interpolatedPoints, pathColor);
+                HandlesUtil.DrawPolyLine2D(interpolatedPoints, s_PathColor);
 
                 // if more than 1 point (most commonly), add an arrow in the middle to show the orientation of the path
                 if (interpolatedPoints.Length > 1)
@@ -630,12 +662,12 @@ namespace CommonsHelper.Editor
             int midIndex = interpolatedPointsCount / 2;
             // calculate local tangent (from the previous point)
             Vector2 tangent = interpolatedPoints[midIndex] - interpolatedPoints[midIndex - 1];
-            HandlesUtil.DrawArrowHead2D(interpolatedPoints[midIndex], tangent, pathColor);
+            HandlesUtil.DrawArrowHead2D(interpolatedPoints[midIndex], tangent, s_PathColor);
         }
 
         /// Draw handles for the control points of the given path, with segments between key points and non-key control points
         /// to visualize tangents, with offset
-        private static void DrawControlPointHandles(BezierPath2D path, int keyPointToRemoveIndex)
+        private void DrawControlPointHandles(BezierPath2D path, int keyPointToRemoveIndex, int insertControlID)
         {
             if (path.GetControlPointsCount() < 4)
             {
@@ -660,8 +692,18 @@ namespace CommonsHelper.Editor
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
                     var oldP0 = keyPoint;
-                    Color color = (i == keyPointToRemoveIndex ? keyPointToRemoveColor : keyPointColor);
-                    int keyPointControlID = GUIUtility.GetControlID(s_MovePointHash, FocusType.Passive);
+                    Color color = (i == keyPointToRemoveIndex ? s_KeyPointToRemoveColor : s_KeyPointColor);
+
+                    // Key points normally use s_MovePointHash and each has its own ID to avoid confusing handles
+                    // However, just after splitting a curve to insert a key point, we want to allow the user to chain
+                    // with dragging the handle of the newly created key point for convenience.
+                    // The behaviour is similar to Unity's native polyline editing (see LineHandle.cs), however instead
+                    // of storing s_InsertedPointPosition and adding an extra handle dedicated to it on top of the
+                    // standard key point handle, we prefer reusing the standard key point handle code, and simply
+                    // setting the control ID to the same ID as the preview... wait
+                    int keyPointControlID = i == m_InsertedPointIndex ?
+                        insertControlID :
+                        GUIUtility.GetControlID(s_MovePointHash, FocusType.Passive);
 
                     // Draw free move handle with a bigger size when hovered, to distinguish split point to add
                     // from existing key point to move
@@ -684,7 +726,7 @@ namespace CommonsHelper.Editor
                     using (var check = new EditorGUI.ChangeCheckScope())
                     {
                         // draw in tangent point
-                        HandlesUtil.DrawSlider2D(ref tangentInPoint, tangentPointColor);
+                        HandlesUtil.DrawSlider2D(ref tangentInPoint, s_TangentPointColor);
 
                         // If user either moved in tangent point directly, or indirectly via the associated key point,
                         // we must move the in tangent point accordingly
@@ -695,7 +737,7 @@ namespace CommonsHelper.Editor
                     }
 
                     // draw in tangent line
-                    HandlesUtil.DrawLine(keyPoint, tangentInPoint, tangentColor);
+                    HandlesUtil.DrawLine(keyPoint, tangentInPoint, s_TangentColor);
                 }
 
                 // draw out tangent point and line, if any
@@ -707,7 +749,7 @@ namespace CommonsHelper.Editor
                     using (var check = new EditorGUI.ChangeCheckScope())
                     {
                         // draw out tangent point
-                        HandlesUtil.DrawSlider2D(ref tangentOutPoint, tangentPointColor);
+                        HandlesUtil.DrawSlider2D(ref tangentOutPoint, s_TangentPointColor);
 
                         // If user either moved out tangent point directly, or indirectly via the associated key point,
                         // we must move the out tangent point accordingly
@@ -718,7 +760,7 @@ namespace CommonsHelper.Editor
                     }
 
                     // draw out tangent line
-                    HandlesUtil.DrawLine(keyPoint, tangentOutPoint, tangentColor);
+                    HandlesUtil.DrawLine(keyPoint, tangentOutPoint, s_TangentColor);
                 }
             }
         }
