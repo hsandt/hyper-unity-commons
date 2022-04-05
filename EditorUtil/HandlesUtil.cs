@@ -64,6 +64,53 @@ namespace CommonsHelper
             return HandleUtility.GetHandleSize(position) / 80f;
         }
 
+        /// Cached method info for 3-parameter HandleUtility.DistanceToPolyLine used by local DistanceToPolyLine
+        private static MethodInfo distanceToPolyLine3ArgsMethodInfo;
+
+        /// <summary>
+        /// Return the distance to a polyline with optional loop flag, and out index of the nearest segment.
+        /// This uses Reflection to call a Unity internal method.
+        /// </summary>
+        /// <param name="points">Polyline points</param>
+        /// <param name="loop">If true, a last segment joins the last and the first point</param>
+        /// <param name="index">Out index of the nearest segment</param>
+        /// <returns></returns>
+        public static float DistanceToPolyLine(Vector3[] points, bool loop, out int index)
+        {
+            // Cache method info if not done yet
+            if (distanceToPolyLine3ArgsMethodInfo == null)
+            {
+                // We want to access the 3-parameter overload of HandleUtility.DistanceToPolyLine, which is internal:
+                // internal static float DistanceToPolyLine(Vector3[] points, bool loop, out int index)
+                // Normally, we can indicate overload parameters:
+                // typeof(HandleUtility).GetMethod("DistanceToPolyLine",
+                //     new[] { typeof(Vector3[]), typeof(bool), typeof(int).MakeByRefType() });
+                // but for some reason, this doesn't work. So instead, we're indicating flags (the most important flag
+                // is BindingFlags.NonPublic, which distinguishes the overload from the 1-parameter public overload)
+                distanceToPolyLine3ArgsMethodInfo = typeof(HandleUtility).GetMethod("DistanceToPolyLine",
+                    BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.NonPublic);
+            }
+
+            float distance = 0f;
+            index = -1;
+
+            if (distanceToPolyLine3ArgsMethodInfo != null)
+            {
+                // Invoke method, getting return value and setting out argument manually
+                object[] parameters = {points, loop, index};
+                distance = (float) distanceToPolyLine3ArgsMethodInfo.Invoke(null, parameters);
+                index = (int) parameters[2];
+            }
+
+            return distance;
+        }
+
+        /// <summary>
+        /// Draw a line between two points specified with color
+        /// </summary>
+        /// <param name="p1">Line start point.</param>
+        /// <param name="p2">Line end point.</param>
+        /// <param name="color">Optional draw color. Current handles color if not set.</param>
         public static void DrawLine(Vector3 p1, Vector3 p2, Color color)
         {
             using (new Handles.DrawingScope(color))
