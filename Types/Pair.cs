@@ -1,17 +1,21 @@
+using System;
+
 namespace CommonsHelper
 {
-	/// Tuple class for 2 elements of arbitrary types
+	/// Mutable tuple class for 2 elements of arbitrary types
+	/// While C# System.Tuple can be used in most cases, it is immutable, so if you need to modify
+	/// pair elements later, use this class instead.
 	public struct Pair<T, U>
 	{
 		public T First { get; set; }
 		public U Second { get; set; }
-		
+
 		public Pair(T first, U second)
 		{
 			First = first;
 			Second = second;
 		}
-	
+
 		public override string ToString()
 		{
 			return $"({First}, {Second})";
