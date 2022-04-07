@@ -204,36 +204,6 @@ namespace CommonsHelper
             m_ControlPoints[3 * keyIndex] = controlPosition;
         }
 
-        /// Yield all key points
-        public IEnumerable<Vector2> GetKeyPoints()
-        {
-            int keyPointsCount = GetKeyPointsCount();
-            for (int keyIndex = 0; keyIndex < keyPointsCount; keyIndex++)
-            {
-                yield return GetKeyPoint(keyIndex);
-            }
-        }
-
-        /// Return the index of the key point the nearest to passed position
-        public int GetNearestKeyPointIndex(Vector2 position)
-        {
-            int nearestKeyPointIndex = -1;
-            float nearestKeyPointDistance = float.MaxValue;
-
-            int keyPointsCount = GetKeyPointsCount();
-            for (int keyIndex = 0; keyIndex < keyPointsCount; keyIndex++)
-            {
-                float distance = Vector2.SqrMagnitude(GetKeyPoint(keyIndex) - position);
-                if (distance < nearestKeyPointDistance)
-                {
-                    nearestKeyPointIndex = keyIndex;
-                    nearestKeyPointDistance = distance;
-                }
-            }
-
-            return nearestKeyPointIndex;
-        }
-
         /// Add a key point at the end of the path, automatically choosing smooth control points between the added
         /// key point and the previous one (the former end).
         public override void AddKeyPoint(Vector2 newKeyPoint)

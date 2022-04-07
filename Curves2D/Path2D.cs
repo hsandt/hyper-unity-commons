@@ -47,6 +47,16 @@ namespace CommonsHelper
         /// Catmull-Rom: this is the penultimate control point
         public abstract Vector2 GetPathEndPoint();
 
+        /// Yield all key points
+        public IEnumerable<Vector2> GetKeyPoints()
+        {
+            int keyPointsCount = GetKeyPointsCount();
+            for (int keyIndex = 0; keyIndex < keyPointsCount; keyIndex++)
+            {
+                yield return GetKeyPoint(keyIndex);
+            }
+        }
+
         /// Return count of key points
         /// Bezier: this exclude tangent points
         /// Catmull-Rom: this is the same as count of control points
@@ -56,6 +66,12 @@ namespace CommonsHelper
         /// Bezier: this does a calculation to find the correct key point among ControlPoints
         /// Catmull-Rom: this is the same as ControlPoints[keyIndex]
         public abstract Vector2 GetKeyPoint(int keyIndex);
+
+        /// Return the index of the key point the nearest to passed position
+        public int GetNearestKeyPointIndex(Vector2 position)
+        {
+            return VectorUtil.IndexOfClosestPointAmongPoints(position, GetKeyPoints().ToList());
+        }
 
         /// Add key point at end of path
         public abstract void AddKeyPoint(Vector2 newKeyPoint);
@@ -182,8 +198,10 @@ namespace CommonsHelper
         /// lengths
         public float EvaluateCurveLength(Vector2[] curve, int segmentsCount)
         {
-            // store end point of the previous iteration to reuse it as start point for the next one
-            Vector2 previousPoint = curve[0];
+            // initialize current point to curve start point
+            // do not take curve[0] as it won't work with some curves where the extreme points are not part of the
+            // interpolated curve (Catmull-Rom), use Interpolate instead
+            Vector2 currentPoint = Interpolate(curve, 0f);
 
             // initialize total length to return
             float length = 0f;
@@ -196,10 +214,10 @@ namespace CommonsHelper
 
                 // locate segment end and add segment length to total length
                 Vector2 nextPoint = Interpolate(curve, nextT);
-                length += Vector2.Distance(previousPoint, nextPoint);
+                length += Vector2.Distance(currentPoint, nextPoint);
 
                 // update previous point for next iteration
-                previousPoint = nextPoint;
+                currentPoint = nextPoint;
             }
 
             // return sum of all segment lengths

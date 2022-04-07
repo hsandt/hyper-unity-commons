@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace CommonsHelper
 {
@@ -61,6 +62,28 @@ namespace CommonsHelper
 		public static Vector2 Rotate90CCW(Vector2 vector)
 		{
 			return new Vector2(-vector.y, vector.x);
+		}
+
+		/// Return the index of the point among `points` that is the nearest to passed `position`
+		/// This is a helper method that works both with world and GUI coordinates, as long as all
+		/// coordinates use the same reference and units.
+		public static int IndexOfClosestPointAmongPoints(Vector2 position, List<Vector2> points)
+		{
+			int nearestKeyPointIndex = -1;
+			float nearestKeyPointDistance = float.MaxValue;
+
+			int keyPointsCount = points.Count;
+			for (int keyIndex = 0; keyIndex < keyPointsCount; keyIndex++)
+			{
+				float distance = Vector2.SqrMagnitude(points[keyIndex] - position);
+				if (distance < nearestKeyPointDistance)
+				{
+					nearestKeyPointIndex = keyIndex;
+					nearestKeyPointDistance = distance;
+				}
+			}
+
+			return nearestKeyPointIndex;
 		}
 
 		/// Return the closest point to the passed [point] on a segment defined by [segmentStart] and [segmentEnd]

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace CommonsHelper.Tests
 {
@@ -260,7 +259,7 @@ namespace CommonsHelper.Tests
             path.SetControlPoint(4, new Vector2(4f, 2f));
             path.SetControlPoint(5, new Vector2(2f, 4f));
 
-            // remove start point
+            // remove mid point
             path.RemoveKeyPoint(1);
 
             Assert.AreEqual(new[] {
@@ -276,7 +275,7 @@ namespace CommonsHelper.Tests
         {
             path.AddKeyPoint(new Vector2(3f, 3f));
 
-            // remove start point
+            // remove end point
             path.RemoveKeyPoint(2);
 
             // verify added control points
@@ -330,14 +329,12 @@ namespace CommonsHelper.Tests
         [Test]
         public void InterpolatePathByNormalizedParameter_Start()
         {
-            // verify added control points
             Assert.AreEqual(new Vector2(0f, 0f), path.InterpolatePathByNormalizedParameter(0f));
         }
 
         [Test]
         public void InterpolatePathByNormalizedParameter_End()
         {
-            // verify added control points
             Assert.AreEqual(new Vector2(3f, 0f), path.InterpolatePathByNormalizedParameter(1f));
         }
 
@@ -350,7 +347,6 @@ namespace CommonsHelper.Tests
             path.SetControlPoint(4, new Vector2(4f, 0f));
             path.SetControlPoint(5, new Vector2(5f, 0f));
 
-            // verify added control points
             Vector2 position = path.InterpolatePathByNormalizedParameter(0.999f);
             Assert.AreEqual(5.999, (double)position.x, 0.01);
             Assert.AreEqual(0f, position.y);
@@ -362,7 +358,6 @@ namespace CommonsHelper.Tests
             path.AddKeyPoint(new Vector2(5f, 0f));
             path.AddKeyPoint(new Vector2(10f, 0f));
 
-            // verify added control points
             Assert.AreEqual(new Vector2(10f, 0f), path.InterpolatePathByNormalizedParameter(1f));
         }
 
