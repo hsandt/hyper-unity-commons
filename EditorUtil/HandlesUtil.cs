@@ -110,12 +110,41 @@ namespace CommonsHelper
         /// </summary>
         /// <param name="p1">Line start point.</param>
         /// <param name="p2">Line end point.</param>
-        /// <param name="color">Optional draw color. Current handles color if not set.</param>
+        /// <param name="color">Draw color.</param>
         public static void DrawLine(Vector3 p1, Vector3 p2, Color color)
         {
             using (new Handles.DrawingScope(color))
             {
                 Handles.DrawLine(p1, p2);
+            }
+        }
+
+        /// <summary>
+        /// Draw a 2D line between two points specified with color
+        /// </summary>
+        /// <param name="p1">Line start point.</param>
+        /// <param name="p2">Line end point.</param>
+        /// <param name="color">Draw color.</param>
+        public static void DrawLine2D(Vector2 p1, Vector2 p2, Color color)
+        {
+            using (new Handles.DrawingScope(color))
+            {
+                Handles.DrawLine((Vector3)p1, (Vector3)p2);
+            }
+        }
+
+        /// <summary>
+        /// Draw a 2D dotted line between two points specified with color
+        /// </summary>
+        /// <param name="p1">Line start point.</param>
+        /// <param name="p2">Line end point.</param>
+        /// <param name="screenSpaceSize">The size in pixels for the lengths of the line segments and the gaps between them.</param>
+        /// <param name="color">Draw color.</param>
+        public static void DrawDottedLine2D(Vector2 p1, Vector2 p2, float screenSpaceSize, Color color)
+        {
+            using (new Handles.DrawingScope(color))
+            {
+                Handles.DrawDottedLine((Vector3)p1, (Vector3)p2, screenSpaceSize);
             }
         }
 
