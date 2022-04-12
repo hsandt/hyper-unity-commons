@@ -59,6 +59,12 @@ namespace CommonsHelper.Editor
         /// You can customize the tooltip there.
         protected abstract GUIContent GetEditModeButtonGUIContent();
 
+        /// Draw extra parts for the interpolated path, such as dotted lines linking to external control points
+        /// not part of the path. This may not apply to all path types and may be left empty for some child classes.
+        /// - Bezier: do nothing
+        /// - Catmull-Rom draw dotted lines to link start/end points to first/last (external) control points
+        protected virtual void DrawExtraInterpolatedPath(Path2D path) {}
+
         /// Draw handles for the control points of the given path, with offset
         protected abstract void DrawControlPointHandles(Path2D path, int keyPointToRemoveIndex, int insertControlID);
 
@@ -162,6 +168,7 @@ namespace CommonsHelper.Editor
 
                 // Draw the interpolated path to have a smooth visualization
                 DrawInterpolatedPath(interpolatedPointsArray);
+                DrawExtraInterpolatedPath(path);
 
                 if (IsEditingCollider)
                 {

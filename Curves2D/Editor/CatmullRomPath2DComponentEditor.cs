@@ -25,6 +25,10 @@ namespace CommonsHelper.Editor
             );
         }
 
+
+        private const float DOTTED_LINE_SCREEN_SPACE_SIZE = 5f;
+
+
         private void OnSceneGUI()
         {
             var script = (CatmullRomPath2DComponent)target;
@@ -38,6 +42,27 @@ namespace CommonsHelper.Editor
         protected override GUIContent GetEditModeButtonGUIContent()
         {
             return Styles.editModeButton;
+        }
+
+        /// Draw extra parts for the interpolated path, such as dotted lines linking to external control points
+        /// not part of the path. This may not apply to all path types and may be left empty for some child classes.
+        /// - Catmull-Rom draw dotted lines to link start/end points to first/last (external) control points
+        protected override void DrawExtraInterpolatedPath(Path2D path)
+        {
+            Event guiEvent = Event.current;
+            EventType eventType = guiEvent.type;
+
+            // As a small optimization, check for event type early (DrawPolyLine2D also checks it anyway)
+            if (eventType == EventType.Repaint)
+            {
+                // Draw dotted line between first (external) control point and actual path start (second point)
+                HandlesUtil.DrawDottedLine2D(path.GetKeyPoint(0), path.GetPathStartPoint(), DOTTED_LINE_SCREEN_SPACE_SIZE, s_PathColor);
+
+                // Draw dotted line between last (external) control point and actual path end (pre-last point)
+                // GetKeyPoint takes an int, so we must compute index from count manually
+                // If this is done often, we can also add an overload that takes an Index to support ^1
+                HandlesUtil.DrawDottedLine2D(path.GetPathEndPoint(), path.GetKeyPoint(path.GetKeyPointsCount() - 1), DOTTED_LINE_SCREEN_SPACE_SIZE, s_PathColor);
+            }
         }
 
         /// Draw handles for the control points of the given path, with segments between key points and non-key control points
