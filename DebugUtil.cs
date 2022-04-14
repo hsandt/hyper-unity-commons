@@ -82,7 +82,7 @@ namespace CommonsDebug
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
 		public static void LogErrorFormat(Object context, string format, params object[] args)
 		{
-			Debug.LogWarningFormat(context, format, args);
+			Debug.LogErrorFormat(context, format, args);
 		}
 
 		#endregion
