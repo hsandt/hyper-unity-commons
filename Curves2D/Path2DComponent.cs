@@ -11,9 +11,7 @@ namespace CommonsHelper
 
         public bool IsRelative => m_IsRelative;
 
-        #if UNITY_EDITOR
         public abstract Path2D Path { get; }
-        #endif
 
         // Proxy methods to take world position into account if m_IsRelative
 
