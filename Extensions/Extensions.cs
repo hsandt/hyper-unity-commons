@@ -112,6 +112,18 @@ namespace CommonsHelper
 			return clone;
 		}
 
+		public static void DeactivateAllChildren(this Transform parent) {
+			foreach (Transform child in parent) {
+				child.gameObject.SetActive(false);
+			}
+		}
+
+		/// Return true if this game object is in layer mask with value `layerMaskValue`
+		public static bool IsInLayerMask(this GameObject go, int layerMaskValue)
+		{
+			return GameObjectUtil.IsInLayerMask(go, layerMaskValue);
+		}
+
 	}
 
 	public static class ComponentExtensions {
@@ -153,12 +165,12 @@ namespace CommonsHelper
 
 		/// Does the layer mask contain the specified layer?
 		public static bool Contains (this LayerMask mask, int layer) {
-			return (mask.value & (1 << layer)) > 0;
+			return GameObjectUtil.IsInLayerMask(layer, mask);
 		}
 
 		/// Does the layer mask contain the layer of the specified game object?
 		public static bool Contains (this LayerMask mask, GameObject go) {
-			return (mask.value & (1 << go.layer)) > 0;
+			return GameObjectUtil.IsInLayerMask(go, mask);
 		}
 
 	}
