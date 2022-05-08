@@ -17,7 +17,7 @@ namespace CommonsHelper
             else return 0;
         }
 
-        /// Return x without its fractional part, i.e. first integer from x when going toward 0 
+        /// Return x without its fractional part, i.e. first integer from x when going toward 0
         public static int Truncate(float x)
         {
             return (int) (Mathf.Sign(x) * Mathf.Floor(Mathf.Abs(x)));
@@ -61,6 +61,12 @@ namespace CommonsHelper
             if (delta < -180f) delta += 360f;
             if (delta > 180f) delta -= 360f;
             return delta;
+        }
+
+        /// Remap a value with an affine that maps xA => yA, xB => yB, and clamp the result to [vA, vB]
+        public static float Remap(float xA, float xB, float yA, float yB, float x)
+        {
+            return Mathf.Lerp(yA, yB, (x - xA) / (xB - xA));
         }
     }
 }
