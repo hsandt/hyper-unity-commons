@@ -2,6 +2,9 @@
 // Original code by frarees
 // Changelog from the gist code of 2022-03-12:
 // hsandt (2022-05-08): added namespace CommonsHelper (only for this repository!)
+// hsandt (2022-05-08): increased kFloatFieldWidth from 16f to 40f, FlexibleFloatFieldWidth coeff from 2.5f to 8f,
+//                      and add parameter bool hasDecimals which adds an extra of 18f to visualize ~2 digits + a dot.
+//                      Pass hasDecimals = true when attribute is used on type Vector2 (not Vector2Int).
 
 using UnityEngine;
 using UnityEditor;
@@ -13,7 +16,7 @@ namespace CommonsHelper
     {
         private const string kVectorMinName = "x";
         private const string kVectorMaxName = "y";
-        private const float kFloatFieldWidth = 16f;
+        private const float kFloatFieldWidth = 40f;
         private const float kSpacing = 2f;
         private const float kRoundingValue = 100f;
 
@@ -29,10 +32,14 @@ namespace CommonsHelper
             return roundingValue == 0 ? value : Mathf.Round(value * roundingValue) / roundingValue;
         }
 
-        private float FlexibleFloatFieldWidth(float min, float max)
+        private float FlexibleFloatFieldWidth(float min, float max, bool hasDecimals)
         {
             var n = Mathf.Max(Mathf.Abs(min), Mathf.Abs(max));
             float floatFieldWidth = 14f + (Mathf.Floor(Mathf.Log10(Mathf.Abs(n)) + 1) * 8f);
+            if (hasDecimals)
+            {
+                floatFieldWidth += 18f;
+            }
             return floatFieldWidth;
         }
 
@@ -111,7 +118,8 @@ namespace CommonsHelper
             float ppp = EditorGUIUtility.pixelsPerPoint;
             float spacing = kSpacing * ppp;
             float fieldWidth = ppp * (attr.DataFields && attr.FlexibleFields
-                ? FlexibleFloatFieldWidth(attr.Min, attr.Max)
+                ? FlexibleFloatFieldWidth(attr.Min, attr.Max,
+                    property.propertyType == SerializedPropertyType.Vector2)
                 : kFloatFieldWidth);
 
             var indent = EditorGUI.indentLevel;
