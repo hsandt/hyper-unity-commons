@@ -1,22 +1,31 @@
 // https://gist.github.com/frarees/9791517
+// Original code by frarees
+// Changelog from the gist code of 2022-03-12:
+// hsandt (2022-05-08): added namespace CommonsHelper (only for this repository!)
+
 using System;
 using UnityEngine;
 
 namespace CommonsHelper
 {
+    [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
+    public class MinMaxSliderAttribute : PropertyAttribute
+    {
+        public float Min { get; set; }
+        public float Max { get; set; }
+        public bool DataFields { get; set; } = true;
+        public bool FlexibleFields { get; set; } = true;
+        public bool Bound { get; set; } = true;
+        public bool Round { get; set; } = true;
 
-	public class MinMaxSliderAttribute : PropertyAttribute {
+        public MinMaxSliderAttribute() : this(0, 1)
+        {
+        }
 
-		/// Min of the slider itself
-		public readonly float max;
-		/// Max of the slider itself
-		public readonly float min;
-
-		public MinMaxSliderAttribute (float min, float max) {
-			this.min = min;
-			this.max = max;
-		}
-	}
-
+        public MinMaxSliderAttribute(float min, float max)
+        {
+            Min = min;
+            Max = max;
+        }
+    }
 }
-
