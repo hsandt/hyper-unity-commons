@@ -64,6 +64,9 @@ namespace CommonsEditor
 
 				List<GameObject> replacedObjects = new List<GameObject> ();
 
+				// Note that Selection.transforms, unlike Selection.objects, only keeps the top-most parent
+				// if you selected both a parent and a direct or indirect child under it.
+				// But since replacing the parent would destroy children anyway, it makes sense.
 				foreach (Transform t in Selection.transforms) {
 
 					GameObject o;
@@ -73,9 +76,9 @@ namespace CommonsEditor
 					// another prefab instance), and not a non-prefab object parented to a prefab instance
 					if (PrefabUtility.GetPrefabInstanceStatus(replacingObject) == PrefabInstanceStatus.Connected &&
 					    PrefabUtility.IsAnyPrefabInstanceRoot(replacingObject)) {
-						// instantiate it from the prefab to keep the link, but also keep properties 
+						// instantiate it from the prefab to keep the link, but also keep properties
 						// overriden at instance level
-						
+
 						// GetCorrespondingObjectFromSource seems to sometimes return the object instance instead of the prefab
 						// GameObject prefab = PrefabUtility.GetCorrespondingObjectFromSource(replacingObject);
 
@@ -84,7 +87,7 @@ namespace CommonsEditor
 						// but you'll need reflection as it is internal
 						string prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(replacingObject);
 						GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-	
+
 						// instantiate prefab in same scene as replaced object (this is only needed if object had no
 						// parent, since SetParent below would move the replacing object to the correct scene anyway)
 						o = (GameObject)PrefabUtility.InstantiatePrefab(prefab, t.gameObject.scene);
@@ -130,7 +133,7 @@ namespace CommonsEditor
 
 						if (keepScale)
 							newT.localScale = t.localScale;
-						
+
 						if (keepSiblingIndex)
 							newT.transform.SetSiblingIndex(t.GetSiblingIndex());
 
