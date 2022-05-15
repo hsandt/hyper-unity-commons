@@ -90,6 +90,8 @@ namespace CommonsEditor
                     SceneManager.MoveGameObjectToScene(clone, selectedTransform.gameObject.scene);
                 }
 
+                // TODO: if contiguous selection, clone everything below, not intertwined
+
                 // Move clone right under selected object
                 // This works even with multiple selection under the same parent as GetSiblingIndex is reevaluated
                 // after the last child insertion
