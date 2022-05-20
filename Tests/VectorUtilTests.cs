@@ -153,5 +153,23 @@ namespace CommonsHelper.Tests
         {
             Assert.AreEqual(new Vector3(1.5f, -1f, 1f), VectorUtil.RoundVector3(new Vector3(1.26f, -1.25f, 0.75f), 0.5f));
         }
+
+        [Test]
+        public void Remap_BeyondLeftBound()
+        {
+            Assert.AreEqual(new Vector2(30f, -30f), VectorUtil.Remap(1f, 2f, new Vector2(30f, -30f), new Vector2(40f, -40f), 0f));
+        }
+
+        [Test]
+        public void Remap_BeyondRightBound()
+        {
+            Assert.AreEqual(new Vector2(40f, -40f), VectorUtil.Remap(1f, 2f, new Vector2(30f, -30f), new Vector2(40f, -40f), 3f));
+        }
+
+        [Test]
+        public void Remap_Middle()
+        {
+            Assert.AreEqual(new Vector2(35f, -35f), VectorUtil.Remap(1f, 2f, new Vector2(30f, -30f), new Vector2(40f, -40f), 1.5f));
+        }
     }
 }
