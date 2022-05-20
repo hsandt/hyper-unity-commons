@@ -63,10 +63,22 @@ namespace CommonsHelper
             return delta;
         }
 
-        /// Remap a value with an affine that maps xA => yA, xB => yB, and clamp the result to [vA, vB]
+        /// Remap a value with an affine that maps xA => yA, xB => yB, and clamp the result to [yA, yB]
         public static float Remap(float xA, float xB, float yA, float yB, float x)
         {
-            return Mathf.Lerp(yA, yB, (x - xA) / (xB - xA));
+            float xDelta = xB - xA;
+
+            if (xDelta == 0f)
+            {
+                #if UNITY_EDITOR
+                Debug.LogErrorFormat("[MathUtil] Remap: xA and xB have same value {0}, cannot divide by 0, " +
+                    "fall back to yA {1}", xA, yA);
+                #endif
+
+                return yA;
+            }
+
+            return Mathf.Lerp(yA, yB, (x - xA) / xDelta);
         }
     }
 }
