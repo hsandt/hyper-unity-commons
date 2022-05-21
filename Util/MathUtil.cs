@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace CommonsHelper
 {
@@ -63,8 +64,8 @@ namespace CommonsHelper
             return delta;
         }
 
-        /// Remap a value with an affine that maps xA => yA, xB => yB, and clamp the result to [yA, yB]
-        public static float Remap(float xA, float xB, float yA, float yB, float x)
+        private static float RemapWithLerpCallback(float xA, float xB, float yA, float yB, float x,
+            Func<float, float, float, float> lerpCallback)
         {
             float xDelta = xB - xA;
 
@@ -78,25 +79,19 @@ namespace CommonsHelper
                 return yA;
             }
 
-            return Mathf.Lerp(yA, yB, (x - xA) / xDelta);
+            return lerpCallback(yA, yB, (x - xA) / xDelta);
+        }
+
+        /// Remap a value with an affine that maps xA => yA, xB => yB, and clamp the result to [yA, yB]
+        public static float Remap(float xA, float xB, float yA, float yB, float x)
+        {
+            return RemapWithLerpCallback(xA, xB, yA, yB, x, Mathf.Lerp);
         }
 
         /// Remap a value with an affine that maps xA => yA, xB => yB, with no clamping
         public static float RemapUnclamped(float xA, float xB, float yA, float yB, float x)
         {
-            float xDelta = xB - xA;
-
-            if (xDelta == 0f)
-            {
-                #if UNITY_EDITOR
-                Debug.LogErrorFormat("[MathUtil] Remap: xA and xB have same value {0}, cannot divide by 0, " +
-                    "fall back to yA {1}", xA, yA);
-                #endif
-
-                return yA;
-            }
-
-            return Mathf.LerpUnclamped(yA, yB, (x - xA) / xDelta);
+            return RemapWithLerpCallback(xA, xB, yA, yB, x, Mathf.LerpUnclamped);
         }
     }
 }
