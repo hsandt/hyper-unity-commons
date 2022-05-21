@@ -15,11 +15,6 @@ namespace CommonsHelper
             return Mathf.Pow(Vector2.SqrMagnitude(a - b), 0.5f * alpha);
         }
 
-        private static Vector2 Remap(float tA, float tB, Vector2 pA, Vector2 pB, float t)
-        {
-            return Vector2.LerpUnclamped(pA, pB, (t - tA) / (tB - tA));
-        }
-
         /// Compute point on 2D CatmullRom curve of control points p0, p1, p2, p3 with distance exponent alpha
         /// at normalized parameter t
         /// When alpha = 0.5, this is Centripetal Catmull-Rom.
@@ -27,6 +22,11 @@ namespace CommonsHelper
         /// linking p0 and p1, p2 and p3.
         public static Vector2 InterpolateCatmullRom(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float alpha, float t)
         {
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.AssertFormat(0 <= t && t <= 1, "[CatmullRomPath2D] InterpolateCatmullRom: t is {0}, " +
+                "expected value between 0 and 1", t);
+            #endif
+
             // https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline
             // Unity code example
             float t0 = 0;
@@ -37,16 +37,20 @@ namespace CommonsHelper
             // We are working with t in [0, 1] mapping to the central part of the curve, between p1 and p2,
             // and we are not interested in the extra parts linking p0 and p1, p2 and p3.
             // So remap t as u between t1 and t2, so t = 0 -> p1 amd t = 1 -> p2.
+            // Lerp would work too, but since we've already asserted t in [0, 1],
+            // LerpUnclamped is slightly less work.
             float u = Mathf.LerpUnclamped(t1, t2, t);
 
-            Vector2 a1 = Remap(t0, t1, p0, p1, u);
-            Vector2 a2 = Remap(t1, t2, p1, p2, u);
-            Vector2 a3 = Remap(t2, t3, p2, p3, u);
+            // Here, u is in [t1, t2] only so we need an unclamped remap for a1, a3, b1 and b2
+            // We may as well use an unclamped remap for a2 and return too since it's less work.
+            Vector2 a1 = VectorUtil.RemapUnclamped(t0, t1, p0, p1, u);
+            Vector2 a2 = VectorUtil.RemapUnclamped(t1, t2, p1, p2, u);
+            Vector2 a3 = VectorUtil.RemapUnclamped(t2, t3, p2, p3, u);
 
-            Vector2 b1 = Remap(t0, t2, a1, a2, u);
-            Vector2 b2 = Remap(t1, t3, a2, a3, u);
+            Vector2 b1 = VectorUtil.RemapUnclamped(t0, t2, a1, a2, u);
+            Vector2 b2 = VectorUtil.RemapUnclamped(t1, t3, a2, a3, u);
 
-            return Remap(t1, t2, b1, b2, u);
+            return VectorUtil.RemapUnclamped(t1, t2, b1, b2, u);
         }
 
         /// Compute point on 2D CatmullRom curve (array of 4 points) with tension alpha at parameter t

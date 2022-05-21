@@ -182,5 +182,23 @@ namespace CommonsHelper
 
 			return Vector2.Lerp(pA, pB, (t - tA) / tDelta);
 		}
+
+		/// Remap a value with an affine that maps tA => pA, tB => pB, with no clamping
+		public static Vector2 RemapUnclamped(float tA, float tB, Vector2 pA, Vector2 pB, float t)
+		{
+			float tDelta = tB - tA;
+
+			if (tDelta == 0f)
+			{
+				#if UNITY_EDITOR
+				Debug.LogErrorFormat("[MathUtil] Remap: tA and tB have same value {0}, cannot divide by 0, " +
+					"fall back to pA {1}", tA, pA);
+				#endif
+
+				return pA;
+			}
+
+			return Vector2.LerpUnclamped(pA, pB, (t - tA) / tDelta);
+		}
 	}
 }

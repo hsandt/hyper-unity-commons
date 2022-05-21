@@ -120,5 +120,22 @@ namespace CommonsHelper.Tests
             Assert.AreEqual(35f, MathUtil.Remap(1f, 2f, 30f, 40f, 1.5f));
         }
 
+        [Test]
+        public void RemapUnclamped_BeyondLeftBound()
+        {
+            Assert.AreEqual(20f, MathUtil.RemapUnclamped(1f, 2f, 30f, 40f, 0f));
+        }
+
+        [Test]
+        public void RemapUnclamped_BeyondRightBound()
+        {
+            Assert.AreEqual(50f, MathUtil.RemapUnclamped(1f, 2f, 30f, 40f, 3f));
+        }
+
+        [Test]
+        public void RemapUnclamped_Middle()
+        {
+            Assert.AreEqual(35f, MathUtil.RemapUnclamped(1f, 2f, 30f, 40f, 1.5f));
+        }
     }
 }
