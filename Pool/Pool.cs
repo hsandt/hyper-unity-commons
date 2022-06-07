@@ -69,7 +69,8 @@ namespace CommonsPattern
 
         /// Initialise pool with [initialPoolSize] free objects (not in use)
         /// ! MultiPoolManager should use this to avoid incorrectly registering pooled objects of type A
-        ///   as pooled objects of type B !
+        ///   as pooled objects of type B.
+        ///   This means that multi-pool transforms should not have any children preset in the scene !
         public void InitIgnoringExistingChildren(int initialPoolSize)
         {
             // 1. Create list with capacity = expected count
