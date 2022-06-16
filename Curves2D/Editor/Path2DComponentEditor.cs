@@ -141,7 +141,7 @@ namespace CommonsHelper.Editor
             );
         }
 
-        protected void DrawEditablePath(Path2DComponent script)
+        public void DrawEditablePath(Path2DComponent script)
         {
             Path2D path = script.Path;
 
@@ -567,7 +567,7 @@ namespace CommonsHelper.Editor
         }
 
         /// Draw the interpolated path, without control points
-        private void DrawInterpolatedPath(Vector2[] interpolatedPoints)
+        private static void DrawInterpolatedPath(Vector2[] interpolatedPoints)
         {
             Event guiEvent = Event.current;
             EventType eventType = guiEvent.type;
