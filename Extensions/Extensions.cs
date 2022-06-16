@@ -13,6 +13,20 @@ namespace CommonsHelper
 
 	}
 
+	public static class RectExtensions {
+
+		/// Expand bounds of rect just enough to contain point
+		/// Equivalent to `rect = RectUtil.MBR(rect, point);`
+		public static void Expand (ref this Rect rect, Vector2 point)
+		{
+			// We could use RectUtil.MBR, but it would create a new struct just to copy fields,
+			// so we prefer assigning fields directly.
+			rect.min = Vector2.Min(rect.min, point);
+			rect.max = Vector2.Max(rect.max, point);
+		}
+
+	}
+
 	public static class GameObjectExtensions {
 
 		/// Extension to search any child transform with name passed as argument
