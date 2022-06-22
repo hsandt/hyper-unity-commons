@@ -45,13 +45,30 @@ namespace CommonsEditor
             {
                 GameObject selectedGameObject = selectedTransform.gameObject;
 
+                Transform cloneParent;
+                int cloneSiblingIndex;
+
                 if (currentPrefabStage != null && selectedGameObject == currentPrefabStage.prefabContentsRoot)
                 {
-                    // Prefab root is selected in Prefab Stage
-                    // In a prefab, we cannot duplicate the root under itself, since it must have no siblings,
-                    // so skip it. And since Selection.transforms ignores children, we know it's the only selection,
-                    // so just break.
-                    break;
+                    // We are selecting Prefab root in Prefab Stage (Prefab Edit Mode)
+                    // Selection.transforms ignores children, so, if this is the case, we know that we are only iterating
+                    // on that Prefab root. However, during prefab editing, we cannot duplicate the root itself to get
+                    // a copy under the same parent (the context), since the prefab root must have no siblings.
+                    // So, if this happens, just like native Duplicate, create the clone under the prefab root itself
+                    // (selectedTransform), effectively duplicating the prefab root as its own child.
+                    // However, while Duplicate will place it as last child, Duplicate Below will place it as
+                    // first child (0).
+                    // IMPORTANT: this will not create a prefab linked instance, but a normal game object, exactly
+                    // like native Duplicate. And this is what we want, because otherwise, it would create a cyclic
+                    // dependency from a prefab to itself.
+                    cloneParent = selectedTransform;
+                    cloneSiblingIndex = 0;
+                }
+                else
+                {
+                    // In normal cases, place the clone under the same parent, as next sibling
+                    cloneParent = selectedTransform.parent;
+                    cloneSiblingIndex = selectedTransform.GetSiblingIndex() + 1;
                 }
 
                 // Get new game object name following Project Settings > Editor > Numbering Scheme
@@ -69,13 +86,13 @@ namespace CommonsEditor
                     // If working on the Main Stage, the scene will also be set later with MoveGameObjectToScene,
                     // so don't bother passing the Scene instead of the parent Transform when selectedTransform.parent
                     // is null.
-                    clone = (GameObject)PrefabUtility.InstantiatePrefab(prefab, selectedTransform.parent);
+                    clone = (GameObject)PrefabUtility.InstantiatePrefab(prefab, cloneParent);
                     PrefabUtility.SetPropertyModifications(clone, PrefabUtility.GetPropertyModifications(selectedGameObject));
                 }
                 else
                 {
                     // The duplicated object is not a prefab, create a standard clone under the same parent
-                    clone = Object.Instantiate(selectedGameObject, selectedTransform.parent);
+                    clone = Object.Instantiate(selectedGameObject, cloneParent);
                 }
 
                 // Place clone in current stage
@@ -95,7 +112,7 @@ namespace CommonsEditor
                 // Move clone right under selected object
                 // This works even with multiple selection under the same parent as GetSiblingIndex is reevaluated
                 // after the last child insertion
-                clone.transform.SetSiblingIndex(selectedTransform.GetSiblingIndex() + 1);
+                clone.transform.SetSiblingIndex(cloneSiblingIndex);
 
                 // Rename clone with Numbering Scheme
                 clone.name = newGameObjectName;
