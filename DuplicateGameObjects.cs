@@ -77,11 +77,25 @@ namespace CommonsEditor
 
                 GameObject clone;
 
-                // Support prefab instances
-                GameObject prefab = PrefabUtility.GetCorrespondingObjectFromSource(selectedGameObject);
-                if (prefab != null)
+                // Support prefab instances:
+                // (same as ReplaceGameObjects)
+                // check if selected game object is an actual prefab instance root in the Scene (from model, regular or variant prefab)
+                // use IsAnyPrefabInstanceRoot to make sure it is a prefab root (including a prefab instance root parented to
+                // another prefab instance), and not a non-prefab object parented to a prefab instance
+                if (PrefabUtility.GetPrefabInstanceStatus(selectedGameObject) == PrefabInstanceStatus.Connected &&
+                    PrefabUtility.IsAnyPrefabInstanceRoot(selectedGameObject))
                 {
-                    // Create another prefab instance under same parent as duplicated object
+                    // (similar to ReplaceGameObjects)
+                    // Make sure to get the actual prefab for this game object, by using GetPrefabAssetPathOfNearestInstanceRoot.
+                    // This will work for both outermost and inner prefab roots.
+                    // Other methods like GetCorrespondingObjectFromSource will return the outermost prefab only,
+                    // which, in the case of duplication, will not only duplicate the wrong object, but also place it
+                    // on the wrong parent (maybe to avoid some cyclic dependency although in prefab instances, this
+                    // only becomes a problem when applying overrides)
+                    string prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(selectedGameObject);
+                    GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+
+                    // Create another prefab instance under same parent as duplicated object, with same properties override
                     // The stage will be set later with PlaceGameObjectInCurrentStage, the parent can still be set now.
                     // If working on the Main Stage, the scene will also be set later with MoveGameObjectToScene,
                     // so don't bother passing the Scene instead of the parent Transform when selectedTransform.parent
