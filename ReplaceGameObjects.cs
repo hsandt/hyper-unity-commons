@@ -14,6 +14,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
 namespace CommonsEditor
@@ -64,14 +65,50 @@ namespace CommonsEditor
 
 				List<GameObject> replacedObjects = new List<GameObject> ();
 
+				PrefabStage currentPrefabStage = null;
+
+				// Check current stage
+				Stage currentStage = StageUtility.GetCurrentStage();
+				if (currentStage is PrefabStage prefabStage)
+				{
+					// Prefab edit mode
+					currentPrefabStage = prefabStage;
+				}
+				else if (currentStage is not MainStage)
+				{
+					// Not Prefab edit mode nor Main scene, must be a custom stage
+					Debug.LogWarning("Replace Selected is not supported in custom stages");
+					return;
+				}
+
 				// Note that Selection.transforms, unlike Selection.objects, only keeps the top-most parent
 				// if you selected both a parent and a direct or indirect child under it.
 				// But since replacing the parent would destroy children anyway, it makes sense.
 				foreach (Transform t in Selection.transforms) {
 
+					GameObject replacedGameObject = t.gameObject;
+
+					if (currentPrefabStage != null && replacedGameObject == currentPrefabStage.prefabContentsRoot)
+					{
+						Debug.LogErrorFormat("Cannot replace Prefab root {0} in Prefab Edit Mode", replacedGameObject);
+						continue;
+					}
+
+					if (PrefabUtility.GetPrefabInstanceStatus(replacedGameObject) == PrefabInstanceStatus.Connected && !PrefabUtility.IsOutermostPrefabInstanceRoot(replacedGameObject))
+					{
+						Debug.LogErrorFormat(replacedGameObject, "[ReplaceGameObject] Replace Selected: Cannot delete child {0} of " +
+							"prefab instance {1}, please edit the prefab itself.",
+							replacedGameObject, PrefabUtility.GetNearestPrefabInstanceRoot(replacedGameObject));
+						continue;
+					}
+
+					// FIXME: also check that we are not in Prefab Edit Mode, with replacing game object being the same
+					// prefab as the edited one, or any variant of it, as it would cause cyclic dependency (try to drag it
+					// manually and you'll see the error popup)
+
 					GameObject o;
 
-					// check if object is an actual prefab instance root in the Scene (from model, regular or variant prefab)
+					// check if replacing object is an actual prefab instance root in the Scene (from model, regular or variant prefab)
 					// use IsAnyPrefabInstanceRoot to make sure it is a prefab root (including a prefab instance root parented to
 					// another prefab instance), and not a non-prefab object parented to a prefab instance
 					if (PrefabUtility.GetPrefabInstanceStatus(replacingObject) == PrefabInstanceStatus.Connected &&
@@ -79,27 +116,24 @@ namespace CommonsEditor
 						// instantiate it from the prefab to keep the link, but also keep properties
 						// overriden at instance level
 
-						// GetCorrespondingObjectFromSource seems to sometimes return the object instance instead of the prefab
-						// GameObject prefab = PrefabUtility.GetCorrespondingObjectFromSource(replacingObject);
-
-						// as a workaround, we find the path of the prefab asset and load it
-						// to avoid this back-and-forth query, you can also use PrefabUtility.GetOriginalSourceOrVariantRoot
-						// but you'll need reflection as it is internal
+						// Make sure to get the actual prefab for this game object, by using GetPrefabAssetPathOfNearestInstanceRoot.
+						// This will work for both outermost and inner prefab roots.
+						// Other methods like GetCorrespondingObjectFromSource will return the outermost prefab only.
 						string prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(replacingObject);
 						GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
 
 						// instantiate prefab in same scene as replaced object (this is only needed if object had no
 						// parent, since SetParent below would move the replacing object to the correct scene anyway)
-						o = (GameObject)PrefabUtility.InstantiatePrefab(prefab, t.gameObject.scene);
+						o = (GameObject)PrefabUtility.InstantiatePrefab(prefab, replacedGameObject.scene);
 						PrefabUtility.SetPropertyModifications(o, PrefabUtility.GetPropertyModifications(replacingObject));
 					}
 
-					// check if object is an actual prefab asset from Project view
+					// check if replacing object is an actual prefab asset from Project view
 					// note: we don't check PrefabUtility.GetPrefabAssetType(replacingObject) since a GameObject that
 					// is an asset is always a prefab, never PrefabAssetType.NotAPrefab or PrefabAssetType.MissingAsset
 					else if (AssetDatabase.Contains(replacingObject)) {
 						// instantiate it with default values, in the same scene as replaced object
-						o = (GameObject)PrefabUtility.InstantiatePrefab(replacingObject, t.gameObject.scene);
+						o = (GameObject)PrefabUtility.InstantiatePrefab(replacingObject, replacedGameObject.scene);
 					}
 
 					else {
@@ -108,10 +142,19 @@ namespace CommonsEditor
 						o = Instantiate(replacingObject);
 						// the normal Instantiate takes no Scene parameter like InstantiatePrefab, so just move
 						// the replacing object to the right scene manually
-						SceneManager.MoveGameObjectToScene(o, t.gameObject.scene);
+						SceneManager.MoveGameObjectToScene(o, replacedGameObject.scene);
 					}
 
-					Undo.RegisterCreatedObjectUndo(o, "created prefab");
+					// NOTES:
+					// 1. DuplicateGameObjects calls StageUtility.PlaceGameObjectInCurrentStage(clone)
+					// so maybe we should do that to make it work in Prefab Edit Mode, but so far that mode
+					// worked without anyway.
+					// 2. DuplicateGameObjects only calls SceneManager.MoveGameObjectToScene if
+					// currentPrefabStage == null && selectedTransform.parent == null
+					// Apparently this doesn't cause an error even when called with replacedGameObject.scene
+					// equal to the temporary Prefab Edit scene, but may be cleaner to skip the call
+					// if currentPrefabStage != null. And it's not needed if there is a parent too.
+
 
 					Transform newT = o.transform;
 
@@ -120,7 +163,7 @@ namespace CommonsEditor
 							newT.name = t.name;
 
 						if (keepIcon)
-							SetIcon (newT.gameObject, GetIcon (t.gameObject));
+							SetIcon (newT.gameObject, GetIcon (replacedGameObject));
 
 						// Note that this will fail if object is child of a prefab and was part of the original prefab,
 						// due to prefab hierarchy locking policy. You can check that this object is part of a prefab,
@@ -139,18 +182,21 @@ namespace CommonsEditor
 
 						replacedObjects.Add (newT.gameObject);
 					}
-				}
 
-				// store replaced object transforms
-				Transform[] oldTransforms = Selection.transforms;
+					// Make sure to undo creation after doing all the work on created object properties
+					// Usually it works anywhere after creation, but I spot a rare bug where, if
+					// Undo.DestroyObjectImmediate fails (it used to fail when trying to replace a game object
+					// under some prefab instance root; now we prevent this altogether and return early),
+					// Undo-ing the replacing object creation would cause Unity to freeze.
+					// And it's cleaner to register creation after complete object setup anyway.
+					Undo.RegisterCreatedObjectUndo(o, "Replaced Game Object");
+
+					// Remove original object
+					Undo.DestroyObjectImmediate(replacedGameObject);
+				}
 
 				// Select new objects
 				Selection.objects = replacedObjects.ToArray ();
-
-				for (int i = oldTransforms.Length - 1; i >= 0; --i) {
-					Undo.DestroyObjectImmediate(oldTransforms[i].gameObject);
-				}
-
 			}
 		}
 
