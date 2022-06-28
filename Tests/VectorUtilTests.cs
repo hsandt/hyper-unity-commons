@@ -173,6 +173,14 @@ namespace CommonsHelper.Tests
         }
 
         [Test]
+        public void Remap_SameTimesSamePoints()
+        {
+            // If tA == tB AND pA == pB, we exceptionally tolerate the case and return pA without assert.
+            // This is useful to handle degenerated cases such as path evaluation with key points located at the same place, without errors.
+            Assert.AreEqual(new Vector2(30f, -30f), VectorUtil.Remap(99f, 99f, new Vector2(30f, -30f), new Vector2(30f, -30f), 99f));
+        }
+
+        [Test]
         public void RemapUnclamped_BeyondLeftBound()
         {
             Assert.AreEqual(new Vector2(20f, -20f), VectorUtil.RemapUnclamped(1f, 2f, new Vector2(30f, -30f), new Vector2(40f, -40f), 0f));
@@ -188,6 +196,13 @@ namespace CommonsHelper.Tests
         public void RemapUnclamped_Middle()
         {
             Assert.AreEqual(new Vector2(35f, -35f), VectorUtil.RemapUnclamped(1f, 2f, new Vector2(30f, -30f), new Vector2(40f, -40f), 1.5f));
+        }
+
+        [Test]
+        public void RemapUnclamped_SameTimesSamePoints()
+        {
+            // Same as Remap_SameTimesSamePoints, but testing that parameter outside range still works
+            Assert.AreEqual(new Vector2(30f, -30f), VectorUtil.RemapUnclamped(99f, 99f, new Vector2(30f, -30f), new Vector2(30f, -30f), 199f));
         }
     }
 }

@@ -121,6 +121,14 @@ namespace CommonsHelper.Tests
         }
 
         [Test]
+        public void Remap_SameXSameY()
+        {
+            // If xA == xB AND yA == yB, we exceptionally tolerate the case and return yA without assert.
+            // This is useful to handle degenerated cases such as path evaluation with key points located at the same place, without errors.
+            Assert.AreEqual(30f, MathUtil.Remap(99f, 99f, 30f, 30f, 99f));
+        }
+
+        [Test]
         public void RemapUnclamped_BeyondLeftBound()
         {
             Assert.AreEqual(20f, MathUtil.RemapUnclamped(1f, 2f, 30f, 40f, 0f));
@@ -136,6 +144,13 @@ namespace CommonsHelper.Tests
         public void RemapUnclamped_Middle()
         {
             Assert.AreEqual(35f, MathUtil.RemapUnclamped(1f, 2f, 30f, 40f, 1.5f));
+        }
+
+        [Test]
+        public void RemapUnclamped_SameXSameY()
+        {
+            // Same as Remap_SameXSameY, but testing that x outside range still works
+            Assert.AreEqual(30f, MathUtil.RemapUnclamped(99f, 99f, 30f, 30f, 199f));
         }
     }
 }

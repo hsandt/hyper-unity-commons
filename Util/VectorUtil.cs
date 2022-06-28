@@ -173,8 +173,12 @@ namespace CommonsHelper
 			if (tDelta == 0f)
 			{
 				#if UNITY_EDITOR
-				Debug.LogErrorFormat("[MathUtil] Remap: tA and tB have same value {0}, cannot divide by 0, " +
-					"fall back to pA {1}", tA, pA);
+				if (pA != pB)
+				{
+					Debug.LogErrorFormat("[VectorUtil] RemapWithLerpCallback: tA and tB have same value {0}, yet pA ({1}) != pB ({2}). " +
+						"Since we cannot divide by 0, we will fall back to pA {1}, but that will be arbitrary " +
+						"(when pA == pB, this case is tolerated)", tA, pA, pB);
+				}
 				#endif
 
 				return pA;

@@ -72,8 +72,12 @@ namespace CommonsHelper
             if (xDelta == 0f)
             {
                 #if UNITY_EDITOR
-                Debug.LogErrorFormat("[MathUtil] Remap: xA and xB have same value {0}, cannot divide by 0, " +
-                    "fall back to yA {1}", xA, yA);
+                if (yA != yB)
+                {
+                    Debug.LogErrorFormat("[MathUtil] RemapWithLerpCallback: xA and xB have same value {0}, yet yA ({1}) != yB ({2}). " +
+                        "Since we cannot divide by 0, we will fall back to yA {1}, but that will be arbitrary " +
+                        "(when yA == yB, this case is tolerated)", xA, yA, yB);
+                }
                 #endif
 
                 return yA;
