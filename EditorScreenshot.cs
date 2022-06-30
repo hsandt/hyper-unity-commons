@@ -14,7 +14,7 @@ namespace CommonsEditor
 	{
 		const string defaultScreenshotFolderPath = "Screenshots";
 		const string defaultScreenshotFilenamePrefix = "screenshot_";
-		
+
 		// EXPERIMENTAL: default parameters for hi-res screenshot
 		const int defaultHiResWidth = 3840;
 		const int defaultHiResHeight = 2160;
@@ -22,7 +22,7 @@ namespace CommonsEditor
 		string screenshotFolderPath = defaultScreenshotFolderPath;
 		string screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
 		int nextScreenshotIndex = 0;
-		
+
 		// EXPERIMENTAL: parameters for hi-res screenshot
 		public int hiResWidth = defaultHiResWidth;
 		public int hiResHeight = defaultHiResHeight;
@@ -47,7 +47,7 @@ namespace CommonsEditor
 			{
 				editorScreenshot.screenshotFolderPath = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath");
 			}
-			
+
 			// if empty, revert to default
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFolderPath))
 			{
@@ -59,7 +59,7 @@ namespace CommonsEditor
 			{
 				editorScreenshot.screenshotFilenamePrefix = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix");
 			}
-			
+
 			// if empty, revert to default
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFilenamePrefix))
 			{
@@ -81,7 +81,7 @@ namespace CommonsEditor
 			{
 				editorScreenshot.hiResHeight = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.hiResHeight");
 			}
-			
+
 			// if one dimension is 0, revert to default
 			if (editorScreenshot.hiResWidth == 0 || editorScreenshot.hiResHeight == 0)
 			{
@@ -118,6 +118,12 @@ namespace CommonsEditor
 			if (GUILayout.Button("Take hi-res screenshot")) TakeHiresScreenshot();
 		}
 
+		private string ConstructScreenshotPath(bool hires)
+		{
+			string optionalResolutionSuffix = hires ? " (hires)" : "";
+			return $"{screenshotFolderPath}/{screenshotFilenamePrefix}{nextScreenshotIndex:00}{optionalResolutionSuffix}.png";
+		}
+
 		void TakeScreenshot()
 		{
 			if (string.IsNullOrWhiteSpace(screenshotFolderPath))
@@ -125,7 +131,7 @@ namespace CommonsEditor
 				Debug.LogWarning("Screenshot Folder Path is empty, cannot take screenshot.");
 				return;
 			}
-			
+
 			// get name of current focused window, which should be "  (UnityEditor.GameView)" if it is a Game view
 			string focusedWindowName = EditorWindow.focusedWindow.ToString();
 			if (!focusedWindowName.Contains("UnityEditor.GameView")) {
@@ -151,7 +157,8 @@ namespace CommonsEditor
 				{
 					Directory.CreateDirectory(screenshotFolderPath);
 				}
-				string path = string.Format("{0}/{1}{2:00}.png", screenshotFolderPath, screenshotFilenamePrefix, nextScreenshotIndex);
+
+				string path = ConstructScreenshotPath(false);
 				ScreenCapture.CaptureScreenshot(path);
 
 				Debug.LogFormat("Screenshot recorded at {0} ({1})", path, UnityStats.screenRes);
@@ -195,7 +202,8 @@ namespace CommonsEditor
 				{
 					Directory.CreateDirectory(screenshotFolderPath);
 				}
-				string path = string.Format("{0}/{1}{2:00} (hires).png", screenshotFolderPath, screenshotFilenamePrefix, nextScreenshotIndex);
+
+				string path = ConstructScreenshotPath(true);
 				File.WriteAllBytes(path, bytes);
 
 				Debug.LogFormat("Hires Screenshot recorded at {0} ({1})", path, UnityStats.screenRes);
