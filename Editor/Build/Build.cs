@@ -48,10 +48,10 @@ namespace CommonsHelper.Editor
 		};
 
 		const BuildOptions autoRunOption = BuildOptions.AutoRunPlayer;
-		
+
 		// options for dev build on Standalone (PC and mobile)
 		const BuildOptions standAloneDevelopmentOptions = BuildOptions.Development | BuildOptions.AllowDebugging;
-		
+
 		// WebGL dev build only should not rely on AllowDebugging aka Script Debugging
 		// (despite being only visible for Standalone in Build Settings UI), so don't use this option on WebGL dev build
 		// See https://forum.unity.com/threads/cannot-build-in-development-mode.691183/#post-6793151
@@ -61,6 +61,10 @@ namespace CommonsHelper.Editor
 		/// Return all the scenes checked in the Build Settings
 		static string[] GetScenes () {
 			return EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
+		}
+
+		public static BuildData GetBuildData() {
+			return Resources.Load<BuildData>(buildDataPathInResources);
 		}
 
 		/// Build the player for a target, with a build platform name (Windows, OSX, Android, etc.), a build target name (Windows 64, OSX, Android),
@@ -75,7 +79,7 @@ namespace CommonsHelper.Editor
 
 			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
 
-			BuildData buildData = Resources.Load<BuildData>(buildDataPathInResources);
+			BuildData buildData = GetBuildData();
 			if (buildData == null)
 			{
 				string fullBuildDataPath = Path.Combine("Assets", defaultResourcesDirectoryPath, buildDataPathInResources);
@@ -116,7 +120,7 @@ namespace CommonsHelper.Editor
 				target = buildTarget,
 				options = autoRunOption | buildTargetDerivedData.platformSpecificOptions | extraOptions
 			};
-			
+
 			// store original config to restore after build (and avoid unwanted changes in Player Settings that will show in VCS)
 			var originalScriptingBackend = PlayerSettings.GetScriptingBackend(buildTargetGroup);
 			var originalIl2CppCompilerConfiguration = PlayerSettings.GetIl2CppCompilerConfiguration(buildTargetGroup);
@@ -129,14 +133,14 @@ namespace CommonsHelper.Editor
 				if (buildTarget != BuildTarget.WebGL)
 				{
 					buildPlayerOptions.options |= standAloneDevelopmentOptions;
-					
+
 					// use Mono for faster build
 					PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.Mono2x);
 				}
 				else
 				{
 					buildPlayerOptions.options |= webGLDevelopmentOptions;
-					
+
 					// WebGL uses WebAssembly anyway, so at least set C++ config to debug
 					PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Debug);
 				}
@@ -154,7 +158,7 @@ namespace CommonsHelper.Editor
 				// Release build
 
 				bool useIL2CPP;
-				
+
 				// WebGL uses WebAssembly anyway so no need to set IL2CPP
 				if (buildTarget == BuildTarget.WebGL)
 				{
@@ -168,7 +172,7 @@ namespace CommonsHelper.Editor
 					//  and in addition, Windows can build IL2CPP for Linux (Unity 2020+)
 					// make sure to install any IL2CPP modules available for your version of Unity
 					bool shouldBuildIL2CPP;
-					
+
 					// Editor must be running on one of those, so editorPlatform should be defined
 #if UNITY_EDITOR_WIN
 #	if UNITY_2020_1_OR_NEWER
@@ -182,7 +186,7 @@ namespace CommonsHelper.Editor
 					shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneLinux64;
 #endif
 					if (shouldBuildIL2CPP)
-					{  
+					{
 						PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.IL2CPP);
 						useIL2CPP = true;
 					}
@@ -199,10 +203,10 @@ namespace CommonsHelper.Editor
 					// if Master works on Windows/WebGL, though, consider using it for their Releases
 					PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Release);
 				}
-				
+
 				// Same remark as with dev build, but we pass the release config this time
 				ManagedStrippingLevel managedStrippingLevel = (ManagedStrippingLevel) buildData.releaseBuildStrippingLevel;
-				
+
 				// IL2CPP needs at least Low stripping level
 				if (useIL2CPP && managedStrippingLevel == ManagedStrippingLevel.Disabled)
 				{
@@ -229,7 +233,7 @@ namespace CommonsHelper.Editor
 			{
 				PlayerSettings.SetScriptingBackend(buildTargetGroup, originalScriptingBackend);
 			}
-			
+
 			PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, originalIl2CppCompilerConfiguration);
 			PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, originalManagedStrippingLevel);
 		}
