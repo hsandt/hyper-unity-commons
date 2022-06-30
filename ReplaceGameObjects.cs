@@ -13,6 +13,7 @@
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
@@ -63,7 +64,7 @@ namespace CommonsEditor
 
 			if (replacingObject != null) {
 
-				List<GameObject> replacedObjects = new List<GameObject> ();
+				List<GameObject> replacingObjects = new List<GameObject> ();
 
 				PrefabStage currentPrefabStage = null;
 
@@ -81,10 +82,34 @@ namespace CommonsEditor
 					return;
 				}
 
-				// Note that Selection.transforms, unlike Selection.objects, only keeps the top-most parent
+				// Selection.transforms, unlike Selection.objects, only keeps the top-most parent
 				// if you selected both a parent and a direct or indirect child under it.
-				// But since replacing the parent would destroy children anyway, it makes sense.
-				foreach (Transform t in Selection.transforms) {
+				// Since replacing the parent would destroy children anyway, we only need to work with selected roots,
+				// so Selection.transforms is what we want to use.
+
+				// However, there is an edge case: Selection.transforms fail to list game objects associated to
+				// missing prefabs (shown in red in Hierarchy).
+				// So to get them, we check Selection.gameObjects instead, which is exhaustive, but also lists children
+				// of other selected objects instead of selection roots only, which we don't want to replace
+				// (as explained above).
+				// So the trick is to only take selected game objects that are NOT already selected roots or children of selected roots
+				// (not that IsChildOf returns true if transforms are equal).
+				// Note that this long Linq query is almost equivalent to iterating over all Selection.transforms and
+				// RemoveAll game objects that verify IsChildOf, except the enumerable is not interpreted yet,
+				// so we will need a ToList conversion later (see remark below).
+				IEnumerable<Transform> extraSelectedTransformsToReplaceEnumerable = Selection.gameObjects
+					.Where(gameObject => Selection.transforms.All(t => !gameObject.transform.IsChildOf(t)))
+					.Select(gameObject => gameObject.transform);
+
+				// Now concatenate both the selected roots and the extra transforms (i.e. the missing prefab objects
+				// not already child of selected roots).
+				// It is important to resolve the list from the enumerable now, as the enumerable refers to intermediate
+				// game objects that may be destroyed in the loop below (when their (indirect) parent is destroyed),
+				// causing an error when iterating on them. Whereas the resolved list will exclude all these objects
+				// already parented to a selected root, only keeping independent missing prefab objects.
+				List<Transform> transformsToReplace = Selection.transforms.Concat(extraSelectedTransformsToReplaceEnumerable).ToList();
+
+				foreach (Transform t in transformsToReplace) {
 
 					GameObject replacedGameObject = t.gameObject;
 
@@ -180,7 +205,7 @@ namespace CommonsEditor
 						if (keepSiblingIndex)
 							newT.transform.SetSiblingIndex(t.GetSiblingIndex());
 
-						replacedObjects.Add (newT.gameObject);
+						replacingObjects.Add (newT.gameObject);
 					}
 
 					// Make sure to undo creation after doing all the work on created object properties
@@ -196,7 +221,7 @@ namespace CommonsEditor
 				}
 
 				// Select new objects
-				Selection.objects = replacedObjects.ToArray ();
+				Selection.objects = replacingObjects.ToArray ();
 			}
 		}
 
