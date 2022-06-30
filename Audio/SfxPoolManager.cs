@@ -5,6 +5,14 @@ using UnityEngine;
 
 using CommonsPattern;
 
+/// Pool Manager allowing to easily play SFX
+/// Has a feature to adjust volume automatically when many SFX of the same type are played
+/// We recommend to use the SfxPoolManager_Base prefab provided in Commons Pattern/Audio, which itself assigns
+/// pooledObjectPrefab = SfxAudioSource_Base prefab provided in Commons Pattern/Audio.
+/// Then, if you need to customize things further (e.g. set Audio Source Output Mixer to game-specific SFX channel),
+/// create a prefab variant of SfxAudioSource_Base (SfxAudioSource_Variant), then create a prefab variant of
+/// SfxPoolManager_Base (e.g. SfxPoolManager_Variant), and on it, override pooledObjectPrefab = SfxAudioSource_Variant.
+/// This way, you benefit from the latest changes done on the base prefabs, while keeping your game-specific overrides.
 public class SfxPoolManager : PoolManager<Sfx, SfxPoolManager>
 {
     [Header("Parameters")]
@@ -24,7 +32,7 @@ public class SfxPoolManager : PoolManager<Sfx, SfxPoolManager>
          "(total volume scale of N SFX using same clip)\n" +
          "= (1 - sameClipStackVolumeModifierFactor^N) / (1-sameClipStackVolumeModifierFactor)")]
     [Range(0f, 1f)]
-    private float sameClipStackVolumeModifierFactor = 0.5f;
+    private float sameClipStackVolumeModifierFactor = 1f;
 
 
     protected override void Init()
