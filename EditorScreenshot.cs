@@ -2,14 +2,16 @@
 // 2016.05.15
 // MIT License
 
-using UnityEngine;
-using UnityEditor;
 using System;
 using System.IO;
+using UnityEditor;
+using UnityEngine;
+
+using CommonsHelper;
+using CommonsHelper.Editor;
 
 namespace CommonsEditor
 {
-
 	public class EditorScreenshot : EditorWindow
 	{
 		const string defaultScreenshotFolderPath = "Screenshots";
@@ -120,8 +122,15 @@ namespace CommonsEditor
 
 		private string ConstructScreenshotPath(bool hires)
 		{
+			// Add title and version if available
+			BuildData buildData = Build.GetBuildData();
+			string appPrefix = buildData ? $"{buildData.appName} {buildData.GetVersionString()} " : "";
+
+			// Add resolution suffix for hires
 			string optionalResolutionSuffix = hires ? " (hires)" : "";
-			return $"{screenshotFolderPath}/{screenshotFilenamePrefix}{nextScreenshotIndex:00}{optionalResolutionSuffix}.png";
+
+			// Ex: "Dragon Raid v0.2.0 screenshot_17 (hires)"
+			return $"{screenshotFolderPath}/{appPrefix}{screenshotFilenamePrefix}{nextScreenshotIndex:00}{optionalResolutionSuffix}.png";
 		}
 
 		void TakeScreenshot()
@@ -133,11 +142,11 @@ namespace CommonsEditor
 			}
 
 			// get name of current focused window, which should be "  (UnityEditor.GameView)" if it is a Game view
-			string focusedWindowName = EditorWindow.focusedWindow.ToString();
+			string focusedWindowName = focusedWindow.ToString();
 			if (!focusedWindowName.Contains("UnityEditor.GameView")) {
 				// since no Game view is focused right now, focus on any Game view, or create one if needed
 				Type gameViewType = Type.GetType("UnityEditor.GameView,UnityEditor");
-				EditorWindow.GetWindow(gameViewType);
+				GetWindow(gameViewType);
 			}
 
 			// Tried getting the last focused window, but does not always work (even for focused window!)
@@ -222,5 +231,4 @@ namespace CommonsEditor
 			EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
 		}
 	}
-
 }

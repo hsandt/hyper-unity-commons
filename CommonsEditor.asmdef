@@ -2,7 +2,8 @@
     "name": "CommonsEditor",
     "rootNamespace": "CommonsEditor",
     "references": [
-        "CommonsHelper"
+        "CommonsHelper",
+        "CommonsHelper.Editor"
     ],
     "includePlatforms": [
         "Editor"
