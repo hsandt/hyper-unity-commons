@@ -8,7 +8,7 @@ namespace CommonsPattern
 	/// It is important to make it a singleton with instance members rather than a (static) class with static members
 	/// to avoid preserving taggedGameObjects across play sessions, in case we change tags between two sessions.
 	/// SEO: before any script whose Awake uses LocatorManager (e.g. PoolManager setting poolTransform in Init)
-	/// executionOrder was set to -50 in .meta to work with most scripts
+	/// executionOrder was set to -70 in .meta to work with most scripts
 	public class LocatorManager : SingletonManager<LocatorManager>
 	{
 		/// Dictionary of references to game objects
@@ -29,7 +29,7 @@ namespace CommonsPattern
 				{
 					return go;
 				}
-				
+
 				// GameObject was registered with tag, but is now considered null. It has probably been destroyed
 				// by a script, or during scene loading while Locator was flagged DontDestroyOnLoad (not recommended).
 				// Clean up destroyed object now.
@@ -47,7 +47,7 @@ namespace CommonsPattern
 				taggedGameObjects[tag] = go;
 				return go;
 			}
-			
+
 			Debug.LogWarningFormat("Could not locate game object with tag {0}.", tag);
 			return null;
 		}
