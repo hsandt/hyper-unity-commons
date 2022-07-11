@@ -124,14 +124,14 @@ namespace CommonsDebug
 		#endregion
 
 		/// <summary>
-		/// Assert that passed list/array is not null, and that no elements are null
+		/// Assert that passed list/array of Objects is not null, and that no elements are null
 		/// </summary>
-		/// <param name="list">List list/array to verify</param>
+		/// <param name="list">List list/array of Objects to verify</param>
 		/// <param name="context">Object owning the list/array, if any. Used as context for the Debug Console.</param>
 		/// <param name="listName">Name of list/array variable for debug</param>
 		/// <typeparam name="T">Type of elements in the list/array</typeparam>
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
-		public static void AssertListElementsNotNull<T>(IReadOnlyList<T> list, Object context, string listName)
+		public static void AssertListElementsNotNull<T>(IReadOnlyList<T> list, Object context, string listName) where T : Object
 		{
 			if (list != null)
 			{
@@ -139,7 +139,12 @@ namespace CommonsDebug
 				// entries may be added later by code
 				for (int i = 0; i < list.Count; i++)
 				{
-					Debug.AssertFormat(list[i] != null, context, "{0}[{1}] is null on {2}", listName, i, context);
+					// Just like GetComponentOrFail extension method (but still true in Unity 2021),
+					// we noticed that undefined list entries are not truly null,
+					// but some dummy Object with instance ID = 0, to allow showing an
+					// UnassignedReferenceException with details on which field is undefined to the developer.
+					Debug.AssertFormat(list[i] != null && list[i].GetInstanceID() != 0,
+						context, "{0}[{1}] is null/undefined/missing on {2}", listName, i, context);
 				}
 			}
 			else
