@@ -75,10 +75,12 @@ namespace CommonsHelper
 	        return (key1.value - key2.value) / timeDiff;
 	    }
 
-	    // @MitchStan
+	    // Code by @MitchStan on
 	    // https://answers.unity.com/questions/1259647/calculate-surface-under-a-curve-from-an-animationc.html
-	    // I removed parameters float w and h because we don't need to draw the curve in a stretched window, we just want the actual integral
-	    // I also renamed areaUnderCurve -> integral since the formula is generic and also works with negative values
+	    // Changes by hsandt:
+	    // - I removed parameters float w and h because we don't need to draw the curve in a stretched window, we just want the actual integral
+	    // - I also renamed areaUnderCurve -> integral since the formula is generic and also works with negative values
+	    // - I added support for constant tangents by checking if (float.IsInfinity(K1.outTangent) || float.IsInfinity(K2.inTangent))
 	    public static float Integral(AnimationCurve curve)
 	    {
 	        float integral = 0f;
