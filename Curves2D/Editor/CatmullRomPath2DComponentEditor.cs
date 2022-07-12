@@ -28,6 +28,8 @@ namespace CommonsHelper.Editor
 
         private const float DOTTED_LINE_SCREEN_SPACE_SIZE = 5f;
 
+        private static readonly Color s_ExtraPathColor = new Color(1f, 0.71f, 0.45f);
+
 
         private void OnSceneGUI()
         {
@@ -56,12 +58,12 @@ namespace CommonsHelper.Editor
             if (eventType == EventType.Repaint)
             {
                 // Draw dotted line between first (external) control point and actual path start (second point)
-                HandlesUtil.DrawDottedLine2D(path.GetKeyPoint(0), path.GetPathStartPoint(), DOTTED_LINE_SCREEN_SPACE_SIZE, s_PathColor);
+                HandlesUtil.DrawDottedLine2D(path.GetKeyPoint(0), path.GetPathStartPoint(), DOTTED_LINE_SCREEN_SPACE_SIZE, s_ExtraPathColor);
 
                 // Draw dotted line between last (external) control point and actual path end (pre-last point)
                 // GetKeyPoint takes an int, so we must compute index from count manually
                 // If this is done often, we can also add an overload that takes an Index to support ^1
-                HandlesUtil.DrawDottedLine2D(path.GetPathEndPoint(), path.GetKeyPoint(path.GetKeyPointsCount() - 1), DOTTED_LINE_SCREEN_SPACE_SIZE, s_PathColor);
+                HandlesUtil.DrawDottedLine2D(path.GetPathEndPoint(), path.GetKeyPoint(path.GetKeyPointsCount() - 1), DOTTED_LINE_SCREEN_SPACE_SIZE, s_ExtraPathColor);
             }
         }
 
