@@ -263,12 +263,46 @@ namespace CommonsHelper
             }
         }
 
+        /// <summary>
+        /// Draw a circle
+        /// </summary>
+        /// <param name="center">Center of the circle</param>
+        /// <param name="rotation">Rotation of the circle</param>
+        /// <param name="radius">Radius of the circle</param>
+        /// <param name="thickness">Thickness of the circle</param>
+        public static void DrawCrossedCircle(Vector3 center, Quaternion rotation, float radius, float thickness = 0f)
+        {
+            // Draw circle
+            Vector3 normal = rotation * Vector3.forward;
+            Handles.DrawWireDisc((Vector3)center, normal, radius, thickness);
+
+            // Draw cross
+            Handles.DrawLine(center + radius * (rotation * Vector3.left), center + radius * (rotation * Vector3.right));
+            Handles.DrawLine(center + radius * (rotation * Vector3.up), center + radius * (rotation * Vector3.down));
+        }
+
+        /// <summary>
+        /// Draw a circle in the XY plane
+        /// </summary>
+        /// <param name="center">Center of the circle</param>
+        /// <param name="radius">Radius of the circle</param>
+        /// <param name="color">Color of the circle</param>
+        /// <param name="thickness">Thickness of the circle</param>
+        public static void DrawCrossedCircle2D(Vector2 center, float radius, Color color, float thickness = 0f)
+        {
+            using (new Handles.DrawingScope(color))
+            {
+                DrawCrossedCircle(center, Quaternion.identity, radius, thickness);
+            }
+        }
+
         #region Handle
 
         const float defaultHandleScreenSize = 0.1f;
         static readonly Handles.CapFunction defaultHandleCap = Handles.CubeHandleCap; // Unity 5.6
 
         /// Adapted from Handles.CircleHandleCap
+        /// (see https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Handles.cs)
         /// Draws a circle with a cross inside so we can drag a wide circle while seeing the target position precisely
         public static void CrossedCircleHandleCap(int controlID, Vector3 position, Quaternion rotation, float size,
             EventType eventType)
@@ -291,12 +325,7 @@ namespace CommonsHelper
                             startCapDrawMethod.Invoke(null, new object[] { position, rotation, size });
 
                             // End of reflection, do the rest of what Handles.CircleHandleCap does normally
-                            Vector3 normal = rotation * new Vector3(0.0f, 0.0f, 1f);
-                            Handles.DrawWireDisc(position, normal, size);
-
-                            // Add custom code here to draw the cross inside the circle
-                            Handles.DrawLine(position + size * Vector3.left, position + size * Vector3.right);
-                            Handles.DrawLine(position + size * Vector3.up, position + size * Vector3.down);
+                            DrawCrossedCircle(position, rotation, size);
                         }
                     }
 
