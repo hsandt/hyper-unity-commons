@@ -50,7 +50,7 @@ namespace CommonsHelper.Editor
 
             if (script != null)
             {
-                DrawEditablePath(script);
+                DrawEditablePathWithNaturalOffset(script);
             }
         }
 

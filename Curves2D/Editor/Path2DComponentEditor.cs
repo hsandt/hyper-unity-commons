@@ -141,7 +141,15 @@ namespace CommonsHelper.Editor
             );
         }
 
-        public void DrawEditablePath(Path2DComponent script)
+        /// Draw editable path with transform offset if path is relative, or no offset else
+        public void DrawEditablePathWithNaturalOffset(Path2DComponent script)
+        {
+            Vector2 offset = script.IsRelative ? (Vector2)script.transform.position : Vector2.zero;
+            DrawEditablePathWithOffset(script, offset);
+        }
+
+        /// Draw editable path with passed offset
+        public void DrawEditablePathWithOffset(Path2DComponent script, Vector2 offset)
         {
             Path2D path = script.Path;
 
@@ -151,8 +159,6 @@ namespace CommonsHelper.Editor
                 Undo.RecordObject(script, "Sanitize Path");
                 path.SanitizePath();
             }
-
-            Vector2 offset = script.IsRelative ? (Vector2)script.transform.position : Vector2.zero;
 
             // Pre-compute interpolated points, they are used for both edit (to detect if cursor is close
             // to a curve) and drawing. Those interpolated points do *not* integrate the path offset.
