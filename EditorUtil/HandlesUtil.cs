@@ -799,15 +799,30 @@ namespace CommonsHelper
             }
         }
 
+        [Obsolete("Use DrawLabelWithBackground")]
+        public static void DrawLabelWithBackground(Vector2 position, string text, float sizeFactor = 1f,
+            bool fixedFontSize = false, Color? textColor = null, Color? backgroundColor = null)
+        {
+            DrawLabel2DWithBackground(position, text, sizeFactor, fixedFontSize, textColor, backgroundColor);
+        }
+
         /// Draw vector text with rectangle background and auto-padding at given position (used for background rectangle topleft),
         /// size and color. If fixedFontSize is true, the size is constant in screen space, else it is constant in world space.
-        public static void DrawLabelWithBackground(Vector2 position, string text, float sizeFactor = 1f,
+        public static void DrawLabel2DWithBackground(Vector2 position, string text, float sizeFactor = 1f,
             bool fixedFontSize = false, Color? textColor = null, Color? backgroundColor = null)
         {
             GUIContent textContent = new GUIContent(text);
 
-            // Background label
             float pixelSize = Get2DPixelSize();
+            if (pixelSize == 0f)
+            {
+                // We are not in 2D mode, this is not supported
+                // If you try Get2DPixelSizeWith3DFallback to absolutely get some pixel size > 0,
+                // it will draw a label background in 3D, but the text will still be drawn in flat 2D so it won't fit in
+                return;
+            }
+
+            // Background label
             GUIStyle guiStyle = CreateGuiStyle(pixelSize, sizeFactor, fixedFontSize, textColor);
             guiStyle.padding = new RectOffset(5, 5, 5, 5);
             // Set alignment to UpperLeft. We'll offset label manually, as it's more reliable than using MiddleCenter.
