@@ -23,7 +23,7 @@ namespace CommonsHelper
         public static float Get2DPixelResolution()
         {
             Camera camera = Camera.current;
-            // Non orthographic and forward/backward cameras are not supported by our calculation
+            // Only orthographic forward/backward cameras are supported by our calculation
             if (camera == null || !(camera.orthographic && Mathf.Abs(camera.transform.forward.z) == 1f))
                 return 0f;
 
@@ -62,6 +62,15 @@ namespace CommonsHelper
         public static float GetPixelSize(Vector3 position)
         {
             return HandleUtility.GetHandleSize(position) / 80f;
+        }
+
+        /// Return size of a pixel in world distance unit, when looking with a 2D camera.
+        /// Else, fall back to general pixel size (for non-orthogonal or non-forward/backward cameras).
+        /// Use this when you are drawing a Handle that should support both 2D and non-2D views.
+        public static float Get2DPixelSizeWith3DFallback(Vector3 position)
+        {
+            float pixel2DSize = Get2DPixelSize();
+            return pixel2DSize > 0f ? pixel2DSize : GetPixelSize(position);
         }
 
         /// Cached method info for 3-parameter HandleUtility.DistanceToPolyLine used by local DistanceToPolyLine
