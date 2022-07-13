@@ -1,4 +1,4 @@
-﻿public enum Slice {
+﻿public enum SlicedCurvePhase {
     None,
     Intro,
     Loop,
