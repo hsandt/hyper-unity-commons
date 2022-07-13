@@ -38,6 +38,16 @@ namespace CommonsHelper.Tests
 	    }
 
 	    [Test]
+	    public void GetDuration_ConstantZeroCurve_Zero () {
+	        Assert.AreEqual(0f, constantZeroCurve.GetDuration());
+	    }
+
+	    [Test]
+	    public void GetDuration_ConstantPositiveCurve_LastKeyTime () {
+	        Assert.AreEqual(4f, constantPositiveCurve.GetDuration());
+	    }
+
+	    [Test]
 	    public void Integral_ConstantZeroCurve_Zero () {
 	        Assert.AreEqual(0f, AnimationCurveUtil.Integral(constantZeroCurve));
 	    }
