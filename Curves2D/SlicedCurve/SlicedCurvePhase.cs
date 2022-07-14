@@ -1,7 +1,7 @@
 ﻿public enum SlicedCurvePhase {
     None,
     Intro,
-    Loop,
+    Sustain,
     Outro,
     End
 }
