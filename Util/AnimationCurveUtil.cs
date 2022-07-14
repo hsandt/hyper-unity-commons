@@ -10,7 +10,8 @@ namespace CommonsHelper
 {
     public static class AnimationCurveUtil
     {
-        public static float GetDuration(this AnimationCurve animationCurve)
+        /// Return duration of animation (time of last key)
+        public static float GetDuration(AnimationCurve animationCurve)
         {
             return animationCurve.keys.Last().time;
         }

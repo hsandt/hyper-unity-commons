@@ -174,6 +174,15 @@ namespace CommonsHelper
 
 	}
 
+	public static class AnimationCurveExtensions {
+
+		/// Return duration of animation (time of last key)
+		public static float GetDuration(this AnimationCurve animationCurve) {
+			return AnimationCurveUtil.GetDuration(animationCurve);
+		}
+
+	}
+
 	// from http://answers.unity3d.com/questions/150690/using-a-bitwise-operator-with-layermask.html
 	public static class LayerMaskExtensions {
 
