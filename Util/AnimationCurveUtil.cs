@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -16,14 +17,26 @@ namespace CommonsHelper
             return animationCurve.keys.Last().time;
         }
 
+        [Obsolete("Use CreateStep")]
         public static AnimationCurve CreateConstant(params Keyframe[] keys)
+        {
+            return CreateStep(keys);
+        }
+
+        public static AnimationCurve CreateStep(params Keyframe[] keys)
         {
             AnimationCurve curve = new AnimationCurve(keys);
             SetAllTangentsConstant(curve);
             return curve;
         }
 
+        [Obsolete("Use CreatePiecewiseLinear")]
         public static AnimationCurve CreateLinear(params Keyframe[] keys)
+        {
+            return CreatePiecewiseLinear(keys);
+        }
+
+        public static AnimationCurve CreatePiecewiseLinear(params Keyframe[] keys)
         {
             AnimationCurve curve = new AnimationCurve(keys);
             SetAllTangentsLinear(curve);

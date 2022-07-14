@@ -10,6 +10,7 @@ namespace CommonsHelper.Tests
 	public class AnimationCurveUtilTests {
 
 	    AnimationCurve constantZeroCurve;
+	    AnimationCurve constantPointCurve;
 	    AnimationCurve constantPositiveCurve;
 	    AnimationCurve constantMixedCurve;
 	    AnimationCurve linearPositiveCurve;
@@ -19,11 +20,12 @@ namespace CommonsHelper.Tests
 
 	    [OneTimeSetUp]
 	    public void Init () {
-	        constantZeroCurve = AnimationCurveUtil.CreateConstant(new Keyframe(0f, 0f));
-	        constantPositiveCurve = AnimationCurveUtil.CreateConstant(new Keyframe(0f, 0f), new Keyframe(1f, 1f), new Keyframe(2f, 3f), new Keyframe(4f, 0f));
-	        constantMixedCurve = AnimationCurveUtil.CreateConstant(new Keyframe(0f, 0f), new Keyframe(1f, 2f), new Keyframe(2f, -3f), new Keyframe(4f, 1f));
-	        linearPositiveCurve = AnimationCurveUtil.CreateLinear(new Keyframe(0f, 0f), new Keyframe(1f, 1f), new Keyframe(2f, 1f), new Keyframe(4f, 0f));
-	        linearMixedCurve = AnimationCurveUtil.CreateLinear(new Keyframe(0f, -2f), new Keyframe(1f, 1f), new Keyframe(2f, -1f), new Keyframe(4f, 0f));
+	        constantZeroCurve = AnimationCurveUtil.CreateStep(new Keyframe(0f, 0f));
+	        constantPointCurve = AnimationCurveUtil.CreateStep(new Keyframe(0f, 9999f));
+	        constantPositiveCurve = AnimationCurveUtil.CreateStep(new Keyframe(0f, 0f), new Keyframe(1f, 1f), new Keyframe(2f, 3f), new Keyframe(4f, 0f));
+	        constantMixedCurve = AnimationCurveUtil.CreateStep(new Keyframe(0f, 0f), new Keyframe(1f, 2f), new Keyframe(2f, -3f), new Keyframe(4f, 1f));
+	        linearPositiveCurve = AnimationCurveUtil.CreatePiecewiseLinear(new Keyframe(0f, 0f), new Keyframe(1f, 1f), new Keyframe(2f, 1f), new Keyframe(4f, 0f));
+	        linearMixedCurve = AnimationCurveUtil.CreatePiecewiseLinear(new Keyframe(0f, -2f), new Keyframe(1f, 1f), new Keyframe(2f, -1f), new Keyframe(4f, 0f));
 
 	        // default tangents are 0
 	        Keyframe k0 = new Keyframe(0f, 1f);
@@ -43,6 +45,11 @@ namespace CommonsHelper.Tests
 	    }
 
 	    [Test]
+	    public void GetDuration_ConstantPointCurve_Zero () {
+	        Assert.AreEqual(0f, constantPointCurve.GetDuration());
+	    }
+
+	    [Test]
 	    public void GetDuration_ConstantPositiveCurve_LastKeyTime () {
 	        Assert.AreEqual(4f, constantPositiveCurve.GetDuration());
 	    }
@@ -50,6 +57,12 @@ namespace CommonsHelper.Tests
 	    [Test]
 	    public void Integral_ConstantZeroCurve_Zero () {
 	        Assert.AreEqual(0f, AnimationCurveUtil.Integral(constantZeroCurve));
+	    }
+
+	    [Test]
+	    public void Integral_ConstantPointCurve_Zero () {
+		    // Value is high, but interval on X is zero, so result is 0
+	        Assert.AreEqual(0f, AnimationCurveUtil.Integral(constantPointCurve));
 	    }
 
 	    [Test]
