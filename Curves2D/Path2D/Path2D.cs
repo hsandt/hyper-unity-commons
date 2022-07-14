@@ -8,9 +8,37 @@ using UnityEngine;
 namespace CommonsHelper
 {
     /// Base class for path = series of connected curves
+    /// A path is defined by key points, which themselves define interpolated curves in a way that
+    /// each concrete child class should define via interpolation methods.
+    /// A path parameter evolves between 0 and [curves count], and corresponds to a point moving along the path
+    /// from start to end, reaching the next curve on each integer value.
+    /// A path normalized parameter evolves between 0 and 1, and corresponds to the same point as
+    /// a path parameter = normalized parameter * [curves count]
     /// Remember to make your child class [Serializable] to make it editable inside component
     public abstract class Path2D
     {
+        /// Info associating path (non-normalized) parameter / curve parameter and cumulated length evaluated
+        /// from path / curve start
+        /// Build a List of those to create a cumulated length mapping, useful to work with path / curve distances
+        /// instead of parameter differences (because parameters are regular intervals may not correspond to
+        /// points at regular distances along the path / curve, as most splines have a non-uniform parametric speed.
+        public class CumulatedLengthInfo
+        {
+            /// Parameter at which the cumulated length was evaluated from path / curve start
+            /// For path, we use non-normalized parameter ([curves count] is the end of path)
+            /// For curve, the parameter is naturally normalized (1 is the end of curve)
+            public float parameter;
+
+            /// Evaluated cumulated length from part start
+            public float cumulatedLength;
+
+            public CumulatedLengthInfo(float parameter, float cumulatedLength)
+            {
+                this.parameter = parameter;
+                this.cumulatedLength = cumulatedLength;
+            }
+        }
+
         /// Read-only access to list of control points
         public abstract ReadOnlyCollection<Vector2> ControlPoints { get; }
 
@@ -193,17 +221,74 @@ namespace CommonsHelper
             return EvaluateCurveLength(curve, segmentsCount);
         }
 
-        /// Return an evaluation of the passed curve (array of points), as the sum of [segmentsCount] segment approximation
-        /// lengths
+        /// Return an evaluation of the passed curve (array of points), as the sum of [segmentsCount] segment
+        /// approximation lengths
         public float EvaluateCurveLength(Vector2[] curve, int segmentsCount)
         {
+            // The curve length is simply the cumulated length on the end (last) point
+            return YieldEvaluateCurveSegmentLengths(curve, segmentsCount).Last().cumulatedLength;
+        }
+
+        public List<CumulatedLengthInfo> EvaluateCumulatedLengths(int segmentsCountPerCurve)
+        {
+            int curvesCount = GetCurvesCount();
+
+            List<CumulatedLengthInfo> cumulatedLengthInfos = new();
+            float pathCumulatedLengthAtLastCurveEnd = 0f;
+
+            for (int keyIndex = 0; keyIndex < curvesCount; ++keyIndex)
+            {
+                List<CumulatedLengthInfo> cumulatedCurveLengths = EvaluateCumulatedCurveLengths(keyIndex, segmentsCountPerCurve);
+                foreach (CumulatedLengthInfo cumulatedLengthInfo in cumulatedCurveLengths)
+                {
+                    // We have a curve parameter, which restarts at 0 for every curve, and we want the non-normalized
+                    // path parameter. Since the curve of index [keyIndex] starts with a path parameter of [keyIndex],
+                    // we must add this to the curve parameter.
+                    float pathParameter = keyIndex + cumulatedLengthInfo.parameter;
+
+                    // Similarly, to get the cumulated length of the whole path since the path start point,
+                    // we must add the path cumulated length at the end of the last curve.
+                    float pathCumulatedLength = pathCumulatedLengthAtLastCurveEnd + cumulatedLengthInfo.cumulatedLength;
+
+                    cumulatedLengthInfos.Add(new CumulatedLengthInfo(pathParameter, pathCumulatedLength));
+                }
+
+                // Remember path cumulated length at the end of this curve for the next curve (if any)
+                pathCumulatedLengthAtLastCurveEnd = cumulatedCurveLengths[^1].cumulatedLength;
+            }
+
+            return cumulatedLengthInfos;
+        }
+
+        /// Return a list of cumulated length info over curve of index i for [segmentsCount] segments
+        public List<CumulatedLengthInfo> EvaluateCumulatedCurveLengths(int keyIndex, int segmentsCount)
+        {
+            Vector2[] curve = GetCurve(keyIndex);
+            return EvaluateCumulatedCurveLengths(curve, segmentsCount);
+        }
+
+        /// Return a list of cumulated length info over passed curve (array of points) for [segmentsCount] segments
+        public List<CumulatedLengthInfo> EvaluateCumulatedCurveLengths(Vector2[] curve, int segmentsCount)
+        {
+            return YieldEvaluateCurveSegmentLengths(curve, segmentsCount).ToList();
+        }
+
+        /// Enumerate evaluated lengths of [segmentsCount] successive segments along the passed curve (array of points),
+        /// packed with curve parameter in CumulatedLengthInfo
+        private IEnumerable<CumulatedLengthInfo> YieldEvaluateCurveSegmentLengths(Vector2[] curve, int segmentsCount)
+        {
+            // By convention, always start with the first point at parameter 0, cumulated length 0
+            // This may help some algorithms like Lower/Upper Bound to always find a result when searching for
+            // a parameter between 0 and the first parameter yielded more below.
+            yield return new CumulatedLengthInfo(0f, 0f);
+
             // initialize current point to curve start point
             // do not take curve[0] as it won't work with some curves where the extreme points are not part of the
             // interpolated curve (Catmull-Rom), use Interpolate instead
             Vector2 currentPoint = Interpolate(curve, 0f);
 
-            // initialize total length to return
-            float length = 0f;
+            // initialize cumulated length to return
+            float cumulatedLength = 0f;
 
             for (int i = 0; i < segmentsCount; i++)
             {
@@ -211,16 +296,16 @@ namespace CommonsHelper
                 // this is the next point after current i, hence i + 1
                 float nextT = (float) (i + 1) / (float) segmentsCount;
 
-                // locate segment end and add segment length to total length
+                // locate segment end and evaluate segment length
                 Vector2 nextPoint = Interpolate(curve, nextT);
-                length += Vector2.Distance(currentPoint, nextPoint);
+                cumulatedLength += Vector2.Distance(currentPoint, nextPoint);
 
-                // update previous point for next iteration
+                // yield segment length
+                yield return new CumulatedLengthInfo(nextT, cumulatedLength);
+
+                // update previous point for next iteration (if any)
                 currentPoint = nextPoint;
             }
-
-            // return sum of all segment lengths
-            return length;
         }
 
         #endregion
