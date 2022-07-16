@@ -49,7 +49,7 @@ namespace CommonsHelper
 
         /// Current slice in the sliced curve
         private SlicedCurvePhase m_CurrentPhase;
-        protected SlicedCurvePhase CurrentPhase => m_CurrentPhase;
+        public SlicedCurvePhase CurrentPhase => m_CurrentPhase;
 
         /// Derived: Current slice curve (derived from m_CurrentSlicedCurvePhase)
         /// If no curve is associated to the current phase, this is null
@@ -57,7 +57,9 @@ namespace CommonsHelper
 
         /// Current time inside the current slice
         private float m_CurrentSliceTime;
-
+        #if UNITY_EDITOR
+        public float CurrentSliceTime => m_CurrentSliceTime;
+        #endif
 
         public SlicedCurveAnimator()
         {
