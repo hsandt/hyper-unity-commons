@@ -119,9 +119,12 @@ namespace CommonsHelper
 			return InstantiateUnderWithOffset(model, parentTr, Vector3.zero);
 		}
 
-		/// Duplicate object under the same parent with the same local position, with a new name. This breaks any prefab link.
+		/// Duplicate object under the same parent (as last sibling) with the same local position, with a new name
+		/// This breaks any prefab link, but is meant for runtime anyway.
+		/// For edit time, prefer DuplicateGameObjects.DuplicateSelectionBelow, which places the clone right under
+		/// the original.
 		public static GameObject Duplicate (this GameObject model, string name) {
-			GameObject clone = Object.Instantiate(model, model.transform.parent) as GameObject;
+			GameObject clone = Object.Instantiate(model, model.transform.parent);
 			clone.name = name;
 			return clone;
 		}
