@@ -22,6 +22,8 @@ namespace CommonsHelper
         /// Build a List of those to create a cumulated length mapping, useful to work with path / curve distances
         /// instead of parameter differences (because parameters are regular intervals may not correspond to
         /// points at regular distances along the path / curve, as most splines have a non-uniform parametric speed.
+        // Uncomment [Serializable] to debug cumulated lengths directly in Inspector in Debug mode
+        // [Serializable]
         public class CumulatedLengthInfo
         {
             /// Parameter at which the cumulated length was evaluated from path / curve start
