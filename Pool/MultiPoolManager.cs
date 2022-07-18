@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+using CommonsHelper;
+
 namespace CommonsPattern
 {
 
@@ -88,11 +90,19 @@ namespace CommonsPattern
 		/// Initialize and fill pool of [initialPoolSize] objects of type [prefabName]
 		private void GeneratePool(string prefabName, GameObject pooledObjectPrefab)
 		{
-#if DEBUG_MULTI_POOL_MANAGER
-			Debug.LogFormat("[MultiPoolManager] Setup prefab pool of size {0} for object type '{1}'", initialPoolSize, prefabName);
-#endif
 			m_MultiPool.Add(prefabName, new Pool<TPooledObject>(pooledObjectPrefab, poolTransform));
-			m_MultiPool[prefabName].InitIgnoringExistingChildren(initialPoolSize);
+
+			// Check for initial pool size override (particularly useful for multi pool, as not all pooled objects
+			// require the same number of instances)
+			TPooledObject prefabPooledObject = pooledObjectPrefab.GetComponentOrFail<TPooledObject>();
+			int initialPoolSizeOverride = prefabPooledObject.InitialPoolSizeOverride;
+			int actualInitialPoolSize = initialPoolSizeOverride > 0 ? initialPoolSizeOverride : initialPoolSize;
+
+			m_MultiPool[prefabName].InitIgnoringExistingChildren(actualInitialPoolSize);
+
+#if DEBUG_MULTI_POOL_MANAGER
+			Debug.LogFormat("[MultiPoolManager] Setup prefab pool of size {0} for object type '{1}'", poolSize, prefabName);
+#endif
 		}
 
 		[Obsolete("Use AcquireFreeObject (then no need to Acquire/activate manually)")]

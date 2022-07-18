@@ -45,5 +45,11 @@
 		// PlayOneShot(AudioClip clip), etc.).
 		// Most pooled object classes should define their own custom use method,
 		// even if just to delegate the job to a sibling component.
+
+		/// Get initial pool size override,
+		/// If positive, it will be used instead of the (Multi)PoolManager's own initialPoolSize.
+		/// Use it to pool more or fewer objects than usual.
+		/// Defaults to 0 (no override)
+		int InitialPoolSizeOverride => 0;
 	}
 }

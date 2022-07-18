@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using CommonsHelper;
+
 namespace CommonsPattern
 {
 
@@ -41,7 +43,14 @@ namespace CommonsPattern
 		protected override void Init ()
 		{
 			m_Pool = new Pool<TPooledObject>(pooledObjectPrefab, poolTransform);
-			m_Pool.InitCheckingExistingChildren(initialPoolSize);
+
+			// Check for initial pool size override (generally not useful for single pool, but checked
+			// for consistency)
+			TPooledObject prefabPooledObject = pooledObjectPrefab.GetComponentOrFail<TPooledObject>();
+			int initialPoolSizeOverride = prefabPooledObject.InitialPoolSizeOverride;
+			int actualInitialPoolSize = initialPoolSizeOverride > 0 ? initialPoolSizeOverride : initialPoolSize;
+
+			m_Pool.InitCheckingExistingChildren(actualInitialPoolSize);
 		}
 
 		[Obsolete("Use AcquireFreeObject (then no need to Acquire/activate manually)")]
