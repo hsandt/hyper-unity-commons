@@ -68,4 +68,17 @@ public class MusicManager : SingletonManager<MusicManager>
             stingerAudioSource.Play();
         }
     }
+
+    /// Play stinger and wait for it to end
+    /// Note that this will consider pause as being stopped
+    public IEnumerator PlayStingerAsync(AudioClip stinger)
+    {
+        PlayStinger(stinger);
+
+        // Wait until audio source is not playing
+        // This considers paused sources as not playing, so if you need to support paused sources,
+        // prefer tracking pause state in your own members and using your own coroutine method
+        // to check tracked pause state.
+        yield return new WaitUntil(() => !stingerAudioSource.isPlaying);
+    }
 }
