@@ -53,9 +53,9 @@ public class MusicManager : SingletonManager<MusicManager>
     }
 
     #if NL_ELRACCOONE_TWEENS
-    public void FadeOutBgm(float duration)
+    public IEnumerator FadeOutBgmAsync(float duration)
     {
-        bgmAudioSource.TweenAudioSourceVolume(0f, duration);
+        yield return bgmAudioSource.TweenAudioSourceVolume(0f, duration).Yield();
     }
     #endif
 
