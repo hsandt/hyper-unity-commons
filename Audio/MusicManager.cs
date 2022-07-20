@@ -39,7 +39,7 @@ public class MusicManager : SingletonManager<MusicManager>
 
     public void PlayBgm(AudioClip bgm)
     {
-        if (bgmAudioSource.clip != bgm)
+        if (!bgmAudioSource.isPlaying || bgmAudioSource.clip != bgm)
         {
             // Note that bgmAudioSource.loop should be true on MusicManager_Base prefab
             bgmAudioSource.clip = bgm;
@@ -61,7 +61,7 @@ public class MusicManager : SingletonManager<MusicManager>
 
     public void PlayStinger(AudioClip stinger)
     {
-        if (stingerAudioSource.clip != stinger)
+        if (!stingerAudioSource.isPlaying || stingerAudioSource.clip != stinger)
         {
             // Note that stingerAudioSource.loop should be false on MusicManager_Base prefab
             stingerAudioSource.clip = stinger;
