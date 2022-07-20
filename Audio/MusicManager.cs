@@ -55,7 +55,15 @@ public class MusicManager : SingletonManager<MusicManager>
     #if NL_ELRACCOONE_TWEENS
     public IEnumerator FadeOutBgmAsync(float duration)
     {
+        // Remember old volume (in case it's not 1f)
+        float oldVolume = bgmAudioSource.volume;
+
+        // Fade out using tween
         yield return bgmAudioSource.TweenAudioSourceVolume(0f, duration).Yield();
+
+        // To clean up, stop BGM properly then restore old volume so BGM source is ready for next play
+        bgmAudioSource.Stop();
+        bgmAudioSource.volume = oldVolume;
     }
     #endif
 
