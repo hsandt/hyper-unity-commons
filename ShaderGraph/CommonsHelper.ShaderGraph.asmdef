@@ -1,0 +1,24 @@
+{
+    "name": "CommonsHelper.ShaderGraph",
+    "rootNamespace": "CommonsHelper.ShaderGraph",
+    "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "COM_UNITY_SHADERGRAPH"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.shadergraph",
+            "expression": "12",
+            "define": "COM_UNITY_SHADERGRAPH"
+        }
+    ],
+    "noEngineReferences": false
+}
