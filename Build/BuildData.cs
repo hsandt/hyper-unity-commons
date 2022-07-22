@@ -17,37 +17,41 @@ namespace CommonsHelper
 			Medium,
 			High,
 		}
-		
+
 		// Example: My App 3.0.27 (WIP)
 		// <= appName: "My App", majorVersion: 3, minorVersion: 0, stageVersion: 27, workInProgress: true
 		[Tooltip("Application name used in build path (may differ from product name)")]
 		public string appName = "My App";
-		
+
 		[Tooltip("Major version in semantic versioning")]
 		public int majorVersion = 0;
-		
+
 		[Tooltip("Minor version in semantic versioning")]
 		public int minorVersion = 1;
-		
+
 		[Tooltip("Stage version in semantic versioning")]
 		public int stageVersion = 0;
-		
+
 		[Tooltip("Check this if you are actively working on this version. This allows the developer to immediately " +
 		         "bump version after a release to avoid overwriting the build folder containing the last release, " +
 		         "while not giving the impression that the next version is ready already. Uncheck for release.")]
 		public bool workInProgress = true;
 
+		[Tooltip("When checked, Release builds will use IL2CPP unless not available on this platform, e.g. due to " +
+			"cross-platform build (if module is available but not installed, it will still try and fail).")]
+		public bool releaseShouldBuildIL2CPP = true;
+
 		[Tooltip("Managed stripping level used for the development build. If using Visual Scripting, set it to Low or less.")]
 		public ManagedStrippingLevel devBuildStrippingLevel = ManagedStrippingLevel.Medium;
-		
+
 		[Tooltip("Managed stripping level used for the release build. If using Visual Scripting, set it to Low or less. " +
 		         "Note that IL2CPP needs at least Low stripping.")]
 		public ManagedStrippingLevel releaseBuildStrippingLevel = ManagedStrippingLevel.High;
-		
+
 		public string GetVersionString()
 		{
 			string baseVersionString = $"v{majorVersion}.{minorVersion}.{stageVersion}";
-			
+
 			if (workInProgress)
 			{
 				baseVersionString += " WIP";

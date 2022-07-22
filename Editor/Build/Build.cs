@@ -166,25 +166,30 @@ namespace CommonsHelper.Editor
 				}
 				else
 				{
-					// only try to build IL2CPP if target platform IL2CPP is supported on editor platform
-					// else, use Mono
-					// currently, we only know that a given editor platform supports itself as IL2CPP target,
-					//  and in addition, Windows can build IL2CPP for Linux (Unity 2020+)
-					// make sure to install any IL2CPP modules available for your version of Unity
-					bool shouldBuildIL2CPP;
+					bool shouldBuildIL2CPP = buildData.releaseShouldBuildIL2CPP;
 
-					// Editor must be running on one of those, so editorPlatform should be defined
+					if (shouldBuildIL2CPP)
+					{
+						// only try to build IL2CPP if target platform IL2CPP is supported on editor platform
+						// else, use Mono
+						// currently, we only know that a given editor platform supports itself as IL2CPP target,
+						//  and in addition, Windows can build IL2CPP for Linux (Unity 2020+)
+						// make sure to install any IL2CPP modules available for your version of Unity
+
+						// Editor must be running on one of those, so editorPlatform should be defined
 #if UNITY_EDITOR_WIN
 #	if UNITY_2020_1_OR_NEWER
-					shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneWindows64 || buildTarget == BuildTarget.StandaloneLinux64;
+						shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneWindows64 || buildTarget == BuildTarget.StandaloneLinux64;
 #	else
-					shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneWindows64;
+						shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneWindows64;
 #	endif
 #elif UNITY_EDITOR_OSX
-					shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneOSX;
+						shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneOSX;
 #elif UNITY_EDITOR_LINUX
-					shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneLinux64;
+						shouldBuildIL2CPP = buildTarget == BuildTarget.StandaloneLinux64;
 #endif
+					}
+
 					if (shouldBuildIL2CPP)
 					{
 						PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.IL2CPP);
