@@ -13,8 +13,9 @@ namespace CommonsHelper
     /// body. However, all drawing-related methods must be inside #if UNITY_EDITOR.
     public static class HandlesUtil
     {
-        /// Return resolution of a 2D camera in pixels per world distance unit. The camera does not need to be in 2D mode,
-        /// but has to be in orthogonal view, looking either forward or backward, otherwise return 0f.
+        /// Return resolution of a 2D Scene View camera in pixels per world distance unit.
+        /// The camera does not need to be in 2D mode, but has to be in orthogonal view, looking either forward or
+        /// backward, otherwise return 0f.
         /// If no camera can be found, also return 0f.
         ///
         /// Since in orthographic view, the distance between the camera and the target is not relevant,
@@ -42,7 +43,7 @@ namespace CommonsHelper
             return 80f / HandleUtility.GetHandleSize(position);
         }
 
-        /// Return size of a pixel in world distance unit, when looking with a 2D camera.
+        /// Return size of a pixel in world distance unit, when looking with a 2D Scene View camera.
         /// This is essentially the reverse of Get2DPixelResolution(), but 0 if camera is not 2D.
         /// Multiply your Handles label, etc. position offsets by this to get screen-size-constant offsets.
         public static float Get2DPixelSize()
@@ -722,7 +723,8 @@ namespace CommonsHelper
         /// This is the default value of GUI.skin.label.fontSize.
         private const float BASE_FONT_SIZE = 12f;
 
-        /// Camera resolution reference at which text is drawn at size BASE_FONT_SIZE with fixed screen font size.
+        /// Camera resolution reference at which text is drawn at size BASE_FONT_SIZE when using
+        /// sizeFactor = 1f and fixedFontSize = false
         private const float BASE_DRAW_TEXT_CAMERA_RESOLUTION = 35f;
 
         /// Return font size to draw text at fixed screen size if fixedFontSize is true,
@@ -751,23 +753,27 @@ namespace CommonsHelper
             return fontSize;
         }
 
-        /// Create and return Gui Style with computed font size and optional color.
+        /// Try to create and set out GUI Style with computed font size and optional color.
+        /// If successful, return true and set out guiStyle to created style
+        /// Else, return false and set out guiStyle to null
+        /// out guiStyle: result guiStyle, if returned value is true
         /// pixelsPerUnit: if not already computed, pass Get2DPixelResolution()
         /// Default sizeFactor: 1f
         /// Default fixedFontSize: false (fixed world size)
         /// Default color: white
         /// Default padding: GUI.skin.label.padding
-        private static GUIStyle CreateGuiStyle(float pixelsPerUnit, float sizeFactor = 1f, bool fixedFontSize = false,
+        private static bool TryCreateTextGuiStyle(out GUIStyle textGuiStyle, float pixelsPerUnit, float sizeFactor = 1f, bool fixedFontSize = false,
             Color? color = null, RectOffset padding = null)
         {
             int fontSize = ComputeFontSize(pixelsPerUnit, sizeFactor, fixedFontSize);
 
             if (fontSize == 0)
             {
-                return null;
+                textGuiStyle = null;
+                return false;
             }
 
-            GUIStyle textGuiStyle = new GUIStyle(GUI.skin.label)
+            textGuiStyle = new GUIStyle(GUI.skin.label)
             {
                 normal = { textColor = color ?? Color.white },
                 fontSize = fontSize,
@@ -778,7 +784,7 @@ namespace CommonsHelper
                 textGuiStyle.padding = padding;
             }
 
-            return textGuiStyle;
+            return true;
         }
 
         [Obsolete("Use Label2D.")]
@@ -792,8 +798,7 @@ namespace CommonsHelper
         public static void Label2D(Vector2 position, string text, float sizeFactor = 1f, bool fixedFontSize = false,
             Color? color = null, RectOffset padding = null)
         {
-            GUIStyle textGuiStyle = CreateGuiStyle(Get2DPixelResolution(), sizeFactor, fixedFontSize, color, padding);
-            if (textGuiStyle != null)
+            if (TryCreateTextGuiStyle(out GUIStyle textGuiStyle, Get2DPixelResolution(), sizeFactor, fixedFontSize, color, padding))
             {
                 Handles.Label(position, text, textGuiStyle);
             }
@@ -823,26 +828,28 @@ namespace CommonsHelper
             }
 
             // Background label
-            GUIStyle guiStyle = CreateGuiStyle(pixelSize, sizeFactor, fixedFontSize, textColor);
-            guiStyle.padding = new RectOffset(5, 5, 5, 5);
-            // Set alignment to UpperLeft. We'll offset label manually, as it's more reliable than using MiddleCenter.
-            guiStyle.alignment = TextAnchor.UpperLeft;
-            // Calculate text size (this includes padding)
-            Vector2 textSize = guiStyle.CalcSize(textContent);
-            Vector2 textWorldSize = textSize * pixelSize;
-            // Remember we work with y down, so height must be negative to work with top-left root position
-            Rect textContainerRect = new Rect(position, new Vector2(textWorldSize.x, -textWorldSize.y));
-            Handles.DrawSolidRectangleWithOutline(textContainerRect, backgroundColor ?? ColorUtil.halfInvisibleBlack,
-                Color.clear);
+            if (TryCreateTextGuiStyle(out GUIStyle textGuiStyle, pixelSize, sizeFactor, fixedFontSize, textColor))
+            {
+                textGuiStyle.padding = new RectOffset(5, 5, 5, 5);
+                // Set alignment to UpperLeft. We'll offset label manually, as it's more reliable than using MiddleCenter.
+                textGuiStyle.alignment = TextAnchor.UpperLeft;
+                // Calculate text size (this includes padding)
+                Vector2 textSize = textGuiStyle.CalcSize(textContent);
+                Vector2 textWorldSize = textSize * pixelSize;
+                // Remember we work with y down, so height must be negative to work with top-left root position
+                Rect textContainerRect = new Rect(position, new Vector2(textWorldSize.x, -textWorldSize.y));
+                Handles.DrawSolidRectangleWithOutline(textContainerRect, backgroundColor ?? ColorUtil.halfInvisibleBlack,
+                    Color.clear);
 
-            // Label
-            // Magic number 1.5f was found by tuning to have the text touch the top then the bottom of the rectangle
-            // (tested with 0 padding), then pick the number right in the middle.
-            // It's not perfect, but aligns text vertically in most cases.
-            Vector2 labelPosition = position + new Vector2(
-                guiStyle.padding.left * pixelSize,
-                (-guiStyle.padding.top + 1.5f * sizeFactor) * pixelSize);
-            Handles.Label(labelPosition, textContent, guiStyle);
+                // Label
+                // Magic number 1.5f was found by tuning to have the text touch the top then the bottom of the rectangle
+                // (tested with 0 padding), then pick the number right in the middle.
+                // It's not perfect, but aligns text vertically in most cases.
+                Vector2 labelPosition = position + new Vector2(
+                    textGuiStyle.padding.left * pixelSize,
+                    (-textGuiStyle.padding.top + 1.5f * sizeFactor) * pixelSize);
+                Handles.Label(labelPosition, textContent, textGuiStyle);
+            }
         }
 
         #endregion
