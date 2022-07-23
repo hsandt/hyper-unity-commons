@@ -818,18 +818,20 @@ namespace CommonsHelper
         {
             GUIContent textContent = new GUIContent(text);
 
-            float pixelSize = Get2DPixelSize();
-            if (pixelSize == 0f)
+            float pixelsPerUnit = Get2DPixelResolution();
+            if (pixelsPerUnit == 0f)
             {
                 // We are not in 2D mode, this is not supported
-                // If you try Get2DPixelSizeWith3DFallback to absolutely get some pixel size > 0,
+                // If you try Get2DPixelSizeWith3DFallback to absolutely get some pixel size > 0 below,
                 // it will draw a label background in 3D, but the text will still be drawn in flat 2D so it won't fit in
                 return;
             }
 
             // Background label
-            if (TryCreateTextGuiStyle(out GUIStyle textGuiStyle, pixelSize, sizeFactor, fixedFontSize, textColor))
+            if (TryCreateTextGuiStyle(out GUIStyle textGuiStyle, pixelsPerUnit, sizeFactor, fixedFontSize, textColor))
             {
+                float pixelSize = 1f / pixelsPerUnit;
+
                 textGuiStyle.padding = new RectOffset(5, 5, 5, 5);
                 // Set alignment to UpperLeft. We'll offset label manually, as it's more reliable than using MiddleCenter.
                 textGuiStyle.alignment = TextAnchor.UpperLeft;
