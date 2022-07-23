@@ -12,8 +12,8 @@ namespace CommonsPattern
     {
         /* Parameters */
 
-        /// Pooled object prefab
-        private readonly GameObject m_PooledObjectPrefab;
+        /// Pooled object component in pooled prefab
+        private readonly TPooledObject m_PrefabPooledObject;
 
         /// Parent under which all pooled objects will be created
         private readonly Transform m_PoolTransform;
@@ -26,9 +26,9 @@ namespace CommonsPattern
 
 
         /// Constructor
-        public Pool(GameObject pooledObjectPrefab, Transform poolTransform)
+        public Pool(TPooledObject prefabPooledObject, Transform poolTransform)
         {
-            m_PooledObjectPrefab = pooledObjectPrefab;
+            m_PrefabPooledObject = prefabPooledObject;
             m_PoolTransform = poolTransform;
         }
 
@@ -157,17 +157,19 @@ namespace CommonsPattern
         /// The caller is responsible for Releasing/Acquiring the new object depending on the needs.
         private TPooledObject InstantiatePooledObject()
         {
-            // Instantiate prefab under pool transform
-            GameObject prefabInstance = Object.Instantiate(m_PooledObjectPrefab, m_PoolTransform);
+            // Instantiate prefab under pool transform and get TPooledObject component
+            // (Instantiate<Component> instantiates the game object with the component, then returns the component
+            // of the new instance)
+            TPooledObject prefabInstancePooledObject = Object.Instantiate(m_PrefabPooledObject, m_PoolTransform);
 
             // Append count to name to make it easier to distinguish pooled objects
+            // Note that name property will set game object name
             // Ex: Projectile(Clone) 3
-            prefabInstance.name += $" {m_Objects.Count}";
+            prefabInstancePooledObject.name += $" {m_Objects.Count}";
 
-            TPooledObject pooledObject = prefabInstance.GetComponentOrFail<TPooledObject>();
-            m_Objects.Add(pooledObject);
+            m_Objects.Add(prefabInstancePooledObject);
 
-            return pooledObject;
+            return prefabInstancePooledObject;
         }
 
         [Obsolete("Use AcquireFreeObject instead, and remove Acquire/SetActive(true) call following this on the caller side")]
@@ -192,10 +194,10 @@ namespace CommonsPattern
                 // So in counterpart with log a warning, as generally such last minute instantiation is not intended and
                 // only a fallback, so we want to notify developer they may want to increase initial pool size instead.
                 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarningFormat("[Pool] AcquireFreeObject: pool for prefab '{0}' is starving at size {1} but " +
+                Debug.LogWarningFormat("[Pool] AcquireFreeObject: pool for prefab pooled object '{0}' is starving at size {1} but " +
                                        "instantiateNewObjectOnStarvation is true, so we will instantiate a new object as fallback. " +
                                        "Consider increasing pool size to at least {2} to avoid this situation.",
-                    m_PooledObjectPrefab, m_Objects.Count, m_Objects.Count + 1);
+                    m_PrefabPooledObject, m_Objects.Count, m_Objects.Count + 1);
                 #endif
 
                 pooledObject = InstantiatePooledObject();

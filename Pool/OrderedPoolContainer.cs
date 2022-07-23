@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using CommonsHelper;
+
 namespace CommonsPattern
 {
 	/// Ordered pool container component
@@ -37,7 +39,8 @@ namespace CommonsPattern
 
 		private void Awake()
 		{
-			m_Pool = new Pool<TPooledObject>(pooledObjectPrefab, transform);
+			TPooledObject prefabPooledObject = pooledObjectPrefab.GetComponentOrFail<TPooledObject>();
+			m_Pool = new Pool<TPooledObject>(prefabPooledObject, transform);
 			m_Pool.InitCheckingExistingChildren(initialPoolSize);
 		}
 

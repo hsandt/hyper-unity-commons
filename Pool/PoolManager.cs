@@ -42,11 +42,12 @@ namespace CommonsPattern
 
 		protected override void Init ()
 		{
-			m_Pool = new Pool<TPooledObject>(pooledObjectPrefab, poolTransform);
+			TPooledObject prefabPooledObject = pooledObjectPrefab.GetComponentOrFail<TPooledObject>();
+
+			m_Pool = new Pool<TPooledObject>(prefabPooledObject, poolTransform);
 
 			// Check for initial pool size override (generally not useful for single pool, but checked
 			// for consistency)
-			TPooledObject prefabPooledObject = pooledObjectPrefab.GetComponentOrFail<TPooledObject>();
 			int initialPoolSizeOverride = prefabPooledObject.InitialPoolSizeOverride;
 			int actualInitialPoolSize = initialPoolSizeOverride > 0 ? initialPoolSizeOverride : initialPoolSize;
 

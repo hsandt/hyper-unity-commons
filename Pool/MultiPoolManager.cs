@@ -90,11 +90,12 @@ namespace CommonsPattern
 		/// Initialize and fill pool of [initialPoolSize] objects of type [prefabName]
 		private void GeneratePool(string prefabName, GameObject pooledObjectPrefab)
 		{
-			m_MultiPool.Add(prefabName, new Pool<TPooledObject>(pooledObjectPrefab, poolTransform));
+			TPooledObject prefabPooledObject = pooledObjectPrefab.GetComponentOrFail<TPooledObject>();
+
+			m_MultiPool.Add(prefabName, new Pool<TPooledObject>(prefabPooledObject, poolTransform));
 
 			// Check for initial pool size override (particularly useful for multi pool, as not all pooled objects
 			// require the same number of instances)
-			TPooledObject prefabPooledObject = pooledObjectPrefab.GetComponentOrFail<TPooledObject>();
 			int initialPoolSizeOverride = prefabPooledObject.InitialPoolSizeOverride;
 			int actualInitialPoolSize = initialPoolSizeOverride > 0 ? initialPoolSizeOverride : initialPoolSize;
 
