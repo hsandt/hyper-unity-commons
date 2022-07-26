@@ -507,10 +507,18 @@ namespace CommonsHelper
             Vector3 snap = optionalSnap ?? Vector3.one;
             capFunction ??= defaultHandleCap;
 
+
             return controlID != null
-                ? (Vector2)Handles.FreeMoveHandle((int)controlID, (Vector3)pos, size, snap,
-                    capFunction)
-                : (Vector2)Handles.FreeMoveHandle((Vector3)pos, size, snap, capFunction);
+                ? (Vector2)Handles.FreeMoveHandle((int)controlID, (Vector3)pos,
+                    #if !UNITY_2022_1_OR_NEWER
+                    Quaternion.identity,
+                    #endif
+                    size, snap, capFunction)
+                : (Vector2)Handles.FreeMoveHandle((Vector3)pos,
+                    #if !UNITY_2022_1_OR_NEWER
+                    Quaternion.identity,
+                    #endif
+                    size, snap, capFunction);
         }
 
         /// Proxy for FreeMoveHandle with 3D position
@@ -522,8 +530,16 @@ namespace CommonsHelper
             capFunction ??= defaultHandleCap;
 
             return controlID != null
-                ? (Vector2)Handles.FreeMoveHandle((int)controlID, pos, size, snap, capFunction)
-                : (Vector2)Handles.FreeMoveHandle(pos, size, snap, capFunction);
+                ? (Vector2)Handles.FreeMoveHandle((int)controlID, pos,
+                    #if !UNITY_2022_1_OR_NEWER
+                    Quaternion.identity,
+                    #endif
+                    size, snap, capFunction)
+                : (Vector2)Handles.FreeMoveHandle(pos,
+                    #if !UNITY_2022_1_OR_NEWER
+                    Quaternion.identity,
+                    #endif
+                    size, snap, capFunction);
         }
 
         /// Variant of DrawFreeMoveHandle with 2D position by reference
