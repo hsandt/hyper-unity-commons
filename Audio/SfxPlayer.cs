@@ -18,8 +18,8 @@ public class SfxPlayer : MonoBehaviour
         #endif
     }
 
-    public void PlaySFX(float volumeScale)
+    public void PlaySFX(float volumeScale, bool useStackVolumeModifier = false)
     {
-        SfxPoolManager.Instance.PlaySfx(sfx, volumeScale, this, "sfx");
+        SfxPoolManager.Instance.PlaySfx(sfx, volumeScale, useStackVolumeModifier, context: this, debugClipName: "sfx");
     }
 }

@@ -19,8 +19,8 @@ public class SfxPoolManager : PoolManager<Sfx, SfxPoolManager>
 
     [SerializeField,
      Tooltip("Factor determining volume of SFX played in overlap with other SFX using the same clip " +
-         "(simultaneously or with delay). Reduce this number to avoid audio clutter when the same SFX is played over " +
-         "many instances. Formula:\n" +
+         "(simultaneously or with delay). Only used when calling PlaySfx with useStackVolumeModifier." +
+         "Reduce this number to avoid audio clutter when the same SFX is played over many instances. Formula:\n" +
          "(volume scale of N-th SFX using same clip)\n" +
          "= (sameClipStackVolumeModifierFactor)^(N-1)\n" +
          "= (sameClipStackVolumeModifierFactor)^(count of SFX still playing same clip)\n" +
@@ -48,8 +48,10 @@ public class SfxPoolManager : PoolManager<Sfx, SfxPoolManager>
 
     /// Play SFX clip on pooled SFX object at volumeScale, with optional context and debugClipName to log error
     /// if SFX could not be acquired.
+    /// If useStackVolumeModifier is true, apply stack volume modifier for this clip based on
+    /// sameClipStackVolumeModifierFactor and count of other SFXs playing same clip
     /// Return played SFX unless it could not be acquired, or the same clip stack volume modifier is 0.
-    public Sfx PlaySfx(AudioClip clip, float volumeScale = 1f, Object context = null, string debugClipName = null)
+    public Sfx PlaySfx(AudioClip clip, float volumeScale = 1f, bool useStackVolumeModifier = false, Object context = null, string debugClipName = null)
     {
         if (clip != null)
         {
@@ -57,9 +59,12 @@ public class SfxPoolManager : PoolManager<Sfx, SfxPoolManager>
 
             if (sfx != null)
             {
-                // Apply same clip stack volume modifier
+                // If useStackVolumeModifier is true, apply same clip stack volume modifier, else default to 1
                 // If it is 0, do not play anything to spare a pooled SFX, and return null
-                float sameClipStackVolumeModifier = ComputeSameClipStackVolumeModifier(clip);
+                float sameClipStackVolumeModifier = useStackVolumeModifier
+                    ? ComputeSameClipStackVolumeModifier(clip)
+                    : 1f;
+
                 if (sameClipStackVolumeModifier > 0)
                 {
                     sfx.PlayStoringClip(clip, sameClipStackVolumeModifier * volumeScale);
