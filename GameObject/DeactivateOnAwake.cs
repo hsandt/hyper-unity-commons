@@ -4,7 +4,7 @@ using UnityEngine.Serialization;
 
 namespace CommonsHelper
 {
-	public class DeactivateOnStart : MonoBehaviour
+	public class DeactivateOnAwake : MonoBehaviour
 	{
 		[SerializeField, Tooltip("Deactivate in editor?")]
 		private bool m_DeactivateInEditor = true;
