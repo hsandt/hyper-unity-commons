@@ -1,14 +1,12 @@
 {
-  "name": "com.komehara.commons-helper",
+  "name": "com.longnguyenhuu.commons-helper",
   "version": "1.0.0",
   "displayName": "Commons Helper",
   "description": "Collection of helper scripts",
   "unity": "2019.3",
   "unityRelease": "1f1",
-  "dependencies": {
-  },
-  "keywords": [
-  ],
+  "dependencies": {},
+  "keywords": [],
   "author": {
     "name": "Long Nguyen Huu",
     "email": "contact@longnguyenhuu.com",
