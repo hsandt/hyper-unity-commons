@@ -152,5 +152,48 @@ namespace CommonsHelper.Tests
             // Same as Remap_SameXSameY, but testing that x outside range still works
             Assert.AreEqual(30f, MathUtil.RemapUnclamped(99f, 99f, 30f, 30f, 199f));
         }
+
+        [TestCase(0f, 1f)]
+        [TestCase(-80f, 0f)]
+        [TestCase(-90f, 0f)]
+        public void VolumeDbToFactor_Db_Factor(float db, float factor)
+        {
+            Assert.AreEqual(factor, MathUtil.VolumeDbToFactor(db));
+        }
+
+        [Test]
+        public void VolumeDbToFactor_ClampedAt20Db()
+        {
+            float factor20Db = MathUtil.VolumeDbToFactor(20f);
+            float factor30Db = MathUtil.VolumeDbToFactor(30f);
+            Assert.AreEqual(factor20Db, factor30Db);
+        }
+
+        [Test]
+        public void VolumeDbToFactor_Minus6_Approx_Half()
+        {
+            Assert.That(MathUtil.VolumeDbToFactor(-6f), Is.EqualTo(0.5f).Within(0.005f));
+        }
+
+        [TestCase(1f, 0f)]
+        [TestCase(0f, -80f)]
+        [TestCase(-1f, -80f)]
+        public void VolumeFactorToDb_Factor_Db(float db, float factor)
+        {
+            Assert.AreEqual(factor, MathUtil.VolumeFactorToDb(db));
+        }
+
+        [Test]
+        public void VolumeFactorToDb_ClampedAt20Db()
+        {
+            float factor20Db = MathUtil.VolumeDbToFactor(20f);
+            Assert.AreEqual(20f, MathUtil.VolumeFactorToDb(factor20Db + 1f));
+        }
+
+        [Test]
+        public void VolumeFactorToDb_Half_Approx_Minus6()
+        {
+            Assert.That(MathUtil.VolumeFactorToDb(0.5f), Is.EqualTo(-6f).Within(0.05f));
+        }
     }
 }
