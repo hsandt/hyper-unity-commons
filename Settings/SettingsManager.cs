@@ -66,7 +66,8 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 		#if UNITY_EDITOR
 		Debug.LogErrorFormat("[SettingsManager] GetSetting: could not get value for setting {0} of type {1}, " +
-			"falling back to default ({2}). Make sure to initialize all settings before calling this method",
+			"falling back to default ({2}). Make sure to initialize all settings before calling this method, " +
+			"by filling Bool/Float Settings lists on SettingsManager.",
 			settingData, typeof(T), default(T));
 		#endif
 
@@ -223,6 +224,10 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
     protected override void Init()
     {
+	    // Note: when we have merged all Commons together, we can use this:
+	    // DebugUtil.AssertListElementsNotNull(boolSettings, ...);
+	    // DebugUtil.AssertListElementsNotNull(floatSettings, ...);
+
 		foreach (var boolSetting in boolSettings)
 		{
 			LoadBoolSettingFromPreferences(boolSetting);
@@ -233,8 +238,8 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			LoadFloatSettingFromPreferences(floatSetting);
 		}
 
-        // AUDIO
-        LoadAudioPrefs();
+        // AUDIO (SUPERSEDED)
+        // LoadAudioPrefs();
 
 		// CINEMATIC
         LoadCinematicPrefs();

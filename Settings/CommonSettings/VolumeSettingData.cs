@@ -5,22 +5,25 @@ using UnityEngine.Audio;
 
 namespace CommonsHelper
 {
-    [CreateAssetMenu(fileName = "BgmVolumeSettingData", menuName = "Settings/Bgm Volume Setting Data", order = 1)]
-    public class BgmVolumeSettingData : SettingData<float>
+    [CreateAssetMenu(fileName = "VolumeSettingData", menuName = "Settings/Volume Setting Data", order = 1)]
+    public class VolumeSettingData : SettingData<float>
     {
         [Header("Audio asset references")]
 
-        [Tooltip("Audio mixer used by the game. It should have the following Exposed Parameters:\n" +
-            "- BGM Volume: Volume of BGM Group\n" +
-            "- SFX Volume: Volume of SFX Group")]
+        [Tooltip("Audio mixer responsible for the associated volume")]
         public AudioMixer audioMixer;
+
+        [Tooltip("Name of Exposed Parameter on Audio Mixer that controls the associated volume")]
+        public string audioParameterName;
 
 
         public override void Init()
         {
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.AssertFormat(audioMixer, this,
-                "[BgmVolumeSettingData] Audio Mixer not set on Bgm Volume Setting Data {0}", this);
+                "[VolumeSettingData] Audio Mixer not set on Volume Setting Data {0}", this);
+            Debug.AssertFormat(!string.IsNullOrEmpty(audioParameterName), this,
+                "[VolumeSettingData] Audio Parameter Name not set on Volume Setting Data {0}", this);
             #endif
         }
 
@@ -29,7 +32,7 @@ namespace CommonsHelper
             // Volume safety to never go beyond 0 db
             float volume = Mathf.Clamp(storedValue, -80f, 0f);
 
-            audioMixer.SetFloat("BGM Volume", volume);
+            audioMixer.SetFloat(audioParameterName, volume);
         }
 
         public override float StoredToReadableValue(float storedValue)
