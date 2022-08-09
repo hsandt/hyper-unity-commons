@@ -14,6 +14,11 @@ public class SettingGaugeLabel : Selectable
     [Tooltip("Data of setting modified by the associated gauge")]
     public SettingData<float> floatSettingData;
 
+    [Tooltip("(Optional) SFX played when moving the gauge slider (via either directional input or mouse drag). " +
+        "This is subject to throttling to avoid SFX spam when moving via mouse drag submitting. " +
+        "Useful to feedback SFX or voice volume change.")]
+    public AudioClip sfxSliderMove;
+
 
     [Header("External references")]
 
@@ -65,6 +70,7 @@ public class SettingGaugeLabel : Selectable
         // First, get the readable value from settings: by convention, it's a ratio, so still a normalized value
         float normalizedSliderValue = SettingsManager.Instance.GetFloatSettingAsReadableValue(floatSettingData);
 
+        // Second, set slider value
         // In this case we are setting up slider value without user interaction, so to avoid an unnecessary callback
         // OnSliderValueChanged (which could try to set value again, or even play SFX), change value silently.
         // Therefore, we cannot use normalizedValue setter directly, so we will denormalize manually.
@@ -77,6 +83,11 @@ public class SettingGaugeLabel : Selectable
         // Slider value has changed, so update value in settings
         // By convention, it's a ratio, so pass the normalized value
         SettingsManager.Instance.SetFloatSettingFromReadableValue(floatSettingData, gaugeSlider.normalizedValue);
+
+        if (sfxSliderMove != null)
+        {
+            UISfxPoolManager.Instance.PlaySfx(sfxSliderMove, context: this, debugClipName: "sfxSliderMove");
+        }
     }
 
     public override void OnMove(AxisEventData eventData)
