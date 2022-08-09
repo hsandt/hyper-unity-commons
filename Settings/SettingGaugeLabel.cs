@@ -1,13 +1,13 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 using CommonsHelper;
 
-public class OptionGaugeLabel : Selectable
+public class SettingGaugeLabel : Selectable
 {
     [Header("Asset references")]
 
@@ -18,12 +18,8 @@ public class OptionGaugeLabel : Selectable
     [Header("External references")]
 
     [Tooltip("Slider associated to this label")]
-    public Slider optionGaugeSlider;
-
-
-    /* Sibling components */
-
-    /// Value handler for this setting
+    [FormerlySerializedAs("optionGaugeSlider")]
+    public Slider gaugeSlider;
 
 
     // Bug IN-10813: Awake is not called on Play, only on Stop (in editor), when inheriting from Selectable
@@ -42,16 +38,15 @@ public class OptionGaugeLabel : Selectable
         if (AppManager.IsNotQuitting())
         {
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.AssertFormat(optionGaugeSlider != null, this, "[OptionGaugeLabel] No Option Gauge Slider set on {0}.", this);
+            Debug.AssertFormat(gaugeSlider != null, this, "[SettingGaugeLabel] No Gauge Slider set on {0}.", this);
             #endif
 
-            optionGaugeSlider.onValueChanged.AddListener(OnSliderValueChanged);
+            gaugeSlider.onValueChanged.AddListener(OnSliderValueChanged);
 
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.AssertFormat(floatSettingData != null, this, "[OptionGaugeLabel] No floatSettingData found on {0}.", gameObject);
+            Debug.AssertFormat(floatSettingData != null, this, "[SettingGaugeLabel] No floatSettingData found on {0}.", gameObject);
             #endif
 
-            // Setup could be done in OptionsMenu (need to reference all option widgets), but for now just do it in OnEnable
             Setup();
         }
     }
@@ -60,7 +55,7 @@ public class OptionGaugeLabel : Selectable
     {
         base.OnDisable();
 
-        optionGaugeSlider.onValueChanged.RemoveListener(OnSliderValueChanged);
+        gaugeSlider.onValueChanged.RemoveListener(OnSliderValueChanged);
     }
 
     private void Setup()
@@ -68,38 +63,38 @@ public class OptionGaugeLabel : Selectable
         // Initialize visual to match model
         // In this case we are setting slider value to represent actual value, so to avoid an unnecessary callback
         // trying to change current value to what it already is, change value silently
-        optionGaugeSlider.SetValueWithoutNotify( SettingsManager.Instance.GetFloatSettingAsReadableValue(floatSettingData));
+        gaugeSlider.SetValueWithoutNotify( SettingsManager.Instance.GetFloatSettingAsReadableValue(floatSettingData));
     }
 
     private void OnSliderValueChanged(float value)
     {
         // This is only called on Application Quit if OnEnable called AddListener, which we already prevented
         // when exiting Play Mode, so no need to add the check here too.
-        SettingsManager.Instance.SetFloatSettingFromReadableValue(floatSettingData, optionGaugeSlider.value);
+        SettingsManager.Instance.SetFloatSettingFromReadableValue(floatSettingData, gaugeSlider.value);
     }
 
     public override void OnMove(AxisEventData eventData)
     {
-        if (optionGaugeSlider.direction == Slider.Direction.LeftToRight)
+        if (gaugeSlider.direction == Slider.Direction.LeftToRight)
         {
             // Capture horizontal move
             if (eventData.moveDir is MoveDirection.Left or MoveDirection.Right)
             {
                 // Delegate move to native Slider to change value
                 // Rely on registered OnSliderValueChanged to then set the value we need to
-                optionGaugeSlider.OnMove(eventData);
+                gaugeSlider.OnMove(eventData);
                 return;
             }
         }
         #if UNITY_EDITOR || DEVELOPMENT_BUILD
         else
         {
-            Debug.LogWarningFormat(this, "[OptionGaugeLabel] OnMove: slider has direction {0}, " +
-                "only LeftToRight is supported", optionGaugeSlider.direction);
+            Debug.LogWarningFormat(this, "[SettingGaugeLabel] OnMove: slider has direction {0}, " +
+                "only LeftToRight is supported", gaugeSlider.direction);
         }
         #endif
 
-        // Move was not captured, call base implementation to navigate between option labels
+        // Move was not captured, call base implementation to navigate between setting labels and other selectables
         base.OnMove(eventData);
     }
 }
