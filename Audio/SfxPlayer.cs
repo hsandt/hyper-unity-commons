@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// Component that plays a SFX via SFX Pool Manager on request
+/// Component that plays an in-game SFX via SFX Pool Manager on request
 public class SfxPlayer : MonoBehaviour
 {
     [Header("Asset references")]
 
-    [Tooltip("SFX played when this game object is enabled")]
+    [Tooltip("In-game SFX played when this game object is enabled")]
     public AudioClip sfx;
 
 
@@ -20,6 +20,6 @@ public class SfxPlayer : MonoBehaviour
 
     public void PlaySFX(float volumeScale, bool useStackVolumeModifier = false)
     {
-        SfxPoolManager.Instance.PlaySfx(sfx, volumeScale, useStackVolumeModifier, context: this, debugClipName: "sfx");
+        InGameSfxPoolManager.Instance.PlaySfx(sfx, volumeScale, useStackVolumeModifier, context: this, debugClipName: "sfx");
     }
 }

@@ -5,15 +5,16 @@ using UnityEngine;
 
 using CommonsPattern;
 
-/// Pool Manager allowing to easily play SFX
+/// Base class for Pool Manager allowing to easily play SFX
 /// Has a feature to adjust volume automatically when many SFX of the same type are played
-/// We recommend to use the SfxPoolManager_Base prefab provided in Commons Pattern/Audio, which itself assigns
-/// pooledObjectPrefab = SfxAudioSource_Base prefab provided in Commons Pattern/Audio.
-/// Then, if you need to customize things further (e.g. set Audio Source Output Mixer to game-specific SFX channel),
-/// create a prefab variant of SfxAudioSource_Base (SfxAudioSource_Variant), then create a prefab variant of
-/// SfxPoolManager_Base (e.g. SfxPoolManager_Variant), and on it, override pooledObjectPrefab = SfxAudioSource_Variant.
-/// This way, you benefit from the latest changes done on the base prefabs, while keeping your game-specific overrides.
-public class SfxPoolManager : PoolManager<Sfx, SfxPoolManager>
+/// Usage: create a prefab [Category]SfxPoolManager (where [Category] = UI, InGame, etc.),
+/// where you assign pooledObjectPrefab to some prefab with an Audio Source and an SFX component.
+/// We recommend creating a variant of the SfxAudioSource_Base prefab provided in Commons Pattern/Audio,
+/// named SfxAudioSource_Variant_[Category], and set parameters there
+/// (e.g. set Audio Source Output Mixer to some project-specific SFX channel for [Category]),
+/// This way, you benefit from the latest changes done on the SfxAudioSource_Base prefab, while keeping your
+/// project-specific overrides.
+public abstract class BaseSfxPoolManager<T> : PoolManager<Sfx, T> where T : BaseSfxPoolManager<T>
 {
     [Header("Parameters")]
 
