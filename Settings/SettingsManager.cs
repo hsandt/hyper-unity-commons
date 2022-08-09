@@ -157,7 +157,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 	[Header("Audio asset references")]
 
-	[Tooltip("Audio mixer used by the game. It should have the following Exposed Parameters:\n" +
+	[Tooltip("OLD Audio mixer used by the game. It should have the following Exposed Parameters:\n" +
 		"- BGM Volume: Volume of BGM Group\n" +
 		"- SFX Volume: Volume of SFX Group")]
 	public AudioMixer audioMixer;
