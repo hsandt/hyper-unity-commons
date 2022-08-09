@@ -61,16 +61,22 @@ public class SettingGaugeLabel : Selectable
     private void Setup()
     {
         // Initialize visual to match model
-        // In this case we are setting slider value to represent actual value, so to avoid an unnecessary callback
-        // trying to change current value to what it already is, change value silently
-        gaugeSlider.SetValueWithoutNotify( SettingsManager.Instance.GetFloatSettingAsReadableValue(floatSettingData));
+
+        // First, get the readable value from settings: by convention, it's a ratio, so still a normalized value
+        float normalizedSliderValue = SettingsManager.Instance.GetFloatSettingAsReadableValue(floatSettingData);
+
+        // In this case we are setting up slider value without user interaction, so to avoid an unnecessary callback
+        // OnSliderValueChanged (which could try to set value again, or even play SFX), change value silently.
+        // Therefore, we cannot use normalizedValue setter directly, so we will denormalize manually.
+        float sliderValue = Mathf.Lerp(gaugeSlider.minValue, gaugeSlider.maxValue, normalizedSliderValue);
+        gaugeSlider.SetValueWithoutNotify(sliderValue);
     }
 
     private void OnSliderValueChanged(float value)
     {
-        // This is only called on Application Quit if OnEnable called AddListener, which we already prevented
-        // when exiting Play Mode, so no need to add the check here too.
-        SettingsManager.Instance.SetFloatSettingFromReadableValue(floatSettingData, gaugeSlider.value);
+        // Slider value has changed, so update value in settings
+        // By convention, it's a ratio, so pass the normalized value
+        SettingsManager.Instance.SetFloatSettingFromReadableValue(floatSettingData, gaugeSlider.normalizedValue);
     }
 
     public override void OnMove(AxisEventData eventData)
