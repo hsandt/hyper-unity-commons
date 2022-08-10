@@ -11,7 +11,15 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
+    "defineConstraints": [
+        "COM_UNITY_VISUALSCRIPTING"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.visualscripting",
+            "expression": "1.7",
+            "define": "COM_UNITY_VISUALSCRIPTING"
+        }
+    ],
     "noEngineReferences": false
 }
