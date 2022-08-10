@@ -20,7 +20,7 @@ public abstract class BaseSfxPoolManager<T> : PoolManager<Sfx, T> where T : Base
 
     [SerializeField,
      Tooltip("Factor determining volume of SFX played in overlap with other SFX using the same clip " +
-         "(simultaneously or with delay). Only used when calling PlaySfx with useStackVolumeModifier." +
+         "(simultaneously or with delay). Only used when calling PlaySfx with useStackVolumeModifier. " +
          "Reduce this number to avoid audio clutter when the same SFX is played over many instances. Formula:\n" +
          "(volume scale of N-th SFX using same clip)\n" +
          "= (sameClipStackVolumeModifierFactor)^(N-1)\n" +
