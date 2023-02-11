@@ -1,5 +1,13 @@
 # Unity Commons - Editor
 
+===
+
+THE REPOSITORY HAS BEEN MERGED WITH OTHER UTILITY REPOSITORIES INTO THE CENTRALIZED REPOSITORY at https://bitbucket.org/hsandt/hyper-unity-commons
+
+It is however preserved so we can still access the version history. We may eventually open a new centralized repository that has both the version history of each original repository, and the latest scripts.
+
+===
+
 This repository contains a collection of Editor scripts for Unity I built over time. I use them for my personal projects and change them as I need, sometimes breaking compatibility. Therefore, I offer no support for them but you can see them as a collection of useful gists.
 
 Still beware of older scripts: as long as they compile without warning, I don't update them, but some may not be relevant anymore with the newest versions of Unity.
