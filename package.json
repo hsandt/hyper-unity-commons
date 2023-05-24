@@ -1,0 +1,19 @@
+{
+  "name": "com.longnguyenhuu.hyper-unity-commons",
+  "version": "1.0.0",
+  "displayName": "Hyper Unity Commons",
+  "description": "A collection of utility scripts for Unity",
+  "unity": "2021.2",
+  "unityRelease": "12f1",
+  "dependencies": {},
+  "keywords": [
+    "utility"
+  ],
+  "author": {
+    "name": "Long Nguyen Huu",
+    "email": "contact@longnguyenhuu.com",
+    "url": "http://longnguyenhuu.com"
+  },
+  "documentationUrl": "https://bitbucket.org/hsandt/hyper-unity-commons",
+  "licensesUrl": "https://bitbucket.org/hsandt/hyper-unity-commons/blob/master/LICENSE"
+}
