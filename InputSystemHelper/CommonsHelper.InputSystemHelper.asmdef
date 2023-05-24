@@ -1,0 +1,24 @@
+{
+    "name": "CommonsHelper.InputSystemHelper",
+    "rootNamespace": "CommonsHelper.InputSystemHelper",
+    "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "COM_UNITY_INPUTSYSTEM"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1",
+            "define": "COM_UNITY_INPUTSYSTEM"
+        }
+    ],
+    "noEngineReferences": false
+}
