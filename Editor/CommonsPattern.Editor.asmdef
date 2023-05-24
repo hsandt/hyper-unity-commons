@@ -1,0 +1,16 @@
+{
+    "name": "CommonsPattern.Editor",
+    "rootNamespace": "CommonsPattern.Editor",
+    "references": [
+        "CommonsPattern"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

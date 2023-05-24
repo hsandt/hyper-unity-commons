@@ -1,0 +1,23 @@
+{
+    "name": "CommonsPattern",
+    "rootNamespace": "CommonsPattern",
+    "references": [
+        "CommonsHelper",
+        "nl.elraccoone.tweens"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "nl.elraccoone.tweens",
+            "expression": "1.6",
+            "define": "NL_ELRACCOONE_TWEENS"
+        }
+    ],
+    "noEngineReferences": false
+}
