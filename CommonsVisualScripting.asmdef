@@ -1,0 +1,25 @@
+{
+    "name": "CommonsVIsualScripting",
+    "rootNamespace": "CommonsVisualScripting",
+    "references": [
+        "GUID:21b0c8d1703a94250bfac916590cea4f",
+        "GUID:ea715009a4efd4c6cbc85be3ae097dd3"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "COM_UNITY_VISUALSCRIPTING"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.visualscripting",
+            "expression": "1.7",
+            "define": "COM_UNITY_VISUALSCRIPTING"
+        }
+    ],
+    "noEngineReferences": false
+}
