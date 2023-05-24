@@ -9,7 +9,7 @@
 //  UnityEngine.GUILayoutUtility.GetRect
 //  UnityEngine.GUILayout.DoLabel
 //  UnityEngine.GUILayout.Label
-//  CommonsDebug.DebugLabelManager.OnGUI
+//  HyperUnityCommons.DebugLabelManager.OnGUI
 //  UnityEngine.GUIUtility:ProcessEvent
 
 using System;

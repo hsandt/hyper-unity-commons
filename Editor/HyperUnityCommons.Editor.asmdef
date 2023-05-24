@@ -1,11 +1,13 @@
 {
-    "name": "CommonsDebug",
-    "rootNamespace": "CommonsDebug",
+    "name": "HyperUnityCommons.Editor",
+    "rootNamespace": "HyperUnityCommons.Editor",
     "references": [
-        "CommonsPattern",
-        "CommonsHelper"
+        "GUID:ad2ea66c272d0e911823d900c52ad06c",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

@@ -1,8 +1,8 @@
 {
-    "name": "CommonsHelper.DOTween",
-    "rootNamespace": "CommonsHelper.DOTween",
+    "name": "HyperUnityCommons.DOTween",
+    "rootNamespace": "HyperUnityCommons.DOTween",
     "references": [
-        "CommonsHelper"
+        "GUID:ad2ea66c272d0e911823d900c52ad06c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -11,7 +11,7 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "COMMONS_HELPER_DOTWEEN"
+        "HYPER_UNITY_COMMONS_DOTWEEN"
     ],
     "versionDefines": [],
     "noEngineReferences": false
