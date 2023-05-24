@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     /// A Catmull-Rom path (spline) is a series of connected Catmull-Rom curves
     [Serializable]

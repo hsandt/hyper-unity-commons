@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace CommonsDebug
+namespace HyperUnityCommons
 {
 
 	/// Static class for easy debugging

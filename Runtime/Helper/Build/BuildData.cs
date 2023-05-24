@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 	/// Build version data. Create one asset in Resources/Build to let the Build window access it.
 	[CreateAssetMenu(fileName = "BuildData", menuName = "Data/Build Data", order = 1)]

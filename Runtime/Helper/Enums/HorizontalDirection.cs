@@ -1,4 +1,4 @@
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 
 	public enum HorizontalDirection
@@ -9,7 +9,7 @@ namespace CommonsHelper
 	}
 
 	public static partial class DirectionUtil {
-    
+
 	    public static HorizontalDirection ToHorizontalDirection(float x) {
 	        if (x < 0)
 	            return HorizontalDirection.Left;

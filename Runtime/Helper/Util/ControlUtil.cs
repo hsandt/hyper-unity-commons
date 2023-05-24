@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 	public static class ControlUtil
 	{

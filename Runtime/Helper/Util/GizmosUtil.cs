@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 
 	public static class GizmosUtil {
@@ -75,7 +75,7 @@ namespace CommonsHelper
 			Color oldColor = Gizmos.color;
 			if (color != null)
 				Gizmos.color = (Color) color;
-		
+
 			for (int i = 0; i < points.Length - 1; ++i) {
 				Gizmos.DrawLine(points[i], points[i + 1]);
 			}
@@ -107,7 +107,7 @@ namespace CommonsHelper
 		    for (int i = 0; i < points.Length; ++i) {
 				Gizmos.DrawLine(points[i], points[(i + 1) % points.Length]);
 			}
-		    
+
             if (color != null)
                 Gizmos.color = oldColor;
 		}

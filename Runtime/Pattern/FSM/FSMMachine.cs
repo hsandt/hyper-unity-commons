@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
 
 	/*
@@ -15,14 +15,14 @@ namespace CommonsPattern
 		State1,
 		State2
 	}
-	
+
 	public class MyState1 : MyState {
 		// implement methods...
-	} 
+	}
 
 	public class MyState2 : MyState {
 		// implement methods...
-	} 
+	}
 
 	public class MyMonoBehaviour : MonoBehaviour {
 
@@ -44,7 +44,7 @@ namespace CommonsPattern
 		void FixedUpdate () {
 			fsmMachine.UpdateMachine();
 		}
-	
+
 		// call when MyMonoBehaviour must be cleared/reset but not destroyed
 		void Clear () {
 			fsmMachine.Clear();

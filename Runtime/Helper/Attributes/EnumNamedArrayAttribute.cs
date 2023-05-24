@@ -7,7 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 	/// Add this attribute to an array of int where each index corresponds to an enum value to display indices
 	/// as enum names.

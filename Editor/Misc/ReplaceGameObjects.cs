@@ -18,7 +18,7 @@ using System.Reflection;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
-namespace CommonsEditor
+namespace HyperUnityCommons.Editor
 {
 
 	public class ReplaceGameObjects : EditorWindow

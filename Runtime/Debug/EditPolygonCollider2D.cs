@@ -6,9 +6,8 @@
  */
 
 using UnityEngine;
-using CommonsHelper;
 
-namespace CommonsDebug
+namespace HyperUnityCommons
 {
     [RequireComponent(typeof(PolygonCollider2D))]
     public class EditPolygonCollider2D : MonoBehaviour
@@ -32,7 +31,7 @@ namespace CommonsDebug
                 {
                     // lazy get component
                     m_PolygonCollider2D = GetComponent<PolygonCollider2D>();
-                    
+
                     if (m_PolygonCollider2D == null)
                     {
                         return;

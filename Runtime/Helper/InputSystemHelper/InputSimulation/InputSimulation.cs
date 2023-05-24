@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 
-namespace CommonsHelper.InputSystemHelper
+namespace HyperUnityCommons.InputSystemHelper
 {
     public class InputSimulation : MonoBehaviour
     {

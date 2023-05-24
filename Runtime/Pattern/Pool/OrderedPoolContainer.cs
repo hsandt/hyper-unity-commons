@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-using CommonsHelper;
-
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
 	/// Ordered pool container component
 	/// Add this component directly to the parent object that contains all pooled objects.

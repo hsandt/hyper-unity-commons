@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 	/// Internal clock counting down and triggering some optional callback when over
 	/// Usage: create new Timer(initial time, callback), call CountDown on it every Update or FixedUpdate,
@@ -27,7 +27,7 @@ namespace CommonsHelper
 		/// Has the timer any time left?
 		public bool HasTimeLeft => m_TimeLeft > 0;
 
-		
+
 		/// Construct new timer with initial time and callback
 		/// Both are optional since we may want a timer with manual handling of count down over,
 		/// or start countdown later.
@@ -57,7 +57,7 @@ namespace CommonsHelper
 			{
 				// timer is running, count it down
 				m_TimeLeft -= deltaTime;
-				
+
 				if (m_TimeLeft <= 0)
 				{
 					m_TimeLeft = 0;
@@ -65,7 +65,7 @@ namespace CommonsHelper
 					return true;
 				}
 			}
-			
+
 	        // timer was either stopped, or counted down but didn't reach 0
 			return false;
 		}

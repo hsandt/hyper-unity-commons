@@ -6,7 +6,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     /// Utility functions for handles. This script is exceptionally outside an Editor folder and assembly (but still
     /// inside #if UNITY_EDITOR) because non-editor classes may want to specialize their Handles drawing in their own

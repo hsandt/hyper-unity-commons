@@ -1,12 +1,12 @@
 // https://gist.github.com/frarees/9791517
 // Original code by frarees
 // Changelog from the gist code of 2022-03-12:
-// hsandt (2022-05-08): added namespace CommonsHelper (only for this repository!)
+// hsandt (2022-05-08): added namespace HyperUnityCommons (only for this repository!)
 
 using System;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
     public class MinMaxSliderAttribute : PropertyAttribute

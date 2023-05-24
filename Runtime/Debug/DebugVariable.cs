@@ -2,9 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
-using CommonsHelper;
-
-namespace CommonsDebug
+namespace HyperUnityCommons
 {
 
 	public class DebugVariable : MonoBehaviour {

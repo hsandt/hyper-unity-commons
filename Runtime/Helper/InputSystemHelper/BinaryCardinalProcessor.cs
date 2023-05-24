@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 using UnityEditor;
 #endif
 
-namespace CommonsHelper.InputSystemHelper
+namespace HyperUnityCommons.InputSystemHelper
 {
     #if UNITY_EDITOR
     [InitializeOnLoad]

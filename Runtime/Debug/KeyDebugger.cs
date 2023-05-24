@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace CommonsDebug
+namespace HyperUnityCommons
 {
 
 	public class KeyDebugger : MonoBehaviour {

@@ -8,9 +8,7 @@
 using UnityEngine;
 using System.Collections;
 
-using CommonsHelper;
-
-namespace CommonsDebug
+namespace HyperUnityCommons
 {
     [RequireComponent(typeof(BoxCollider2D))]
     public class EditBoxCollider2D : MonoBehaviour
@@ -34,7 +32,7 @@ namespace CommonsDebug
                 {
                     // lazy get component
                     m_BoxCollider2D = GetComponent<BoxCollider2D>();
-                    
+
                     if (m_BoxCollider2D == null)
                     {
                         return;

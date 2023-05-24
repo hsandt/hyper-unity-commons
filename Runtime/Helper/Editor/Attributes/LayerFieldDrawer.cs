@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
     /// LayerField will display a dropdown to select a layer among the list of layers defined
     /// at edit time, using a native method.

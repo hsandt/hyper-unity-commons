@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 
 	[RequireComponent(typeof(AudioSource))]

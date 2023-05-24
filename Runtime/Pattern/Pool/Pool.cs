@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-using CommonsHelper;
 using Object = UnityEngine.Object;
 
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
     public class Pool<TPooledObject> where TPooledObject : MonoBehaviour, IPooledObject
     {

@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-using CommonsHelper;
+using HyperUnityCommons;
 
 public class SettingGaugeLabel : Selectable
 {

@@ -4,7 +4,7 @@ using System.Collections;
 
 using NUnit.Framework;
 
-namespace CommonsHelper.Tests
+namespace HyperUnityCommons.Tests
 {
 
 	[TestFixture]

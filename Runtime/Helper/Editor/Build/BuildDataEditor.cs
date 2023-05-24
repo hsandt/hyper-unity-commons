@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
 
 	[CustomEditor(typeof(BuildData))]

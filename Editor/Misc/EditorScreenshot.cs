@@ -7,10 +7,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-using CommonsHelper;
-using CommonsHelper.Editor;
-
-namespace CommonsEditor
+namespace HyperUnityCommons.Editor
 {
 	public class EditorScreenshot : EditorWindow
 	{

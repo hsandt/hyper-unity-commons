@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
     /// Adaptation of StandardPooledObject for MasterBehaviour
     public class StandardMasterPooledObject : MasterBehaviour, IPooledObject

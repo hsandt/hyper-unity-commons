@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 
-namespace CommonsEditor
+namespace HyperUnityCommons.Editor
 {
 
 	static class EditorConsole

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-using CommonsPattern;
+using HyperUnityCommons;
 #if NL_ELRACCOONE_TWEENS
 using ElRaccoone.Tweens;
 #endif

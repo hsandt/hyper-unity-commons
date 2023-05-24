@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     /// Component containing a BezierPath2D
     public class BezierPath2DComponent : Path2DComponent

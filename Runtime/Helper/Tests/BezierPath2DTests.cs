@@ -4,7 +4,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace CommonsHelper.Tests
+namespace HyperUnityCommons.Tests
 {
     public class BezierPath2DStaticTests
     {

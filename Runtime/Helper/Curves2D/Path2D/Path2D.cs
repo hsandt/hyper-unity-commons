@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     /// Base class for path = series of connected curves
     /// A path is defined by key points, which themselves define interpolated curves in a way that

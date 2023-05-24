@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     public static class AnimationCurveUtil
     {

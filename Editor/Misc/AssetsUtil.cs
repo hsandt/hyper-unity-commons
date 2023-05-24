@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace CommonsEditor
+namespace HyperUnityCommons.Editor
 {
     public static class AssetsUtil
     {
@@ -77,7 +77,7 @@ namespace CommonsEditor
                 {
                     var path = AssetDatabase.GUIDToAssetPath(guid);
                     var asset = AssetDatabase.LoadMainAssetAtPath(path);
-                    
+
                     // Exclude folders
                     if (!AssetDatabase.IsValidFolder(path))
                     {
@@ -85,7 +85,7 @@ namespace CommonsEditor
                         string[] existingLabels = AssetDatabase.GetLabels(asset);
                         if (!existingLabels.Contains("Data"))
                         {
-                            string[] newLabels = existingLabels.Append("Data").ToArray(); 
+                            string[] newLabels = existingLabels.Append("Data").ToArray();
                             AssetDatabase.SetLabels(asset, newLabels);
                         }
                     }

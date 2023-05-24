@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
     /// Helper to quickly generate and activate a certain number of UI widgets
     /// under a parent, esp. a Layout. In production, it is recommended to switch to a proper pool

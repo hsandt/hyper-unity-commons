@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.UI;
 using UnityEngine;
 
-namespace CommonsPattern.Editor
+namespace HyperUnityCommons.Editor
 {
     [CustomEditor(typeof(SettingGaugeLabel))]
     [CanEditMultipleObjects]

@@ -3,20 +3,20 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
     public class MasterBehaviour : ClearableBehaviour, IPausable
     {
         [Header("Parameters")]
-        
+
         [SerializeField, Tooltip("Check to automatically register all ClearableBehaviour, any Animator, " +
             "and any Particle Systems, as slaves on start. Note that we don't check for duplicates, " +
             "so if you check this, do not add sibling slaves manually at all.")]
         private bool addSiblingComponentsAsSlaves = true;
-        
-        
+
+
         [Header("Slave components")]
-        
+
         // Behaviour is broader than MonoBehaviour and contains all native Unity components that have an Update event,
         // along with the OnEnable and OnDisable events.
         // In Awake(), make sure you register sibling behaviours you need to pause with slaveBehaviours.Add(myBehaviour);
@@ -38,14 +38,14 @@ namespace CommonsPattern
         // ParticleSystems are other types of Components with their own Play/Pause methods, so they are in another list
         [Tooltip("Particle systems to pause and resume")]
         public List<ParticleSystem> slaveParticles;
-        
-        
+
+
         /* State */
 
         // True iff this entity is paused
         private bool m_IsPaused = false;
-        
-        
+
+
         private void Awake()
         {
             if (addSiblingComponentsAsSlaves)
@@ -58,10 +58,10 @@ namespace CommonsPattern
 
             Init();
         }
-        
+
         /// Override this method to customize Awake behavior while preserving Awake's behaviour
         protected virtual void Init() {}
-        
+
         /// Add all ClearableBehaviour components as slave behaviours, and any Animator component as slave animator
         protected void AddSiblingSlaveBehaviours()
         {
@@ -71,21 +71,21 @@ namespace CommonsPattern
                 // To avoid infinite recursion on Setup/Clear, do not register the Master script itself as its own Slave!
                 if (clearableBehaviour != this)
                 {
-                    // Don't check if already in list, we've warned user that we don't check for duplicates in tooltip 
+                    // Don't check if already in list, we've warned user that we don't check for duplicates in tooltip
                     slaveBehaviours.Add(clearableBehaviour);
                 }
             }
 
-            // Not all characters have those components, so don't fail if you don't find one 
+            // Not all characters have those components, so don't fail if you don't find one
             slaveAnimator = GetComponent<Animator>();
             slaveRigidbody2D = GetComponent<Rigidbody2D>();
 
             // Cumulate slave particles set manually with any sibling particle systems found
-            // Don't check if already in list, we've warned user that we don't check for duplicates in tooltip 
+            // Don't check if already in list, we've warned user that we don't check for duplicates in tooltip
             slaveParticles.AddRange(GetComponents<ParticleSystem>());
         }
-        
-        
+
+
         /* ClearableBehaviour methods */
 
         public override void Setup()
@@ -147,14 +147,14 @@ namespace CommonsPattern
             }
         }
 
-        
+
         /* IPausable interface */
 
         /// Pause all slave behaviours
         public virtual void Pause()
         {
             m_IsPaused = true;
-            
+
             foreach (Behaviour slaveBehaviour in slaveBehaviours)
             {
                 // Unlike Setup/Clear which tries to cast to ClearableBehaviour to delegate Setup/Clear,
@@ -182,7 +182,7 @@ namespace CommonsPattern
         public virtual void Resume()
         {
             m_IsPaused = false;
-            
+
             foreach (Behaviour slaveBehaviour in slaveBehaviours)
             {
                 // Same remark as in Pause

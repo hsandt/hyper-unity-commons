@@ -3,7 +3,7 @@ using UnityEngine;
 
 using NUnit.Framework;
 
-namespace CommonsHelper.Tests
+namespace HyperUnityCommons.Tests
 {
 
 	[TestFixture]

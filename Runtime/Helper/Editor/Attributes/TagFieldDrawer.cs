@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
     /// TagField will display a dropdown to select a tag among the list of tags defined
     /// at edit time, using a native method.

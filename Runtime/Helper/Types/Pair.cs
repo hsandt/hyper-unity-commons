@@ -1,6 +1,6 @@
 using System;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 	/// Mutable tuple class for 2 elements of arbitrary types
 	/// While C# System.Tuple can be used in most cases, it is immutable, so if you need to modify

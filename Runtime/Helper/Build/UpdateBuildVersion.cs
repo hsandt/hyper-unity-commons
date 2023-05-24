@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 	/// Put this script on any game object with a Text or TextMeshProUGUI reflecting the current build version.
 	/// This is convenient to always show the correct build version on the title screen.
@@ -24,12 +24,12 @@ namespace CommonsHelper
 
 		private void UpdateText () {
 			string version = BuildData.GetVersionStringFromResource();
-			
+
 			if (m_TextWidget)
 			{
 				m_TextWidget.text = version;
 			}
-			
+
 			if (m_TMPWidget)
 			{
 				m_TMPWidget.text = version;

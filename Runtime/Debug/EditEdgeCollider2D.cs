@@ -8,16 +8,14 @@
 using UnityEngine;
 using System.Collections;
 
-using CommonsHelper;
-
-namespace CommonsDebug
+namespace HyperUnityCommons
 {
     [RequireComponent(typeof(EdgeCollider2D))]
     public class EditEdgeCollider2D : MonoBehaviour
     {
 #if UNITY_EDITOR
         private EdgeCollider2D m_EdgeCollider2D;
-        
+
         [SerializeField, Tooltip("Should the collider be visible even when the game object is not selected? " +
                                  "(experimental: requires no rotation in the hierarchy and local scale only)")]
         private bool alwaysShowCollider = false;
@@ -34,7 +32,7 @@ namespace CommonsDebug
                 {
                     // lazy get component
                     m_EdgeCollider2D = GetComponent<EdgeCollider2D>();
-                    
+
                     if (m_EdgeCollider2D == null)
                     {
                         return;

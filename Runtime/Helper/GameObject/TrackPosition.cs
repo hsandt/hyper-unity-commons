@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 
 	/// Keep a transform at a target position

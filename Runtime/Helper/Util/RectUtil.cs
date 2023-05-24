@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 
 	public static class RectUtil {

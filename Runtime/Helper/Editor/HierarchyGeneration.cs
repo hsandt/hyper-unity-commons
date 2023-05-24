@@ -3,7 +3,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
 	public class HierarchyGeneration : MonoBehaviour
 	{

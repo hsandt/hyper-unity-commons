@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-using CommonsPattern;
+using HyperUnityCommons;
 
 /// Application Manager
 /// It handles things related to the application and window, but not to a gamestate in particular

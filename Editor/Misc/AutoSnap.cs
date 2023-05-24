@@ -7,9 +7,7 @@
 using UnityEngine;
 using UnityEditor;
 
-using CommonsHelper;
-
-namespace CommonsEditor
+namespace HyperUnityCommons.Editor
 {
 	public class AutoSnap : EditorWindow
 	{
@@ -29,7 +27,7 @@ namespace CommonsEditor
 				window.doSnap = EditorPrefs.GetBool("AutoSnap.doSnap");
 			if (EditorPrefs.HasKey("AutoSnap.snapValue"))
 				window.snapValue = EditorPrefs.GetFloat("AutoSnap.snapValue");
-			
+
 			window.Focus();
 		}
 
@@ -71,7 +69,7 @@ namespace CommonsEditor
 				// Undo in case you mis-snapped an object, but remember to disable Auto Snap before undoing or it will
 				// resnap immediately!
 				Undo.RecordObject(transform, "Auto-snap position");
-				
+
 				transform.localPosition = VectorUtil.RoundVector3(transform.localPosition, snapValue);
 			}
 		}

@@ -3,7 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
 
 	[CustomEditor(typeof(RectContainer), true), CanEditMultipleObjects]

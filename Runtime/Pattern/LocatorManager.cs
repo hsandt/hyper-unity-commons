@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
 	/// Singleton manager that memoizes objects by tag
 	/// It is important to make it a singleton with instance members rather than a (static) class with static members

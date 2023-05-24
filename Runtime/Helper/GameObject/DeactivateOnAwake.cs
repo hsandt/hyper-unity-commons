@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 	public class DeactivateOnAwake : MonoBehaviour
 	{

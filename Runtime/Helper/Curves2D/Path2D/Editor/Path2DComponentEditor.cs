@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
     /// <summary>
     /// Base class for 2D path (like Bezier and Catmull-Rom) component custom editors

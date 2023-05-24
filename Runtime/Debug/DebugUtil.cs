@@ -3,9 +3,7 @@ using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-using CommonsHelper;
-
-namespace CommonsDebug
+namespace HyperUnityCommons
 {
 	public static class DebugUtil
 	{

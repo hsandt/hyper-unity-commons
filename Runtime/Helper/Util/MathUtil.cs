@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     public static class MathUtil
     {

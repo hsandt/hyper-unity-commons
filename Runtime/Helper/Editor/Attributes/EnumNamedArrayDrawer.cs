@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
     /// Property drawer for EnumNamedArrayAttribute
     /// See usage in EnumNamedArrayAttribute docstring

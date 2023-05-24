@@ -1,4 +1,4 @@
-﻿namespace CommonsPattern
+﻿namespace HyperUnityCommons
 {
 
 	/// Interface for objects managed by a Pool

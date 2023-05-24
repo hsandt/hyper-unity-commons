@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsEditor
+namespace HyperUnityCommons.Editor
 {
 
 	// using System.Reflection;

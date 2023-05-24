@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
     [CustomEditor(typeof(CatmullRomPath2DComponent))]
     public class CatmullRomPath2DComponentEditor : Path2DComponentEditor

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     /// Dictionary that maps a SettingData<T> to a setting value of type T
     /// Unity objects are hashed via their instance ID, so in fact we could use int as key type,

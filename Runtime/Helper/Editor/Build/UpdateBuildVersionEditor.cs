@@ -4,7 +4,7 @@ using UnityEditor;
 using System.Collections;
 using TMPro;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
 	[CustomEditor(typeof(UpdateBuildVersion))]
 	public class UpdateBuildVersionEditor : UnityEditor.Editor
@@ -39,13 +39,13 @@ namespace CommonsHelper.Editor
 		public static void UpdateBuildVersionTextSiblingOf (UpdateBuildVersion script)
 		{
 			string version = BuildData.GetVersionStringFromResource();
-			
+
 			Text text = script.GetComponent<Text>();
 			if (text != null)
 			{
 				InspectorUtil.ChangeText(text, version);
 			}
-			
+
 			TextMeshProUGUI tmpWidget = script.GetComponent<TextMeshProUGUI>();
 			if (tmpWidget != null)
 			{

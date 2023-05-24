@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 using DG.Tweening;
 
-namespace CommonsHelper.DOTween
+namespace HyperUnityCommons.DOTween
 {
 
 	public static class DOTweenExtensions {

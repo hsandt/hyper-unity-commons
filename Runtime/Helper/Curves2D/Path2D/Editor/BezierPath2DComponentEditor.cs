@@ -24,7 +24,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
     [CustomEditor(typeof(BezierPath2DComponent))]
     public class BezierPath2DComponentEditor : Path2DComponentEditor

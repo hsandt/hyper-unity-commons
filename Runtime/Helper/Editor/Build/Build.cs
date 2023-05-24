@@ -10,7 +10,7 @@ using System.Linq;
 // It could be useful e.g. to delete debug objects when building for release, or platform-specific objects when
 // building for other platforms (the EditorOnly tag is not enough for these particular cases)
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
 
 	public static class Build {

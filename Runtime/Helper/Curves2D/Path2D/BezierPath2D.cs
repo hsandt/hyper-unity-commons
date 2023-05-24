@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     /// A Bezier path is a series of connected Bezier curves
     [Serializable]

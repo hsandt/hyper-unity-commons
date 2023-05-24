@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     [CreateAssetMenu(fileName = "VolumeSettingData", menuName = "Settings/Volume Setting Data", order = 1)]
     public class VolumeSettingData : SettingData<float>

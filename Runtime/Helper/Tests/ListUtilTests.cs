@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 
-namespace CommonsHelper.Tests
+namespace HyperUnityCommons.Tests
 {
     [TestFixture]
     public class ListUtilTests

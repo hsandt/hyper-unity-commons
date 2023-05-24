@@ -6,9 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-using CommonsHelper;
-
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
 
 	/// Manager for a heterogeneous pool of game objects sharing a common script TPooledObject that implements IPooledObject

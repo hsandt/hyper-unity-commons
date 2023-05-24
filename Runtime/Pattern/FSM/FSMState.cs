@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
 
 	/// Abstract class for finite-state machine state. TStateKey can be any comparable, although we recommend using an Enum.

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-using CommonsPattern;
+using HyperUnityCommons;
 
 /// Base class for Pool Manager allowing to easily play SFX
 /// Has a feature to adjust volume automatically when many SFX of the same type are played

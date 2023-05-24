@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     /// Component containing a CatmullRomPath2D
     public class CatmullRomPath2DComponent : Path2DComponent

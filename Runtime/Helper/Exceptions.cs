@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 #endif
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 
 	public class ResourceNotFoundException : Exception {

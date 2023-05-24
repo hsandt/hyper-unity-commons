@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace CommonsEditor
+namespace HyperUnityCommons.Editor
 {
 
 	public static class EditorGUIHelper

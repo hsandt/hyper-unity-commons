@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
 
 	/// Base class for behaviours that can be cleared and restarted from their initial states. Recommended for all MonoBehaviours with state variables.

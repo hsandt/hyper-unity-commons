@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     /// A Sliced Curve Animator handles a Sliced Curve
     /// It can be started, tracks its own slice phase and time, and must be

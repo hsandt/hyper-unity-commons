@@ -7,14 +7,14 @@ using UnityEngine.UI;
 using UnityEditor;
 using TMPro;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 
     /// Utility functions for handles. This script is exceptionally outside an Editor folder and assembly (but still
     /// inside #if UNITY_EDITOR) because non-editor classes may want to specialize their Inspector drawing in their own
     /// body. However, all drawing-related methods must be inside #if UNITY_EDITOR.
 	public static class InspectorUtil {
-	
+
 		/// Modify text content on a Text component with live update in the editor
 		/// Doing the usual Undo.RecordObject(text) + text.text = textContent is not enough,
 		/// nor adding Canvas.ForceUpdateCanvases(), SceneView.RepaintAll() or text.SendMessage("OnValidate"),
@@ -36,14 +36,14 @@ namespace CommonsHelper
 			textProperty.stringValue = textContent;
 			textSerializedObject.ApplyModifiedProperties();
 		}
-	    
+
 		/// Modify text content on a TextMeshProUGUI component with live update in the editor
 		/// Same as ChangeText, but for TextMeshPro
 		public static void ChangeTMPText (TextMeshProUGUI text, string textContent) {
 			EditorGUIUtility.editingTextField = false;
 
 			SerializedObject textSerializedObject = new SerializedObject(text);
-			
+
 			// note casing, the text field is actually on base class TMP_Text and named "m_text" lowercase
 			SerializedProperty textProperty = textSerializedObject.FindProperty("m_text");
 			textProperty.stringValue = textContent;

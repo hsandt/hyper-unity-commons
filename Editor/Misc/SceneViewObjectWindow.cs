@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
-namespace CommonsEditor
+namespace HyperUnityCommons.Editor
 {
 
 	public class SceneViewObjectWindow : EditorWindow

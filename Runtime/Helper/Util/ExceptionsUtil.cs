@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 
 	public class ExceptionsUtil {

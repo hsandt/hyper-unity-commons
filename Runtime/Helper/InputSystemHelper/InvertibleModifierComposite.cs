@@ -29,7 +29,7 @@ using UnityEngine.InputSystem.Utilities;
 using UnityEditor;
 #endif
 
-namespace CommonsHelper.InputSystemHelper
+namespace HyperUnityCommons.InputSystemHelper
 {
     // We need to register our composite with the input system. And we
     // want to do it in a way that makes the composite visible in the action

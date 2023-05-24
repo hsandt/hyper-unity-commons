@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     /// A Sliced Curve is a curve made of 3 parts: Intro, Sustain, Outro.
     /// The concept is similar to music, where the intro and the outro is played once,

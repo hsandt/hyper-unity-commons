@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     public abstract class Path2DComponent : MonoBehaviour
     {

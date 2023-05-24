@@ -2,18 +2,17 @@
 
 using UnityEngine;
 
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
 	/*
 	A generic singleton base class for manager game objects that are present only
 	once in the scene.
-	
+
 	Usage:
-	
+
 	1. Create a subclass script using the curiously recurrent template pattern:
-	
+
 	```
-	using CommonsPattern;
 
 	public class MyManager : SingletonManager<MyManager> {
 		// if you need to override behavior on Awake
@@ -22,31 +21,30 @@ namespace CommonsPattern
 		}
 	}
 	```
-	
+
 	Alternatively, if you prefer defining your own Awake:
-	
+
 	```
-	using CommonsPattern;
 
 	public class MyManager : SingletonManager<MyManager> {
 		// if you need to override behavior on Awake
 		private void Awake() {
 			// replaces InitSingleton() for subclasses, more efficient with static type check
 			SetInstanceOrSelfDestruct(this);
-			
+
 			// init your stuff
 		}
 	}
 	```
-	
+
 	2. Create a Game Object (we recommend a Prefab) with your script.
 	Either place it in a scene that is always loaded (once), or instantiate your prefab (once) at runtime.
-	
+
 	3. If you need to customize OnDestroy, override OnDestroyInternal instead
-	
+
 	Manager instances will automatically be registered as static instance, accessed via the Instance property.
 	Step 2 is necessary, as a manager game object will *not* created if it does not already exist.
-	
+
 	If no instances have been registered, Instance returns null without error.
 	If more than 1 instance is detected, any extra instance will self-destruct with a warning.
 	On game object/component destruction, the instance is cleared.
@@ -72,7 +70,7 @@ namespace CommonsPattern
 					GetType(), typeof(T));
 			}
 		}
-		
+
 		protected static void SetInstanceOrSelfDestruct (T value) {
 			if (_instance == null) {
 				_instance = value;
@@ -98,7 +96,7 @@ namespace CommonsPattern
 			}
 			OnDestroyInternal();
 		}
-		
+
 		/// Override this method to customize OnDestroy behavior while preserving singleton logic
 		protected virtual void OnDestroyInternal() {}
 	}

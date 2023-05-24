@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 	public static class VectorUtil
 	{

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
     /// Put this script on any game object with multiple Text or TextMeshProUGUI children.
     /// The extra text children are often meant as outlines (esp. for pixel art fonts), when placed before

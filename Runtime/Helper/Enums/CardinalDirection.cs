@@ -1,4 +1,4 @@
-namespace CommonsHelper
+namespace HyperUnityCommons
 {
 
 	public enum CardinalDirection

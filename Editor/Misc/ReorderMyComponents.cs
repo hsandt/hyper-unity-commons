@@ -9,7 +9,7 @@ using UnityEditor;
 using System.Reflection;
 using System.Collections.Generic;
 
-namespace CommonsEditor
+namespace HyperUnityCommons.Editor
 {
 
 	[InitializeOnLoad]

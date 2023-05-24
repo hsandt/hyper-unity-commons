@@ -9,7 +9,7 @@ using System.Diagnostics;
  *
  */
 
-namespace CommonsDebug
+namespace HyperUnityCommons
 {
 
     public static class PhysicsUtil {

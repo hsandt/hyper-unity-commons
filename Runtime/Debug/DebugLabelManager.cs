@@ -17,13 +17,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-using CommonsPattern;
-
-namespace CommonsDebug
+namespace HyperUnityCommons
 {
 
 	/// Manager to display debug labels
-	
+
 	/// UI labels are visible in standalone builds, but if you want to remove them from the build,
 	/// just make the the DebugLabelManager game object tagged EditorOnly (UI label code will not be stripped though)
 
@@ -40,7 +38,7 @@ namespace CommonsDebug
 				Instance.DrawUIText(text, color ?? Color.white, duration, channel);
 			}
 		}
-		
+
 		public static void Print (FormattableString formattableText, Color? color = null, float duration = 2f, int channel = -1)
 		{
 			if (Instance != null)
@@ -49,7 +47,7 @@ namespace CommonsDebug
 				Instance.DrawUIText(FormattableString.Invariant(formattableText), color ?? Color.white, duration, channel);
 			}
 		}
-		
+
 #if UNITY_EDITOR
 
 		public static void Print3D (Vector3 position, string text, Color? color = null, float duration = 2f)
@@ -67,9 +65,9 @@ namespace CommonsDebug
 				Instance.DrawText(position, FormattableString.Invariant(formattableText), color ?? Color.white, duration);
 			}
 		}
-		
+
 #endif
-		
+
 		#endregion
 
 		enum PooledTimedObjectState {
@@ -77,21 +75,21 @@ namespace CommonsDebug
 			Active,
 			Inactive
 		}
-		
+
 		/// UI debug label, displayed on screen
 		private class LabelData
 		{
 			public string text;
 			public Color color;
 			public float duration;
-			
+
 			public void SetParams (string text, Color color, float duration) {
 				this.text = text;
 				this.color = color;
 				this.duration = duration;
 			}
 		}
-		
+
 #if UNITY_EDITOR
 		/// Handle debug label, displayed in space
 		private class SpatialLabelData : LabelData {
@@ -104,7 +102,7 @@ namespace CommonsDebug
 			}
 		}
 #endif
-		
+
 		private class PooledLabel<TLabelData> where TLabelData : LabelData, new() {
 			/// Is the pooled object used?
 			public PooledTimedObjectState state = PooledTimedObjectState.Inactive;
@@ -115,19 +113,19 @@ namespace CommonsDebug
 
 
 		/* Parameters */
-		
+
 		[Header("UI Labels")]
-		
+
 		[SerializeField, Tooltip("Size of the pool of UI labels")]
 		private int uiLabelPoolSize = 10;
 
 		[SerializeField, Tooltip("Size of the font used to draw UI labels")]
 		private int uiLabelFontSize = 24;
-		
+
 		[SerializeField, Tooltip("Width of the outline of UI labels. If 0, do not draw outline. " +
 								 "Caution: this quickly increases CPU usage.")]
 		private int uiLabelOutlineWidth = 0;
-		
+
 		[Header("Spatial Labels")]
 
 #if UNITY_EDITOR
@@ -143,7 +141,7 @@ namespace CommonsDebug
 
 		/// Pool of label data (LabelData is a pure object, so we don't use PoolManager)
 		List<PooledLabel<LabelData>> m_UILabelDataPool = new List<PooledLabel<LabelData>>();
-		
+
 #if UNITY_EDITOR
 		/// Pool of spatial label data (LabelData is a pure object, so we don't use PoolManager)
 		List<PooledLabel<SpatialLabelData>> m_SpatialLabelDataPool = new List<PooledLabel<SpatialLabelData>>();
@@ -185,7 +183,7 @@ namespace CommonsDebug
 				// 2-state FSM
 				if (pooledUILabelData.state == PooledTimedObjectState.Inactive)
 					continue;
-				
+
 				// always draw before checking time, so that labels drawn with time 0
 				// are displayed at least 1 frame (else they would be ignored when drawn in FixedUpdate)
 				LabelData uiLabelData = pooledUILabelData.pooledObject;
@@ -235,7 +233,7 @@ namespace CommonsDebug
 			{
 				// assign the border color
 				style.normal.textColor = borderColor;
-				
+
 				// draw the left and right edges, including in the corners
 				for (int j = - borderWidth; j <= borderWidth; j++)
 				{
@@ -244,7 +242,7 @@ namespace CommonsDebug
 					// right edge
 					GUI.Label(new Rect(centerRect.x + borderWidth,centerRect.y + j, centerRect.width, centerRect.height), content, style);
 				}
-				
+
 				// draw the top of bottom edges, but spare the corners this time as they have been done above
 				for (int i = - borderWidth + 1; i <= borderWidth - 1; i++)
 				{
@@ -254,12 +252,12 @@ namespace CommonsDebug
 					GUI.Label(new Rect(centerRect.x + i,centerRect.y + borderWidth, centerRect.width, centerRect.height), content, style);
 				}
 			}
-			
+
 			// draw the inner color version in the center (it overwrites the style color)
 			style.normal.textColor = innerColor;
 			GUI.Label(centerRect, content, style);
 		}
-		
+
 		#region UIlabels
 
 		public void DrawUIText(string text, Color color, float duration = 2f, int channel = -1)
@@ -284,7 +282,7 @@ namespace CommonsDebug
 			pooledlabelData.state = PooledTimedObjectState.Active;
 			pooledlabelData.endTime = Time.time + duration;
 		}
-		
+
 		#endregion
 
 
@@ -335,7 +333,7 @@ namespace CommonsDebug
 			freeLabelData.state = PooledTimedObjectState.ShouldStart;
 		}
 #endif
-		
+
 		#endregion
 	}
 

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace CommonsHelper.Editor
+namespace HyperUnityCommons.Editor
 {
     /// ReadOnlyField will gray out elements it is used on.
     /// When used on an array, it will gray out the array elements but not the array itself, so the size can still be

@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
-using CommonsHelper;
-using CommonsPattern;
+using HyperUnityCommons;
 
 /// Settings Manager
 /// We recommend creating it and making it DontDestroyOnLoad via some PersistentManagersGenerator (specific to project)

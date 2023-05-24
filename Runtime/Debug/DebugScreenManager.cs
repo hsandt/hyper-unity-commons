@@ -3,10 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-using CommonsHelper;
-using CommonsPattern;
-
-namespace CommonsDebug
+namespace HyperUnityCommons
 {
 	// IMPROVE: when variable has not been updated for several frames, darken the label
 
@@ -52,7 +49,7 @@ namespace CommonsDebug
 #if UNITY_EDITOR
 			initialized = true;  // Hot reload support
 #endif
-			
+
 			// prepare one debug text and one debug variable per channel (only one can appear per channel at a time)
 			// (similar to pool, but fewer objects and each has a fixed position)
 

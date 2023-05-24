@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CommonsPattern
+namespace HyperUnityCommons
 {
     /// Common implementation of IPooledObject for MonoBehaviour, based on game object activation
     /// This component can be added directly to any pooled object considered active when game object is active
