@@ -230,10 +230,11 @@ namespace HyperUnityCommons.Editor
 			Reporting.BuildReport buildReport = BuildPipeline.BuildPlayer(buildPlayerOptions);
 			Reporting.BuildSummary buildSummary = buildReport.summary;
 
-			Debug.LogFormat(@"Build result: {0} (took {3:hh\:mm\:ss} from {1} to {2})", buildSummary.result,
-				buildSummary.buildStartedAt, buildSummary.buildEndedAt, buildSummary.buildEndedAt - buildSummary.buildStartedAt);
+			Debug.LogFormat(@"Build result for {4}: {0} (took {3:hh\:mm\:ss} from {1} to {2})", buildSummary.result,
+				buildSummary.buildStartedAt, buildSummary.buildEndedAt, buildSummary.buildEndedAt - buildSummary.buildStartedAt,
+				buildPlayerOptions.locationPathName);
 
-			// restore original settings
+			// Restore original settings
 			if (buildTarget != BuildTarget.WebGL)
 			{
 				PlayerSettings.SetScriptingBackend(buildTargetGroup, originalScriptingBackend);
@@ -241,6 +242,16 @@ namespace HyperUnityCommons.Editor
 
 			PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, originalIl2CppCompilerConfiguration);
 			PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, originalManagedStrippingLevel);
+
+			// Unity tends to add "- {fileID: 0}" to preloadedAssets on build, so remove null preloaded assets
+			Object[] cleanedUpPreloadedAssets = PlayerSettings.GetPreloadedAssets()
+				.Where(asset => asset != null)
+				.ToArray();
+			PlayerSettings.SetPreloadedAssets(cleanedUpPreloadedAssets);
+
+			// Save assets so that Project Settings restoration is properly saved
+			// Otherwise, the last save was done at Build time and you will see unwanted changes in the VCS
+			AssetDatabase.SaveAssets();
 		}
 
 		/// Build Windows 64
