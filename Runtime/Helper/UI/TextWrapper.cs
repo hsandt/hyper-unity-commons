@@ -6,13 +6,16 @@ using TMPro;
 
 namespace HyperUnityCommons
 {
-    /// Put this script on any game object with multiple Text or TextMeshProUGUI children.
+    /// Put this script on any game object that may have one or multiple Text or TextMeshProUGUI children,
+    /// that you want to change text and/or color of. This allows compatibility with common types of text.
     /// The extra text children are often meant as outlines (esp. for pixel art fonts), when placed before
-    /// the core text in the hierarchy.
-    /// Then get this component and use its API to update all the text components on children at once.
-    /// This is a bit expensive, but a quick workaround to get pixel art font outlines working without a custom shader.
-    /// This works with both standard and TMP text.
-    public class TextWithOutline : MonoBehaviour
+    /// the core text in the hierarchy. However, they are optional if you only need this component to benefit from
+    /// classic Text + TMP Text compatibility. If you write a framework where you want to let the user use custom
+    /// outline or not, this is also useful.
+    /// User code must get this component and use its API to update all the text components on children at once.
+    /// This is a bit expensive if there are 4 or more outline directions, but a quick workaround to get pixel art font
+    /// outlines working without a custom shader.
+    public class TextWrapper : MonoBehaviour
     {
         /* Child component references */
 
