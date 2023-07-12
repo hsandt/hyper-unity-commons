@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace HyperUnityCommons.Editor
 {
-    [CustomEditor(typeof(SettingGaugeLabel))]
+    [CustomEditor(typeof(SettingGaugeLabel), isFallback = true)]
     [CanEditMultipleObjects]
     public class SettingGaugeLabelEditor : SelectableEditor
     {
