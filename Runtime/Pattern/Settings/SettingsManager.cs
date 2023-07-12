@@ -34,26 +34,26 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	private readonly SettingDictionary<float> floatSettingDictionary = new();
 
 
-	public bool GetBoolSetting(SettingData<bool> boolSettingData)
+	public bool GetBoolSetting(SettingData<bool> boolSetting)
 	{
-		return GetSettingInDictionary(boolSettingData, boolSettingDictionary);
+		return GetSettingInDictionary(boolSetting, boolSettingDictionary);
 	}
 
-	public float GetFloatSetting(SettingData<float> floatSettingData)
+	public float GetFloatSetting(SettingData<float> floatSetting)
 	{
-		return GetSettingInDictionary(floatSettingData, floatSettingDictionary);
+		return GetSettingInDictionary(floatSetting, floatSettingDictionary);
 	}
 
-	public bool GetBoolSettingAsReadableValue(SettingData<bool> boolSettingData)
+	public bool GetBoolSettingAsReadableValue(SettingData<bool> boolSetting)
 	{
-		bool storedValue = GetSettingInDictionary(boolSettingData, boolSettingDictionary);
-		return boolSettingData.StoredToReadableValue(storedValue);
+		bool storedValue = GetSettingInDictionary(boolSetting, boolSettingDictionary);
+		return boolSetting.StoredToReadableValue(storedValue);
 	}
 
-	public float GetFloatSettingAsReadableValue(SettingData<float> floatSettingData)
+	public float GetFloatSettingAsReadableValue(SettingData<float> floatSetting)
 	{
-		float storedValue = GetSettingInDictionary(floatSettingData, floatSettingDictionary);
-		return floatSettingData.StoredToReadableValue(storedValue);
+		float storedValue = GetSettingInDictionary(floatSetting, floatSettingDictionary);
+		return floatSetting.StoredToReadableValue(storedValue);
 	}
 
 	private static T GetSettingInDictionary<T>(SettingData<T> settingData, SettingDictionary<T> settingDictionary)
@@ -73,36 +73,36 @@ public class SettingsManager : SingletonManager<SettingsManager>
 		return default;
 	}
 
-	public void SetBoolSetting(SettingData<bool> boolSettingData, bool storedValue)
+	public void SetBoolSetting(SettingData<bool> boolSetting, bool storedValue)
 	{
-		SetSettingInDictionary(boolSettingData, boolSettingDictionary, storedValue);
+		SetSettingInDictionary(boolSetting, boolSettingDictionary, storedValue);
 	}
 
-	public void SetFloatSetting(SettingData<float> floatSettingData, float storedValue)
+	public void SetFloatSetting(SettingData<float> floatSetting, float storedValue)
 	{
-		SetSettingInDictionary(floatSettingData, floatSettingDictionary, storedValue);
+		SetSettingInDictionary(floatSetting, floatSettingDictionary, storedValue);
 	}
 
-	public void SetBoolSettingFromReadableValue(SettingData<bool> boolSettingData, bool readableValue)
+	public void SetBoolSettingFromReadableValue(SettingData<bool> boolSetting, bool readableValue)
 	{
-		bool storedValue = boolSettingData.ReadableToStoredValue(readableValue);
-		SetBoolSetting(boolSettingData, storedValue);
+		bool storedValue = boolSetting.ReadableToStoredValue(readableValue);
+		SetBoolSetting(boolSetting, storedValue);
 	}
 
-	public void SetFloatSettingFromReadableValue(SettingData<float> floatSettingData, float readableValue)
+	public void SetFloatSettingFromReadableValue(SettingData<float> floatSetting, float readableValue)
 	{
-		float storedValue = floatSettingData.ReadableToStoredValue(readableValue);
-		SetFloatSetting(floatSettingData, storedValue);
+		float storedValue = floatSetting.ReadableToStoredValue(readableValue);
+		SetFloatSetting(floatSetting, storedValue);
 	}
 
-	private void SetDefaultBoolSetting(SettingData<bool> boolSettingData)
+	private void SetDefaultBoolSetting(SettingData<bool> boolSetting)
 	{
-		SetBoolSetting(boolSettingData, boolSettingData.defaultValue);
+		SetBoolSetting(boolSetting, boolSetting.defaultValue);
 	}
 
-	private void SetDefaultFloatSetting(SettingData<float> floatSettingData)
+	private void SetDefaultFloatSetting(SettingData<float> floatSetting)
 	{
-		SetFloatSetting(floatSettingData, floatSettingData.defaultValue);
+		SetFloatSetting(floatSetting, floatSetting.defaultValue);
 	}
 
 	private static void SetSettingInDictionary<T>(SettingData<T> settingData, SettingDictionary<T> settingDictionary,
@@ -114,31 +114,31 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 	/// Load settings from player preferences
 	/// If a key is not present, set value to parameterized default
-	private void LoadBoolSettingFromPreferences(SettingData<bool> boolSettingData)
+	private void LoadBoolSettingFromPreferences(SettingData<bool> boolSetting)
 	{
-		if (PlayerPrefs.HasKey(boolSettingData.playerPrefKey))
+		if (PlayerPrefs.HasKey(boolSetting.playerPrefKey))
 		{
-			bool playerPrefStoredValue = GetPlayerPrefsBool(boolSettingData.playerPrefKey);
-			SetBoolSetting(boolSettingData, playerPrefStoredValue);
+			bool playerPrefStoredValue = GetPlayerPrefsBool(boolSetting.playerPrefKey);
+			SetBoolSetting(boolSetting, playerPrefStoredValue);
 		}
 		else
 		{
-			SetDefaultBoolSetting(boolSettingData);
+			SetDefaultBoolSetting(boolSetting);
 		}
 	}
 
 	/// Load settings from player preferences
 	/// If a key is not present, set value to parameterized default
-	private void LoadFloatSettingFromPreferences(SettingData<float> floatSettingData)
+	private void LoadFloatSettingFromPreferences(SettingData<float> floatSetting)
 	{
-		if (PlayerPrefs.HasKey(floatSettingData.playerPrefKey))
+		if (PlayerPrefs.HasKey(floatSetting.playerPrefKey))
 		{
-			float playerPrefStoredValue = PlayerPrefs.GetFloat(floatSettingData.playerPrefKey);
-			SetFloatSetting(floatSettingData, playerPrefStoredValue);
+			float playerPrefStoredValue = PlayerPrefs.GetFloat(floatSetting.playerPrefKey);
+			SetFloatSetting(floatSetting, playerPrefStoredValue);
 		}
 		else
 		{
-			SetDefaultFloatSetting(floatSettingData);
+			SetDefaultFloatSetting(floatSetting);
 		}
 	}
 
@@ -229,11 +229,13 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 		foreach (var boolSetting in boolSettings)
 		{
+			boolSetting.AssertIsValid();
 			LoadBoolSettingFromPreferences(boolSetting);
 		}
 
 		foreach (var floatSetting in floatSettings)
 		{
+			floatSetting.AssertIsValid();
 			LoadFloatSettingFromPreferences(floatSetting);
 		}
 

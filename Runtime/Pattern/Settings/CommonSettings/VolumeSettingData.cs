@@ -16,15 +16,12 @@ namespace HyperUnityCommons
         [Tooltip("Name of Exposed Parameter on Audio Mixer that controls the associated volume")]
         public string audioParameterName;
 
-
-        public override void Init()
+        public override void AssertIsValid()
         {
-            #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.AssertFormat(audioMixer, this,
                 "[VolumeSettingData] Audio Mixer not set on Volume Setting Data {0}", this);
             Debug.AssertFormat(!string.IsNullOrEmpty(audioParameterName), this,
                 "[VolumeSettingData] Audio Parameter Name not set on Volume Setting Data {0}", this);
-            #endif
         }
 
         public override void OnSetValue(float storedValue)

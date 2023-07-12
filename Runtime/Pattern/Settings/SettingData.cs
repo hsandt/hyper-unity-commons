@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 
 namespace HyperUnityCommons
@@ -19,9 +20,9 @@ namespace HyperUnityCommons
         [Tooltip("Default value set when no Player Preference is found on game start")]
         public T defaultValue;
 
-        /// Initialization method
-        /// Mostly for checking that all parameters have been set properly
-        public virtual void Init() {}
+        /// Assert that all parameters have been set properly
+        [Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        public virtual void AssertIsValid() {}
 
         /// Called when this setting value is set
         /// Default implementation is empty, as some settings do nothing on value set, but will be queried later
