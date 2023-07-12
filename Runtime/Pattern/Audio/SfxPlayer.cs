@@ -14,7 +14,7 @@ public class SfxPlayer : MonoBehaviour
     private void Awake()
     {
         #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        Debug.AssertFormat(sfx != null, "[SfxSpawner] Awake: sfx is not set on {0}", this);
+        Debug.AssertFormat(sfx != null, this, "[SfxSpawner] Awake: sfx is not set on {0}", this);
         #endif
     }
 
