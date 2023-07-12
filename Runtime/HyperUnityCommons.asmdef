@@ -6,8 +6,7 @@
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "GUID:c956f17f16aa645919b704d986429054",
         "GUID:6f0786a5bbd4d44b992c72105d6500fe",
-        "GUID:caca889fed6088d40b22c2d7e2909c31",
-        "GUID:8a18b43bbefca455abece4fd62e82bba"
+        "GUID:caca889fed6088d40b22c2d7e2909c31"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -19,7 +18,7 @@
     "versionDefines": [
         {
             "name": "garettbass.unity-extensions.inspect-in-line",
-            "expression": "0.2",
+            "expression": "0.2.1",
             "define": "UNITY_EXTENSIONS_INSPECT_IN_LINE"
         },
         {
@@ -31,11 +30,6 @@
             "name": "com.eflatun.scenereference",
             "expression": "1.2.2",
             "define": "COM_EFLATUN_SCENEREFERENCE"
-        },
-        {
-            "name": "com.e7.introloop",
-            "expression": "6",
-            "define": "COM_E7_INTROLOOP"
         }
     ],
     "noEngineReferences": false
