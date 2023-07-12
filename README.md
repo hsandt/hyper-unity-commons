@@ -50,8 +50,9 @@ Some scripts are based on code snippets found online, sometimes with multiple co
 
 Sometimes there is a complete folder copied from another open source project, generally because development stopped so this was the only way to salvage it. In this case, said folder will have its own LICENSE file.
 
-The Runtime/Helper/Types/Unity, Editor/StagPoint, Editor/UnityToolbag folders have their own LICENSE.
+The Runtime/Helper/Collider2D/PolygonColliderSimplification-master-2017-06-09, Runtime/Helper/Types/Unity, Editor/StagPoint, Editor/UnityToolbag folders have their own LICENSE.
 
+* Runtime/Helper/Collider2D/PolygonColliderSimplification-master-2017-06-09 contains a partial frozen copy of third-party repository https://github.com/j-bbr/PolygonColliderSimplification (stripped of ProjectSettings)
 * Runtime/Helper/Types/Unity contains files from the com.unity.live-capture package
 * UnityToolbag contains a partial copy of https://github.com/kellygravelyn/UnityToolbag
 * StagPoint contains a salvaged copy of StagPoint's ImmediateWindow before development stopped and the project was abandoned. It has a copyright, but considering their tool was available for free it was abandoned and made unavailable, I considered it fair use to keep a copy here.
