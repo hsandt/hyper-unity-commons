@@ -34,14 +34,23 @@ namespace HyperUnityCommons
             {
                 if (HyperUnityCommonsEditorPrefsWindow.GetRemoveUnloadedScenesDuringPlayKeyPref())
                 {
-                    s_SceneSetupsBackup = EditorSceneManager.GetSceneManagerSetup();
-                    SceneSetup[] loadedSceneSetupsOnly = s_SceneSetupsBackup.Where(sceneSetup => sceneSetup.isLoaded).ToArray();
+                    // Check current scene setup array (do not fill s_SceneSetupsBackup yet, as it would mean that
+                    // we need to restore backup later on PlayModeStateChange.EnteredEditMode)
+                    SceneSetup[] currentSceneSetups = EditorSceneManager.GetSceneManagerSetup();
+                    SceneSetup[] loadedSceneSetupsOnly = currentSceneSetups.Where(sceneSetup => sceneSetup.isLoaded).ToArray();
 
                     // No need to change anything if no scene was unloaded
                     // This also allows us not to have to save the scenes now and keep them dirty even after exit Play
                     // mode, in case there are unsaved changes
-                    if (loadedSceneSetupsOnly.Length != s_SceneSetupsBackup.Length)
+                    if (loadedSceneSetupsOnly.Length < currentSceneSetups.Length)
                     {
+                        // This log will be cut if Clear On Play is active, but useful for debugging
+                        Debug.LogFormat("[RemoveUnloadedScenesDuringPlay] ModeStateChanged: exiting Edit mode, " +
+                            "detected {0} unloaded scenes ({1} loaded scenes out of {2} scenes). Saving scenes and " +
+                            "removing unloaded scenes.",
+                            currentSceneSetups.Length - loadedSceneSetupsOnly.Length,
+                            loadedSceneSetupsOnly.Length, currentSceneSetups.Length);
+
                         // Save open scenes now (if needed), otherwise we'll lose dirty changes when switching scene setups
                         // The changes won't be present during Play, and we won't recover them after exit Play mode
                         // We should log it, as this is not the usual behavior (which preserves scenes dirty as mentioned above)
@@ -50,6 +59,8 @@ namespace HyperUnityCommons
                         s_ShouldLogSaveScenesAfterEnteringPlayMode = true;
                         EditorSceneManager.SaveOpenScenes();
 
+                        // Now, backup scenes and remove unloaded scenes
+                        s_SceneSetupsBackup = currentSceneSetups;
                         EditorSceneManager.RestoreSceneManagerSetup(loadedSceneSetupsOnly);
                     }
                 }
