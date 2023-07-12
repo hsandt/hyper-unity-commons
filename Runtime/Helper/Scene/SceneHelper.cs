@@ -81,7 +81,7 @@ namespace HyperUnityCommons
         /// <param name="isDonePollingPeriodSeconds">Period (seconds) used to poll whether unloading is finished</param>
         /// <param name="context">Optional context for debugging</param>
         /// <param name="debugSceneReferenceName">Optional scene name or full symbol with namespace used to access scene reference for debugging</param>
-        public static async Task UnloadSceneAsync(SceneReference sceneReference, double isDonePollingPeriodSeconds,
+        public static async Task UnloadSceneAsync(SceneReference sceneReference, double isDonePollingPeriodSeconds = 0.1f,
             Object context = null, string debugSceneReferenceName = null)
         {
             if (string.IsNullOrEmpty(sceneReference.AssetGuidHex))
@@ -130,7 +130,7 @@ namespace HyperUnityCommons
         /// <param name="debugNextSceneReferenceName">Optional scene name or full symbol with namespace used to access next scene reference for debugging</param>
         /// <param name="debugTransitionSceneReferenceName">Optional scene name or full symbol with namespace used to access transition scene reference for debugging</param>
         public static async Task TransitionFromToScene(SceneReference previousSceneReference, SceneReference nextSceneReference, SceneReference transitionSceneReference,
-            double isDonePollingPeriodSeconds, Object context = null, string debugPreviousSceneReferenceName = null,
+            double isDonePollingPeriodSeconds = 0.1f, Object context = null, string debugPreviousSceneReferenceName = null,
             string debugNextSceneReferenceName = null, string debugTransitionSceneReferenceName = null)
         {
             // Load transition scene additively for screen transition
