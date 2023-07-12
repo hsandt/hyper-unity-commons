@@ -5,6 +5,11 @@ using System.Collections.Generic;
 
 namespace HyperUnityCommons
 {
+    /// Master Behaviour component
+    /// Place it on a game object as the main component. It will control "slaves", namely Behaviours added manually
+    /// as well as ClearableBehaviours, Animator, Rigidbody2D and ParticleSystems added manually or found if
+    /// addSiblingComponentsAsSlaves is set to true.
+    /// Caution: Setup will enable all slaves, so disabling Behaviours in the Inspector will not work as expected.
     public class MasterBehaviour : ClearableBehaviour, IPausable
     {
         [Header("Parameters")]
