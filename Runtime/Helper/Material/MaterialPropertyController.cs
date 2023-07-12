@@ -60,9 +60,12 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
 
     /* Methods to override */
 
-    /// Do any initialisation required by the child class here, such as registering or creating material instances
-    /// if they don't exist or are shared on game start
-    protected virtual void Init() {}
+    /// If child class has old members, process them to be compatible with new version
+    /// (e.g. filling controlledComponentsWithMaterial with old component array content)
+    protected virtual void UpdateVersion() {}
+
+    /// If child class is using shared material, create unique material instances for every target
+    protected virtual void InstantiateMaterials() {}
 
     /// Return enumerable to target material properties
     protected abstract Material GetTargetMaterialInstance(TComponent component);
@@ -71,12 +74,17 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
     private void Awake()
     {
         // Call it first, may adjust controlledComponentsWithMaterial
-        Init();
+        UpdateVersion();
 
         m_PropertyChangeEndTimer = new Timer(callback: ResetProperties);
 
         // Search for any extra controlled components with material in hierarchy
         GameObjectUtil.FillComponentsSearchingInHierarchy(controlledComponentsWithMaterial, gameObject, searchComponentsMode);
+
+        // Must be called just after FillComponentsSearchingInHierarchy so we instantiate materials for all wanted
+        // shared materials if needed, and before setting m_CachedTargetMaterialInstances since
+        // GetTargetMaterialInstance needs those material instances.
+        InstantiateMaterials();
 
         // Cache material instances from components
         m_CachedTargetMaterialInstances = controlledComponentsWithMaterial?

@@ -15,7 +15,7 @@ public class ImageMaterialPropertyController : MaterialPropertyController<Image>
     public Image[] OLD_images;
 
 
-    protected override void Init()
+    protected override void UpdateVersion()
     {
         // Version upgrade: for projects which have not transferred all sprite renderers from
         // old list OLD_images to new list controlledComponentsWithMaterial (on base class) yet,
@@ -31,7 +31,10 @@ public class ImageMaterialPropertyController : MaterialPropertyController<Image>
                 controlledComponentsWithMaterial.AddRange(OLD_images);
             }
         }
+    }
 
+    protected override void InstantiateMaterials()
+    {
         // MaterialPropertyController.Awake also calls DebugUtil.AssertListElementsNotNull so no need to log errors
         // on null entries again, just check for not null
         if (controlledComponentsWithMaterial != null)

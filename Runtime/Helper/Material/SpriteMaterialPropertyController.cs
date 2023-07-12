@@ -25,7 +25,7 @@ public class SpriteMaterialPropertyController : MaterialPropertyController<Sprit
     public List<SpriteRenderer> OLD_controlledSpriteRenderers;
 
 
-    protected override void Init()
+    protected override void UpdateVersion()
     {
         DebugUtil.AssertListElementsNotNull(OLD_AdditionalSpriteRenderers, this, nameof(OLD_AdditionalSpriteRenderers));
         DebugUtil.AssertListElementsNotNull(OLD_controlledSpriteRenderers, this, nameof(OLD_controlledSpriteRenderers));
