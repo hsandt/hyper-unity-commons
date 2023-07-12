@@ -157,7 +157,7 @@ namespace HyperUnityCommons
         private TPooledObject InstantiatePooledObject()
         {
             // Instantiate prefab under pool transform and get TPooledObject component
-            // (Instantiate<Component> instantiates the game object with the component, then returns the component
+            // (Instantiate<Component>(Component component) instantiates the game object with the component, then returns the component
             // of the new instance)
             TPooledObject prefabInstancePooledObject = Object.Instantiate(m_PrefabPooledObject, m_PoolTransform);
 
@@ -190,7 +190,7 @@ namespace HyperUnityCommons
                 // Pool starvation, but we should instantiate a new object as it is considered important
                 // Performance note: we are not "smart" (e.g. instantiating a batch of new objects
                 // as a List allocation would do, by power of two). We really just instantiate what we need, 1 object.
-                // So in counterpart with log a warning, as generally such last minute instantiation is not intended and
+                // So in counterpart, log a warning, as generally such last minute instantiation is not intended and
                 // only a fallback, so we want to notify developer they may want to increase initial pool size instead.
                 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogWarningFormat("[Pool] AcquireFreeObject: pool for prefab pooled object '{0}' is starving at size {1} but " +
