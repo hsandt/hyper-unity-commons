@@ -48,10 +48,10 @@ See [LICENSE](LICENSE) for all original scripts.
 
 Some scripts are based on code snippets found online, sometimes with multiple contributors before myself. In this case, known contributors are listed at the beginning of the file, and the code license effective on the platform at the time the code snippet was posted applies instead (for instance, CC BY-SA 4.0 on Stack Overflow).
 
-Sometimes there is a complete folder copied from another open source project, because either development stopped so this was the only way to salvage it, or it was not convenient to use it as a submodule (e.g. when the repository was not formatted with the proper package structure).
-In this case, said folder will have its own LICENSE file.
+Sometimes there is a complete folder copied from another open source project, generally because development stopped so this was the only way to salvage it. In this case, said folder will have its own LICENSE file.
 
-The Editor/StagPoint, Editor/UnityToolbag folders have their own LICENSE.
+The Runtime/Helper/Types/Unity, Editor/StagPoint, Editor/UnityToolbag folders have their own LICENSE.
 
+* Runtime/Helper/Types/Unity contains files from the com.unity.live-capture package
 * UnityToolbag contains a partial copy of https://github.com/kellygravelyn/UnityToolbag
 * StagPoint contains a salvaged copy of StagPoint's ImmediateWindow before development stopped and the project was abandoned. It has a copyright, but considering their tool was available for free it was abandoned and made unavailable, I considered it fair use to keep a copy here.
