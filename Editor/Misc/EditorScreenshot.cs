@@ -26,7 +26,7 @@ namespace HyperUnityCommons.Editor
 		public int hiResWidth = defaultHiResWidth;
 		public int hiResHeight = defaultHiResHeight;
 
-		[MenuItem("Window/Editor Screenshot")]
+		[MenuItem("Window/Hyper Unity Commons/Editor Screenshot")]
 		static void Init()
 		{
 			GetOrCreateWindow();

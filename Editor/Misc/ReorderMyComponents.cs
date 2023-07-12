@@ -23,7 +23,7 @@ namespace HyperUnityCommons.Editor
 		bool mouseDown;
 		int[] newIndexes;
 
-		[MenuItem("Window/Reorder Components")]
+		[MenuItem("Window/Hyper Unity Commons/Reorder Components")]
 		private static void ShowWindow () {
 			ReorderMyComponents windowHndle = (ReorderMyComponents)EditorWindow.GetWindow(typeof(ReorderMyComponents));
 			windowHndle.autoRepaintOnSceneChange = true;
