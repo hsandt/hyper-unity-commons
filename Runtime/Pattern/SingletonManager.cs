@@ -13,6 +13,7 @@ namespace HyperUnityCommons
 	1. Create a subclass script using the curiously recurrent template pattern:
 
 	```
+	using HyperUnityCommons;
 
 	public class MyManager : SingletonManager<MyManager> {
 		// if you need to override behavior on Awake
@@ -25,6 +26,7 @@ namespace HyperUnityCommons
 	Alternatively, if you prefer defining your own Awake:
 
 	```
+	using HyperUnityCommons;
 
 	public class MyManager : SingletonManager<MyManager> {
 		// if you need to override behavior on Awake
@@ -75,8 +77,13 @@ namespace HyperUnityCommons
 			if (_instance == null) {
 				_instance = value;
 			} else {
+				// During debug, uncomment this line and comment the "Normal code" below so singleton instance stays
+				// in the scene so we can identify where redundant singleton manager was located
+				// Debug.LogWarningFormat(value, "Instance of {0} already exists, pinging it.", typeof(T));
+
+				// Normal code
 				Destroy(value.gameObject);
-				Debug.LogWarningFormat("Instance of {0} already exists, this new instance will self-destruct." +
+				Debug.LogWarningFormat("Instance of {0} already exists, this new instance will self-destruct. " +
 						"Please remove any extra instances of Manager in the scene.",
 					typeof(T));
 			}
