@@ -28,6 +28,30 @@ namespace HyperUnityCommons
 		{
 			return IsInLayerMask(go.layer, layerMaskValue);
 		}
+
+		/// Search for components of type TComponent on game object [go] following the rule of [searchComponentsMode]
+		/// and add all the results to list [components].
+		/// This preserves any existing entry in the list, to allow user to predefine some components (e.g. in the
+		/// Inspector) then search further ones
+		public static void FillComponentsSearchingInHierarchy<TComponent>(List<TComponent> components, GameObject go,
+			SearchComponentsMode searchComponentsMode)
+			where TComponent : Component
+		{
+			// Add components found automatically depending on search mode
+			switch (searchComponentsMode)
+			{
+				case SearchComponentsMode.None:
+					break;
+				case SearchComponentsMode.Self:
+					components.AddRange(go.GetComponents<TComponent>());
+					break;
+				case SearchComponentsMode.SelfAndChildren:
+					components.AddRange(go.GetComponentsInChildren<TComponent>());
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
 	}
 }
 
