@@ -8,6 +8,8 @@ using UnityEngine.Serialization;
 using HyperUnityCommons;
 
 /// MaterialPropertyController for Sprite Renderers
+/// MAT_Sprite-Unlit (Packages/com.longnguyenhuu.hyper-unity-commons/Runtime/Helper/Shaders/MAT_Sprite-Unlit.mat)
+/// is an example of material for sprites with the properties _Color and _Brightness.
 public class SpriteMaterialPropertyController : MaterialPropertyController<SpriteRenderer>
 {
     [Header("Child references")]

@@ -6,16 +6,15 @@ using UnityEngine;
 
 using HyperUnityCommons;
 
-/// Component that sets properties "Tint" and "Brightness" on materials via public API, optionally with limited duration
-/// MAT_Sprite-Unlit (Packages/com.longnguyenhuu.hyper-unity-commons/Runtime/Helper/Shaders/MAT_Sprite-Unlit.mat)
-/// is an example of material with those two properties.
+/// Component that sets properties "_Color" and "_Brightness" on materials via public API, optionally with limited duration
 /// This must be subclassed with a class that specializes into finding materials on components of type TComponent.
+/// See subclasses for more info
 public abstract class MaterialPropertyController<TComponent> : ClearableBehaviour where TComponent: Component
 {
     /* Property hashes */
 
-    private readonly int tintPropertyID = Shader.PropertyToID("Tint");
-    private readonly int brightnessPropertyID = Shader.PropertyToID("Brightness");
+    private readonly int colorPropertyID = Shader.PropertyToID("_Color");
+    private readonly int brightnessPropertyID = Shader.PropertyToID("_Brightness");
 
 
     [Header("Child references")]
@@ -106,7 +105,7 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
                 targetMaterialInstance.GetInstanceID(), targetMaterialInstance, controlledComponentsWithMaterial[i], this);
 
             m_InitialTintDict.Add(targetMaterialInstance.GetInstanceID(),
-                targetMaterialInstance.GetColor(tintPropertyID));
+                targetMaterialInstance.GetColor(colorPropertyID));
             m_InitialBrightnessDict.Add(targetMaterialInstance.GetInstanceID(),
                 targetMaterialInstance.GetFloat(brightnessPropertyID));
         }
@@ -131,7 +130,7 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
     /// Set tint property on passed material instance
     private void SetTintOnMaterialInstance(Material materialInstance, Color tint)
     {
-        materialInstance.SetColor(tintPropertyID, tint);
+        materialInstance.SetColor(colorPropertyID, tint);
     }
 
     /// Reset tint property on passed material instance to initial color

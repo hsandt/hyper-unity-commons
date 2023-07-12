@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using UnityEngine.Serialization;
 
 /// MaterialPropertyController for Images
+/// MAT_UI_Default-with-Brightness (Packages/com.longnguyenhuu.hyper-unity-commons/Runtime/Helper/Shaders/MAT_UI_Default-with-Brightness.mat)
+/// is an example of material for images with the properties _Color and _Brightness.
 public class ImageMaterialPropertyController : MaterialPropertyController<Image>
 {
     [Header("Sibling & child references")]
