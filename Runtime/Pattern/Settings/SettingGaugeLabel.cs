@@ -7,6 +7,8 @@ using UnityEngine.UI;
 
 using HyperUnityCommons;
 
+/// Component to place on label associated to a setting gauge slider
+/// Requires: AppManager, SettingsManager
 public class SettingGaugeLabel : Selectable
 {
     [Header("Asset references")]
@@ -22,7 +24,7 @@ public class SettingGaugeLabel : Selectable
 
     [Header("External references")]
 
-    [Tooltip("Slider associated to this label")]
+    [Tooltip("Slider of gauge associated to this label")]
     [FormerlySerializedAs("optionGaugeSlider")]
     public Slider gaugeSlider;
 
@@ -42,15 +44,10 @@ public class SettingGaugeLabel : Selectable
         // surrounding the condition with #if UNITY_EDITOR here.
         if (AppManager.IsNotQuitting())
         {
-            #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.AssertFormat(gaugeSlider != null, this, "[SettingGaugeLabel] No Gauge Slider set on {0}.", this);
-            #endif
+            DebugUtil.AssertFormat(floatSettingData != null, this, "[SettingGaugeLabel] No floatSettingData found on {0}.", gameObject);
+            DebugUtil.AssertFormat(gaugeSlider != null, this, "[SettingGaugeLabel] No Gauge Slider set on {0}.", this);
 
             gaugeSlider.onValueChanged.AddListener(OnSliderValueChanged);
-
-            #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.AssertFormat(floatSettingData != null, this, "[SettingGaugeLabel] No floatSettingData found on {0}.", gameObject);
-            #endif
 
             Setup();
         }
@@ -103,13 +100,11 @@ public class SettingGaugeLabel : Selectable
                 return;
             }
         }
-        #if UNITY_EDITOR || DEVELOPMENT_BUILD
         else
         {
-            Debug.LogWarningFormat(this, "[SettingGaugeLabel] OnMove: slider has direction {0}, " +
+            DebugUtil.LogWarningFormat(this, "[SettingGaugeLabel] OnMove: slider has direction {0}, " +
                 "only LeftToRight is supported", gaugeSlider.direction);
         }
-        #endif
 
         // Move was not captured, call base implementation to navigate between setting labels and other selectables
         base.OnMove(eventData);
