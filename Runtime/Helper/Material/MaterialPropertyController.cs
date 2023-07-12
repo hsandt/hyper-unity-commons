@@ -84,10 +84,23 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
             .ToList();
 
         // Store initial properties of material instances
-        foreach (var targetMaterialInstance in m_CachedTargetMaterialInstances)
+        for (int i = 0; i < m_CachedTargetMaterialInstances.Count; i++)
         {
-            m_InitialTintDict.Add(targetMaterialInstance.GetInstanceID(), targetMaterialInstance.GetColor(tintPropertyID));
-            m_InitialBrightnessDict.Add(targetMaterialInstance.GetInstanceID(), targetMaterialInstance.GetFloat(brightnessPropertyID));
+            var targetMaterialInstance = m_CachedTargetMaterialInstances[i];
+
+            // Just check m_InitialTintDict, as m_InitialBrightnessDict should have the same keys
+            DebugUtil.AssertFormat(!m_InitialTintDict.ContainsKey(targetMaterialInstance.GetInstanceID()),
+                this,
+                "[MaterialPropertyController] Awake: m_InitialTintDict already contains key " +
+                "{0}, which means material instance {1} from component {2} has been added twice, " +
+                "or once in Inspector to controlledComponentsWithMaterial, and once via FillComponentsSearchingInHierarchy " +
+                "on {2}. Make sure that the search is not redundant with manual entry.",
+                targetMaterialInstance.GetInstanceID(), targetMaterialInstance, controlledComponentsWithMaterial[i], this);
+
+            m_InitialTintDict.Add(targetMaterialInstance.GetInstanceID(),
+                targetMaterialInstance.GetColor(tintPropertyID));
+            m_InitialBrightnessDict.Add(targetMaterialInstance.GetInstanceID(),
+                targetMaterialInstance.GetFloat(brightnessPropertyID));
         }
     }
 
