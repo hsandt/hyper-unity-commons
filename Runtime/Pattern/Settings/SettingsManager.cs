@@ -1,5 +1,6 @@
 ﻿// #define DEBUG_SETTINGS_MANAGER
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,132 +14,286 @@ public class SettingsManager : SingletonManager<SettingsManager>
 {
 	#region New API
 
-	// Limitation: we can only show all bool settings together, then all float settings together,
-	// as we cannot declare a member of generic type List<SettingData<T>>.
-	// This could work if we define a non-generic base class for SettingData though
-	// (we could also use List<ScriptableObject> then cast, but it's too vague and will allow
-	// too many assets to be set in the inspector)
+	// Note that we need BaseSettingData to add any setting data in the inspector
+	// SettingData<object> would not work, as it would show all SettingData<T> in the assignment popup, but only accept
+	// SettingData specifically bound to object (not any type), which we never use.
+	[Tooltip("List of settings of any type to show in order")]
+	public List<BaseSettingData> settings;
 
-	[Tooltip("List of boolean settings to show in order")]
-	public List<SettingData<bool>> boolSettings;
-
-	[Tooltip("List of float settings to show in order")]
-	public List<SettingData<float>> floatSettings;
 
 	/* State */
 
-	/// Dictionary of all boolean settings
-	private readonly SettingDictionary<bool> boolSettingDictionary = new();
-
-	/// Dictionary of all float settings
-	private readonly SettingDictionary<float> floatSettingDictionary = new();
+	/// Dictionary of settings of any type, using boxing
+	private readonly Dictionary<BaseSettingData, object> settingValueDictionary = new();
 
 
-	public bool GetBoolSetting(SettingData<bool> boolSetting)
+	protected override void Init()
 	{
-		return GetSettingInDictionary(boolSetting, boolSettingDictionary);
-	}
+		DebugUtil.AssertListElementsNotNull(settings, this, nameof(settings));
 
-	public float GetFloatSetting(SettingData<float> floatSetting)
-	{
-		return GetSettingInDictionary(floatSetting, floatSettingDictionary);
-	}
-
-	public bool GetBoolSettingAsReadableValue(SettingData<bool> boolSetting)
-	{
-		bool storedValue = GetSettingInDictionary(boolSetting, boolSettingDictionary);
-		return boolSetting.StoredToReadableValue(storedValue);
-	}
-
-	public float GetFloatSettingAsReadableValue(SettingData<float> floatSetting)
-	{
-		float storedValue = GetSettingInDictionary(floatSetting, floatSettingDictionary);
-		return floatSetting.StoredToReadableValue(storedValue);
-	}
-
-	private static T GetSettingInDictionary<T>(SettingData<T> settingData, SettingDictionary<T> settingDictionary)
-	{
-		if (settingDictionary.TryGetValue(settingData, out T value))
+		foreach (var setting in settings)
 		{
-			return value;
+			setting.AssertIsValid();
+			LoadSettingFromPreferences(setting);
+		}
+
+		// AUDIO (SUPERSEDED)
+		// LoadAudioPrefs();
+
+		// CINEMATIC
+		LoadCinematicPrefs();
+
+		// GRAPHICS
+		LoadScreenPrefs();
+	}
+
+	/// Return PlayerPrefs bool value for key encoded as integer (0: false, 1: true) if any
+	/// If key is not present, return false
+	private static bool GetPlayerPrefsBool(string key)
+	{
+		return PlayerPrefs.GetInt(key) == 1;
+	}
+
+	/// Set PlayerPrefs bool value for key with value encoded as integer (0: false, 1: true)
+	private static void SetPlayerPrefsBool(string key, bool value)
+	{
+		PlayerPrefs.SetInt(key, value ? 1 : 0);
+	}
+
+	/// Return current setting value
+	/// If settingData.alwaysCheckEngineValue is true, and default (engine) value differs from value in dictionary,
+	/// update dictionary value to default (engine) value and use this one instead.
+	public TSettingValue GetSettingValue<TSettingValue>(SettingData<TSettingValue> settingData)
+	{
+		TSettingValue currentSettingValue = GetSettingValue_Internal(settingData);
+
+		if (settingData.alwaysCheckEngineValue)
+		{
+			// This setting must be an engine setting with a value that can be set outside the Settings menu
+			// (e.g. a quick toggle fullscreen shortcut could modify resolution without modifying the corresponding
+			// setting), so the dictionary setting value may not be in sync with the actual current engine value.
+			// Compare them
+			TSettingValue defaultSettingValue = settingData.GetDefaultValueOnStart();
+			if (Comparer<TSettingValue>.Default.Compare(currentSettingValue, defaultSettingValue) != 0)
+			{
+				// The engine value differs from stored dictionary value, engine value should have priority
+				// So set the dictionary value to match engine value (without side effect, since the engine value is
+				// already set)
+				SetSettingWithoutNotify(settingData, defaultSettingValue);
+
+				// And remember to update the current setting value to the engine value, so code below can work
+				// with this local variable (cheaper than calling GetSettingValue again)
+				currentSettingValue = defaultSettingValue;
+			}
+		}
+
+		return currentSettingValue;
+	}
+
+	private TSettingValue GetSettingValue_Internal<TSettingValue>(SettingData<TSettingValue> settingData)
+	{
+		if (settingValueDictionary.TryGetValue(settingData, out object value))
+		{
+			try
+			{
+				return (TSettingValue) value;
+			}
+			catch (InvalidCastException e)
+			{
+				DebugUtil.LogErrorFormat(settingData,
+					"[SettingsManager] GetSettingValue: incorrect unboxing of value associated " +
+					"to setting data {0}. Should be of type {1}. InvalidCastException message: {2}",
+					settingData, typeof(TSettingValue), e.Message);
+			}
 		}
 
 		#if UNITY_EDITOR
-		Debug.LogErrorFormat("[SettingsManager] GetSetting: could not get value for setting {0} of type {1}, " +
+		Debug.LogErrorFormat("[SettingsManager] GetSettingValue: could not get value for setting {0} of type {1}, " +
 			"falling back to default ({2}). Make sure to initialize all settings before calling this method, " +
-			"by filling Bool/Float Settings lists on SettingsManager.",
-			settingData, typeof(T), default(T));
+			"by filling settings on the SettingsManager.",
+			settingData, typeof(TSettingValue), default(TSettingValue));
 		#endif
 
 		return default;
 	}
 
-	public void SetBoolSetting(SettingData<bool> boolSetting, bool storedValue)
+	public TSettingValue GetSettingAsReadableValue<TSettingValue>(SettingData<TSettingValue> settingData)
 	{
-		SetSettingInDictionary(boolSetting, boolSettingDictionary, storedValue);
+		// Get stored value (note that it will also retrieve engine value if set to alwaysCheckEngineValue)
+		TSettingValue storedValue = GetSettingValue(settingData);
+		return settingData.StoredToRepresentedValue(storedValue);
 	}
 
-	public void SetFloatSetting(SettingData<float> floatSetting, float storedValue)
+	/// Set setting in dictionary and call OnSetValue to update any engine value accordingly
+	public void SetSetting<TSettingValue>(SettingData<TSettingValue> settingData, TSettingValue storedValue)
 	{
-		SetSettingInDictionary(floatSetting, floatSettingDictionary, storedValue);
-	}
-
-	public void SetBoolSettingFromReadableValue(SettingData<bool> boolSetting, bool readableValue)
-	{
-		bool storedValue = boolSetting.ReadableToStoredValue(readableValue);
-		SetBoolSetting(boolSetting, storedValue);
-	}
-
-	public void SetFloatSettingFromReadableValue(SettingData<float> floatSetting, float readableValue)
-	{
-		float storedValue = floatSetting.ReadableToStoredValue(readableValue);
-		SetFloatSetting(floatSetting, storedValue);
-	}
-
-	private void SetDefaultBoolSetting(SettingData<bool> boolSetting)
-	{
-		SetBoolSetting(boolSetting, boolSetting.defaultValue);
-	}
-
-	private void SetDefaultFloatSetting(SettingData<float> floatSetting)
-	{
-		SetFloatSetting(floatSetting, floatSetting.defaultValue);
-	}
-
-	private static void SetSettingInDictionary<T>(SettingData<T> settingData, SettingDictionary<T> settingDictionary,
-		T storedValue)
-	{
-		settingDictionary[settingData] = storedValue;
+		// Boxing TSettingValue to object is implicit, so no need to add anything
+		settingValueDictionary[settingData] = storedValue;
 		settingData.OnSetValue(storedValue);
 	}
 
-	/// Load settings from player preferences
-	/// If a key is not present, set value to parameterized default
-	private void LoadBoolSettingFromPreferences(SettingData<bool> boolSetting)
+	/// Variant of SetSetting that doesn't call OnSetValue
+	private void SetSettingWithoutNotify<TSettingValue>(SettingData<TSettingValue> settingData, TSettingValue storedValue)
 	{
-		if (PlayerPrefs.HasKey(boolSetting.playerPrefKey))
+		// Boxing TSettingValue to object is implicit, so no need to add anything
+		settingValueDictionary[settingData] = storedValue;
+	}
+
+	public void SetSettingFromReadableValue<TSettingValue>(SettingData<TSettingValue> settingData, TSettingValue readableValue)
+	{
+		TSettingValue storedValue = settingData.RepresentedToStoredValue(readableValue);
+		SetSetting(settingData, storedValue);
+	}
+
+	private void SetDefaultSetting<TSettingValue>(SettingData<TSettingValue> setting)
+	{
+		SetSetting(setting, setting.GetDefaultValueOnStart());
+	}
+
+	/// Load setting from player preferences
+	/// If preference value is not valid, fallback to good value based on preference value
+	/// If no preference has been saved, set value to default
+	private void LoadSettingFromPreferences(BaseSettingData setting)
+	{
+		// Type check is a little brutal, but it works because we know that all setting data are in fact deriving from
+		// SettingData<TSettingValue>.
+		// The alternative is to use polymorphism, but that means we must define:
+		// BoolDiscreteSettingData, IntDiscreteSettingData, FloatContinuousSettingData that would implement some
+		// LoadSettingFromPreferences accordingly, and make sure to subclass them (and not SettingData<bool/int/float>
+		// directly to define the final setting data classes.
+		if (setting is SettingData<bool> boolSetting)
 		{
-			bool playerPrefStoredValue = GetPlayerPrefsBool(boolSetting.playerPrefKey);
-			SetBoolSetting(boolSetting, playerPrefStoredValue);
+			LoadSimpleSettingFromPreferences(boolSetting, GetBoolSettingFromPreferences);
+		}
+		else if (setting is SettingData<int> intSetting)
+		{
+			LoadSimpleSettingFromPreferences(intSetting, GetIntSettingFromPreferences);
+		}
+		else if (setting is SettingData<float> floatSetting)
+		{
+			LoadSimpleSettingFromPreferences(floatSetting, GetFloatSettingFromPreferences);
+		}
+		else if (setting is SettingData<Resolution> resolutionSetting)
+		{
+			LoadResolutionSettingFromPreferences(resolutionSetting);
 		}
 		else
 		{
-			SetDefaultBoolSetting(boolSetting);
+			DebugUtil.LogErrorFormat(setting,
+				"[SettingsManager] LoadSettingFromPreferences: Unsupported BaseSettingData subclass for {0}",
+				setting);
 		}
 	}
 
-	/// Load settings from player preferences
-	/// If a key is not present, set value to parameterized default
-	private void LoadFloatSettingFromPreferences(SettingData<float> floatSetting)
+	/// Load simple (primitive type) setting from player preferences, using callback specific to setting value type
+	/// If preference value is not valid, fallback to good value based on preference value
+	/// If no preference has been saved, set value to default
+	/// getSettingFromPreferencesCallback should have signature:
+	/// TSettingValue Method(SettingData&lt;TSettingValue&gt; settingData)
+	private void LoadSimpleSettingFromPreferences<TSettingValue>(SettingData<TSettingValue> settingData,
+		Func<SettingData<TSettingValue>, TSettingValue> getSettingFromPreferencesCallback)
 	{
-		if (PlayerPrefs.HasKey(floatSetting.playerPrefKey))
+		if (PlayerPrefs.HasKey(settingData.playerPrefKey))
 		{
-			float playerPrefStoredValue = PlayerPrefs.GetFloat(floatSetting.playerPrefKey);
-			SetFloatSetting(floatSetting, playerPrefStoredValue);
+			TSettingValue playerPrefStoredValue = getSettingFromPreferencesCallback(settingData);
+			if (settingData.IsValueValid(playerPrefStoredValue))
+			{
+				// Valid preference value, use it
+				SetSetting(settingData, playerPrefStoredValue);
+			}
+			else
+			{
+				// Invalid preference value, use fallback based on it
+				TSettingValue fallbackValue = settingData.GetFallbackValueFrom(playerPrefStoredValue);
+				DebugUtil.AssertFormat(settingData.IsValueValid(fallbackValue),
+					"[SettingsManager] LoadSimpleSettingFromPreferences: GetFallbackValueFrom({0}) returned " +
+					"invalid value, but we don't know better in this generic context, so still using it as fallback",
+					playerPrefStoredValue);
+
+				SetSetting(settingData, fallbackValue);
+			}
 		}
 		else
 		{
-			SetDefaultFloatSetting(floatSetting);
+			// No preference found at all, use default value
+			// (implementation can enforce some default, or find a good default from engine)
+			SetDefaultSetting(settingData);
+		}
+	}
+
+	/// Return bool setting from player preferences
+	private static bool GetBoolSettingFromPreferences(SettingData<bool> boolSetting)
+	{
+		return GetPlayerPrefsBool(boolSetting.playerPrefKey);
+	}
+
+	/// Return integer setting from player preferences
+	private static int GetIntSettingFromPreferences(SettingData<int> intSetting)
+	{
+		return PlayerPrefs.GetInt(intSetting.playerPrefKey);
+	}
+
+	/// Return float setting from player preferences
+	private static float GetFloatSettingFromPreferences(SettingData<float> intSetting)
+	{
+		return PlayerPrefs.GetFloat(intSetting.playerPrefKey);
+	}
+
+	/// Load resolution setting from multiple player preferences (width x height @ refresh rate)
+	/// If preference value is not valid, fallback to good value based on preference value
+	/// If no preference has been saved, set value to default
+	private void LoadResolutionSettingFromPreferences(SettingData<Resolution> resolutionSetting)
+	{
+		// Implementation is similar to LoadSimpleSettingFromPreferences, but specialized
+		// for Resolution which is a compounded type
+		string resolutionWidthPlayerPrefKey = $"{resolutionSetting.playerPrefKey}.Width";
+		string resolutionHeightPlayerPrefKey = $"{resolutionSetting.playerPrefKey}.Height";
+		string resolutionRefreshRatePlayerPrefKey = $"{resolutionSetting.playerPrefKey}.RefreshRate";
+
+		// The most important preferences are width and height
+		// Obviously, if you work with new code, you should have saved refresh rate too, but in case you are using
+		// old preferences that don't have refresh rate, we support not knowing it
+		if (PlayerPrefs.HasKey(resolutionWidthPlayerPrefKey) && PlayerPrefs.HasKey(resolutionHeightPlayerPrefKey))
+		{
+			int playerPrefResolutionWidth = PlayerPrefs.GetInt(resolutionWidthPlayerPrefKey);
+			int playerPrefResolutionHeight = PlayerPrefs.GetInt(resolutionHeightPlayerPrefKey);
+
+			// To support not knowing preferred refresh rate, if preference is not present, fall back to 0
+			// IsValueValid and GetFallbackValueFrom below will handle this, detecting invalid refresh rate
+			// and finding a matching resolution at different refresh rate if needed
+			int playerPrefResolutionRefreshRate = PlayerPrefs.HasKey(resolutionRefreshRatePlayerPrefKey)
+				? PlayerPrefs.GetInt(resolutionRefreshRatePlayerPrefKey)
+				: 0;
+
+			Resolution playerPrefResolution = new Resolution
+			{
+				width = playerPrefResolutionWidth,
+				height = playerPrefResolutionHeight,
+				refreshRate = playerPrefResolutionRefreshRate
+			};
+
+			if (resolutionSetting.IsValueValid(playerPrefResolution))
+			{
+				// Valid preference value, use it
+				SetSetting(resolutionSetting, playerPrefResolution);
+			}
+			else
+			{
+				// Invalid preference value, use fallback based on it
+				Resolution fallbackValue = resolutionSetting.GetFallbackValueFrom(playerPrefResolution);
+				DebugUtil.AssertFormat(resolutionSetting.IsValueValid(fallbackValue),
+					"[SettingsManager] LoadResolutionSettingFromPreferences: GetFallbackValueFrom({0}) returned " +
+					"invalid value, but we don't know better in this generic context, so still using it as fallback",
+					playerPrefResolution);
+
+				SetSetting(resolutionSetting, fallbackValue);
+			}
+		}
+		else
+		{
+			// No preference found at all, use default value
+			// (implementation can enforce some default, or find a good default from engine)
+			SetDefaultSetting(resolutionSetting);
 		}
 	}
 
@@ -219,48 +374,6 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
     /// Current graphics quality
     int m_GraphicsQuality;
-
-
-    protected override void Init()
-    {
-	    // Note: when we have merged all Commons together, we can use this:
-	    // DebugUtil.AssertListElementsNotNull(boolSettings, ...);
-	    // DebugUtil.AssertListElementsNotNull(floatSettings, ...);
-
-		foreach (var boolSetting in boolSettings)
-		{
-			boolSetting.AssertIsValid();
-			LoadBoolSettingFromPreferences(boolSetting);
-		}
-
-		foreach (var floatSetting in floatSettings)
-		{
-			floatSetting.AssertIsValid();
-			LoadFloatSettingFromPreferences(floatSetting);
-		}
-
-        // AUDIO (SUPERSEDED)
-        // LoadAudioPrefs();
-
-		// CINEMATIC
-        LoadCinematicPrefs();
-
-		// GRAPHICS
-		LoadScreenPrefs();
-	}
-
-	/// Return PlayerPrefs bool value for key encoded as integer (0: false, 1: true) if any
-	/// If key is not present, return false
-	private static bool GetPlayerPrefsBool(string key)
-	{
-		return PlayerPrefs.GetInt(key) == 1;
-	}
-
-	/// Set PlayerPrefs bool value for key with value encoded as integer (0: false, 1: true)
-	private static void SetPlayerPrefsBool(string key, bool value)
-	{
-		PlayerPrefs.SetInt(key, value ? 1 : 0);
-	}
 
 
     #region Audio

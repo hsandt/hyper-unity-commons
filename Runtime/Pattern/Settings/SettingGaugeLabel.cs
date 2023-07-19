@@ -13,8 +13,8 @@ public class SettingGaugeLabel : Selectable
 {
     [Header("Asset references")]
 
-    [Tooltip("Data of setting modified by the associated gauge")]
-    public SettingData<float> floatSettingData;
+    [Tooltip("Data of continuous setting modified by the associated gauge")]
+    public ContinuousSettingData<float> floatSettingData;
 
     [Tooltip("(Optional) SFX played when moving the gauge slider (via either directional input or mouse drag). " +
         "This is subject to throttling to avoid SFX spam when moving via mouse drag submitting. " +
@@ -29,19 +29,16 @@ public class SettingGaugeLabel : Selectable
     public Slider gaugeSlider;
 
 
-    // Bug IN-10813: Awake is not called on Play, only on Stop (in editor), when inheriting from Selectable
-    // Start sometimes work, but is not reliable either.
-    // So we use OnEnable instead, but then must do symmetrical operations in OnDisable
+    // Bug IN-10813: when inheriting from Selectable, in the editor:
+    // - Awake is not called on Play, only on Stop
+    // - Start sometimes work, but is not reliable
+    // - OnEnable is called when expected, but also on Application Quit to setup values in the editor
+    // => The most reliable is to check and initialize members in OnEnable, after base call, but only if application is
+    // not quitting; and also do any required symmetrical operations like even unregistration in OnDisable.
     protected override void OnEnable()
     {
         base.OnEnable();
 
-        // In the editor, on Application Quit, OnEnable is called again to setup values in the editor,
-        // but we do not want to touch the slider and modify the scene! So we check that we are not exiting Play Mode
-        // (which would often mean MainMenuManager instance has been destroyed, and to be extra safe we also check that
-        // we are not quitting play mode if it is not destroyed yet).
-        // This should be unnecessary for builds, but the check makes sense for builds anyway so we didn't bother
-        // surrounding the condition with #if UNITY_EDITOR here.
         if (AppManager.IsNotQuitting())
         {
             DebugUtil.AssertFormat(floatSettingData != null, this, "[SettingGaugeLabel] No floatSettingData found on {0}.", gameObject);
@@ -55,7 +52,10 @@ public class SettingGaugeLabel : Selectable
 
     protected override void OnDisable()
     {
-        base.OnDisable();
+        if (AppManager.IsNotQuitting())
+        {
+            base.OnDisable();
+        }
 
         gaugeSlider.onValueChanged.RemoveListener(OnSliderValueChanged);
     }
@@ -65,7 +65,7 @@ public class SettingGaugeLabel : Selectable
         // Initialize visual to match model
 
         // First, get the readable value from settings: by convention, it's a ratio, so still a normalized value
-        float normalizedSliderValue = SettingsManager.Instance.GetFloatSettingAsReadableValue(floatSettingData);
+        float normalizedSliderValue = SettingsManager.Instance.GetSettingAsReadableValue(floatSettingData);
 
         // Second, set slider value
         // In this case we are setting up slider value without user interaction, so to avoid an unnecessary callback
@@ -79,7 +79,7 @@ public class SettingGaugeLabel : Selectable
     {
         // Slider value has changed, so update value in settings
         // By convention, it's a ratio, so pass the normalized value
-        SettingsManager.Instance.SetFloatSettingFromReadableValue(floatSettingData, gaugeSlider.normalizedValue);
+        SettingsManager.Instance.SetSettingFromReadableValue(floatSettingData, gaugeSlider.normalizedValue);
 
         if (sfxSliderMove != null)
         {
@@ -97,6 +97,7 @@ public class SettingGaugeLabel : Selectable
                 // Delegate move to native Slider to change value
                 // Rely on registered OnSliderValueChanged to then set the value we need to
                 gaugeSlider.OnMove(eventData);
+                eventData.Use();
                 return;
             }
         }
