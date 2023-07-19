@@ -7,6 +7,27 @@ namespace HyperUnityCommons
 {
 	public static class VectorUtil
 	{
+		/// Return abscissa of vector projected on axis along direction vector (automatically normalized)
+		/// It is preferred to ProjectParallel when we want to sort vectors projected along direction,
+		/// as it avoids calculating another Dot product between ProjectParallel's result and direction just to extract
+		/// an abscissa.
+		/// UB unless direction is not close to Zero vector
+		public static float ProjectParallelAbscissa(Vector2 vector, Vector2 direction)
+		{
+			float directionMagnitude = direction.magnitude;
+
+			if (directionMagnitude < Mathf.Epsilon)
+			{
+				DebugUtil.LogErrorFormat("[VectorUtil] ProjectParallelAbscissa: Cannot project on direction {0} " +
+					"with magnitude {1} too close to zero, falling back to returning 0",
+					direction, directionMagnitude);
+				return 0f;
+			}
+
+			// p = <v, e> / ||e||
+			return Vector2.Dot(vector, direction) / directionMagnitude;
+		}
+
 		/// Return vector projected on direction vector (automatically normalized)
 		/// UB unless direction is not close to Zero vector
 		public static Vector2 ProjectParallel(Vector2 vector, Vector2 direction)
@@ -15,7 +36,10 @@ namespace HyperUnityCommons
 
 			if (directionSqrMagnitude < Mathf.Epsilon)
 			{
-				throw ExceptionsUtil.CreateExceptionFormat("Cannot project on null direction");
+				DebugUtil.LogErrorFormat("[VectorUtil] ProjectParallel: Cannot project on direction {0} " +
+					"with square magnitude {1} too close to zero, falling back to returning Vector2.zero",
+					direction, directionSqrMagnitude);
+				return Vector2.zero;
 			}
 
 			// p = (<v, e> / ||e||^2) * e
