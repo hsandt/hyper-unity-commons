@@ -7,6 +7,10 @@
 // This way, you can bind an action to an input with modifier while making sure that the input *without* modifier
 // never triggers that action.
 
+// Project requirements
+// !! To use it, you need to check Project Settings > Player > Other Settings > Script Compilation > Allow 'unsafe' Code
+// This is because ReadValue override has been adapted from OneModifierComposite.ReadValue which is itself unsafe.
+
 // Example
 // Say you want Alt+Enter to toggle fullscreen, but only Enter (with Alt released) to trigger UI Submit,
 // to avoid submitting and toggling fullscreen at the same time.
@@ -14,10 +18,6 @@
 // InvertibleModifierComposite with invertModifier = false.
 // Then, bind an InvertibleModifierComposite with invertModifier = true to the UI Submit action (in this particular
 // case, you'll also want to remove the default entry based on Usages "Submit [Any]" which overlaps Enter).
-
-// Project requirements
-// To use it, you need to check Project Settings > Player > Allow 'unsafe' Code
-// This is because ReadValue override has been adapted from OneModifierComposite.ReadValue which is itself unsafe.
 
 using System.ComponentModel;
 using Unity.Collections.LowLevel.Unsafe;
