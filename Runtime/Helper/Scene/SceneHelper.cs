@@ -66,7 +66,7 @@ namespace HyperUnityCommons
             }
 
             AsyncOperation asyncLoading = SceneManager.LoadSceneAsync(sceneReference.BuildIndex, loadSceneMode);
-            await AwaitOperationIsDone(isDonePollingPeriodSeconds, asyncLoading);
+            await AwaitOperationIsDone(asyncLoading, isDonePollingPeriodSeconds);
 
             if (loadAsActiveScene)
             {
@@ -115,22 +115,29 @@ namespace HyperUnityCommons
 
             // Unload additive scene and wait
             AsyncOperation asyncUnloading = SceneManager.UnloadSceneAsync(sceneReference.BuildIndex);
-            await AwaitOperationIsDone(isDonePollingPeriodSeconds, asyncUnloading);
+            await AwaitOperationIsDone(asyncUnloading, isDonePollingPeriodSeconds);
         }
 
         /// <summary>
         /// Transition from previous scene to next scene using transition scene
+        /// The transition scene is mandatory even if you don't have anything special to show for the transition
+        /// (for instance if you show a transition overlay in caller code side for more control), just to avoid
+        /// unloading the last scene in case there is no scene loaded besides the previous scene.
+        /// In this case, just prepare an empty scene that you will use as transition scene.
+        /// Note that this will work even when called from an object that will be destroyed with previous scene unloading,
+        /// because Tasks are running on their own
         /// </summary>
         /// <param name="previousSceneReference">Current scene. Must be loaded when calling this method.</param>
         /// <param name="nextSceneReference">Next scene to load. Must not be loaded when calling this method.</param>
         /// <param name="transitionSceneReference">Scene that acts as transition between the two other scenes (screen overlay, loading screen...). Must not be loaded when calling this method.</param>
-        /// <param name="isDonePollingPeriodSeconds">Period (seconds) used to poll whether each loading/unloading is finished</param>
+        /// <param name="isDonePollingPeriodSeconds">Period (seconds) used to poll whether each loading/unloading is finished (also used for asset unloading if unloadUnusedAssets is true)</param>
+        /// <param name="unloadUnusedAssets">If true, unload unused assets after unloading previous scene. Note that the transition scene, if used, will still be loaded at this point, so its assets won't be unloaded.</param>
         /// <param name="context">Optional context for debugging</param>
         /// <param name="debugPreviousSceneReferenceName">Optional scene name or full symbol with namespace used to access previous scene reference for debugging</param>
         /// <param name="debugNextSceneReferenceName">Optional scene name or full symbol with namespace used to access next scene reference for debugging</param>
         /// <param name="debugTransitionSceneReferenceName">Optional scene name or full symbol with namespace used to access transition scene reference for debugging</param>
         public static async Task TransitionFromToScene(SceneReference previousSceneReference, SceneReference nextSceneReference, SceneReference transitionSceneReference,
-            double isDonePollingPeriodSeconds = 0.1f, Object context = null, string debugPreviousSceneReferenceName = null,
+            double isDonePollingPeriodSeconds = 0.1f, bool unloadUnusedAssets = false, Object context = null, string debugPreviousSceneReferenceName = null,
             string debugNextSceneReferenceName = null, string debugTransitionSceneReferenceName = null)
         {
             // Load transition scene additively for screen transition
@@ -140,6 +147,11 @@ namespace HyperUnityCommons
             // Unload previous scene
             await UnloadSceneAsync(previousSceneReference, isDonePollingPeriodSeconds,
                 context, debugPreviousSceneReferenceName);
+
+            if (unloadUnusedAssets)
+            {
+                await AwaitOperationIsDone(Resources.UnloadUnusedAssets(), isDonePollingPeriodSeconds);
+            }
 
             // Load next scene additively as active scene, so we preserve the transition scene loaded above but still
             // make it the new main scene
@@ -155,7 +167,8 @@ namespace HyperUnityCommons
 
         #endif
 
-        public static async Task AwaitOperationIsDone(double isDonePollingPeriodSeconds, AsyncOperation asyncOperation)
+        public static async Task AwaitOperationIsDone(AsyncOperation asyncOperation,
+            double isDonePollingPeriodSeconds = 0.1f)
         {
             while (true)
             {
