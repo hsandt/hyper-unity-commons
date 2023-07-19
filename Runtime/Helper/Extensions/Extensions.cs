@@ -204,15 +204,11 @@ namespace HyperUnityCommons
 	public static class ColorExtensions {
 
 		public static Color ToVisible (this Color color) {
-			Color visibleColor = color;
-			visibleColor.a = 1;
-			return visibleColor;
+			return color.ToAlpha(1f);
 		}
 
 		public static Color ToInvisible (this Color color) {
-			Color invisibleColor = color;
-			invisibleColor.a = 0;
-			return invisibleColor;
+			return color.ToAlpha(0f);
 		}
 
 		public static Color ToAlpha (this Color color, float alpha) {
