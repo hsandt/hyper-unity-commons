@@ -134,8 +134,7 @@ namespace HyperUnityCommons
 		{
 			if (list != null)
 			{
-				// Assert on null entry, but not on absence of entry:
-				// entries may be added later by code
+				// Assert on null/missing entry
 				for (int i = 0; i < list.Count; i++)
 				{
 					// Just like GetComponentOrFail extension method (but still true in Unity 2021),
