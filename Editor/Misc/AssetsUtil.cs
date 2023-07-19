@@ -9,6 +9,38 @@ namespace HyperUnityCommons.Editor
 {
     public static class AssetsUtil
     {
+        /// Return list of assets of type T
+        /// If searchInFolders is not null nor empty, search in passed folder paths
+        /// https://answers.unity.com/questions/486545/getting-all-assets-of-the-specified-type.html
+        /// adapted to support searchInFolders
+        public static List<T> FindAssetsByType<T>(string[] searchInFolders = null) where T : UnityEngine.Object
+        {
+            List<T> assets = new List<T>();
+            // FindAssets itself understands null and empty array of folders, so pass it directly
+            string[] guids = AssetDatabase.FindAssets($"t:{typeof(T)}", searchInFolders);
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guids[i]);
+                T asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
+                if (asset != null)
+                {
+                    assets.Add(asset);
+                }
+                else
+                {
+                    Debug.LogWarningFormat("[AssetsUtil] FindAssetsByType: no asset found for GUID guids[{0}] = {1} " +
+                        "when searching folders: {2} for assets of type {3}",
+                        i, guids[i],
+                        searchInFolders != null && searchInFolders.Length > 0
+                            ? string.Join(",", searchInFolders.Select(path => $"'{path}'"))
+                            : "(everywhere)",
+                        typeof(T));
+                }
+            }
+
+            return assets;
+        }
+
         /// Create an asset from model, or replace it if it already exists at path (preserves GUID)
         public static void CreateOrReplace<T>(UnityEngine.Object model, string path) where T : UnityEngine.Object
         {
