@@ -52,12 +52,12 @@ public class SettingGaugeLabel : Selectable
 
     protected override void OnDisable()
     {
-        if (AppManager.IsNotQuitting())
-        {
-            base.OnDisable();
-        }
+        base.OnDisable();
 
-        gaugeSlider.onValueChanged.RemoveListener(OnSliderValueChanged);
+        if (gaugeSlider != null)
+        {
+            gaugeSlider.onValueChanged.RemoveListener(OnSliderValueChanged);
+        }
     }
 
     private void Setup()

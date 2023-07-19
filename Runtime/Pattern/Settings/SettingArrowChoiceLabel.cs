@@ -75,10 +75,7 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : Selectable
 
     protected override void OnDisable()
     {
-        if (AppManager.IsNotQuitting())
-        {
-            base.OnDisable();
-        }
+        base.OnDisable();
 
         UnregisterEvents();
     }
