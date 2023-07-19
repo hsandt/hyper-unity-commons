@@ -128,6 +128,35 @@ public class MusicManager : SingletonManager<MusicManager>
 
     #endif
 
+    /// Play BGM and return true if any, else do nothing return false
+    public bool PlayBgmWrapperIfAny(AudioAssetWrapper bgmWrapper)
+    {
+        if (bgmWrapper != null)
+        {
+            #if COM_E7_INTROLOOP
+            if (bgmWrapper.introloopAudio != null)
+            {
+                PlayIntroloopBgm(bgmWrapper.introloopAudio);
+                return true;
+            }
+            #endif
+
+            if (bgmWrapper.nativeAudioClip != null)
+            {
+                PlayBgm(bgmWrapper.nativeAudioClip);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void PlayBgmWrapper(AudioAssetWrapper bgmWrapper)
+    {
+        bool success = PlayBgmWrapperIfAny(bgmWrapper);
+        DebugUtil.AssertFormat(success, "[MusicManager] PlayBgmWrapper: bgmWrapper is null, could not play");
+    }
+
     #if NL_ELRACCOONE_TWEENS
     public IEnumerator FadeOutBgmAsync(float duration)
     {
