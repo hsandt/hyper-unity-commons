@@ -48,8 +48,18 @@ namespace HyperUnityCommons.Editor
             T output = AssetDatabase.LoadAssetAtPath<T>(path);
             if (output != null)
             {
-                // edit asset in place to keep GUID, so that references in editor are preserved
+                // Preserve original name: indeed, the model is generally a temporary Object not saved yet
+                // (that's the point of replacing), so it has no name matching filename yet, and CopySerialized
+                // will set output.name to an empty string in this case
+                string originalName = output.name;
+
+                // Edit asset in place to keep GUID, so that references in editor are preserved
                 EditorUtility.CopySerialized(model, output);
+
+                // Restore original name
+                output.name = originalName;
+
+                // Save changes
                 AssetDatabase.SaveAssets();
             }
             else
