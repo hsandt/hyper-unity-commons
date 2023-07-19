@@ -41,7 +41,8 @@ namespace HyperUnityCommons.Editor
             return assets;
         }
 
-        /// Create an asset from model, or replace it if it already exists at path (preserves GUID)
+        /// Create an asset from model if it doesn't exist at path yet OR has the wrong type
+        /// Else, replace asset at path, modifying properties in-place (preserves GUID)
         public static void CreateOrReplace<T>(UnityEngine.Object model, string path) where T : UnityEngine.Object
         {
             T output = AssetDatabase.LoadAssetAtPath<T>(path);
