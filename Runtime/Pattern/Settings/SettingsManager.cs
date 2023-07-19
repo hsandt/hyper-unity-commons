@@ -43,21 +43,8 @@ public class SettingsManager : SingletonManager<SettingsManager>
 		// CINEMATIC
 		LoadCinematicPrefs();
 
-		// GRAPHICS
-		LoadScreenPrefs();
-	}
-
-	/// Return PlayerPrefs bool value for key encoded as integer (0: false, 1: true) if any
-	/// If key is not present, return false
-	private static bool GetPlayerPrefsBool(string key)
-	{
-		return PlayerPrefs.GetInt(key) == 1;
-	}
-
-	/// Set PlayerPrefs bool value for key with value encoded as integer (0: false, 1: true)
-	private static void SetPlayerPrefsBool(string key, bool value)
-	{
-		PlayerPrefs.SetInt(key, value ? 1 : 0);
+		// GRAPHICS (SUPERSEDED)
+		// LoadScreenPrefs();
 	}
 
 	/// Return current setting value
@@ -79,7 +66,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 				// The engine value differs from stored dictionary value, engine value should have priority
 				// So set the dictionary value to match engine value (without side effect, since the engine value is
 				// already set)
-				SetSettingWithoutNotify(settingData, defaultSettingValue);
+				SetSetting_Internal(settingData, defaultSettingValue);
 
 				// And remember to update the current setting value to the engine value, so code below can work
 				// with this local variable (cheaper than calling GetSettingValue again)
@@ -127,13 +114,22 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	/// Set setting in dictionary and call OnSetValue to update any engine value accordingly
 	public void SetSetting<TSettingValue>(SettingData<TSettingValue> settingData, TSettingValue storedValue)
 	{
-		// Boxing TSettingValue to object is implicit, so no need to add anything
-		settingValueDictionary[settingData] = storedValue;
+		SetSetting_Internal(settingData, storedValue);
+
+		// Update any engine value
+		// This is mostly for immediate player feedback, such as tuning BGM volume while listening to it
+		// For heavier changes such as resolution, consider buffering changes and applying them later
 		settingData.OnSetValue(storedValue);
+
+		// Set player preference to new value and save it immediately
+		// When we add a buffer system (see comment above), we will also want to delay setting preferences to confirm
+		// time, and save them all at once
+		SetPreference(settingData, storedValue);
+		PlayerPrefs.Save();
 	}
 
-	/// Variant of SetSetting that doesn't call OnSetValue
-	private void SetSettingWithoutNotify<TSettingValue>(SettingData<TSettingValue> settingData, TSettingValue storedValue)
+	/// Just set setting value in dictionary, without calling OnSetValue nor saving any preference
+	private void SetSetting_Internal<TSettingValue>(SettingData<TSettingValue> settingData, TSettingValue storedValue)
 	{
 		// Boxing TSettingValue to object is implicit, so no need to add anything
 		settingValueDictionary[settingData] = storedValue;
@@ -227,6 +223,13 @@ public class SettingsManager : SingletonManager<SettingsManager>
 		return GetPlayerPrefsBool(boolSetting.playerPrefKey);
 	}
 
+	/// Return PlayerPrefs bool value for key encoded as integer (0: false, 1: true) if any
+	/// If key is not present, return false
+	private static bool GetPlayerPrefsBool(string key)
+	{
+		return PlayerPrefs.GetInt(key) == 1;
+	}
+
 	/// Return integer setting from player preferences
 	private static int GetIntSettingFromPreferences(SettingData<int> intSetting)
 	{
@@ -246,6 +249,11 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	{
 		// Implementation is similar to LoadSimpleSettingFromPreferences, but specialized
 		// for Resolution which is a compounded type
+		// Note that Unity also natively remembers its own resolution info:
+		// - Screenmanager Resolution Width/Height
+		// - Screenmanager Fullscreen mode
+		// etc. but it's easier to work with our own preferences.
+
 		string resolutionWidthPlayerPrefKey = $"{resolutionSetting.playerPrefKey}.Width";
 		string resolutionHeightPlayerPrefKey = $"{resolutionSetting.playerPrefKey}.Height";
 		string resolutionRefreshRatePlayerPrefKey = $"{resolutionSetting.playerPrefKey}.RefreshRate";
@@ -295,6 +303,117 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			// (implementation can enforce some default, or find a good default from engine)
 			SetDefaultSetting(resolutionSetting);
 		}
+	}
+
+	/// Set player preference to value
+	/// ! You must call PlayerPrefs.Save() after setting all the preferences you needed to change, to save them
+	private void SetPreference<TSettingValue>(SettingData<TSettingValue> setting, TSettingValue value)
+	{
+		// Type check is a little brutal, same remark as LoadSettingFromPreferences
+		if (setting is SettingData<bool> boolSetting)
+		{
+			if (value is bool boolValue)
+			{
+				SetBoolPreference(boolSetting, boolValue);
+			}
+			else
+			{
+				DebugUtil.LogErrorFormat(boolSetting,
+					"[SettingsManager] SetPreference: boolSetting {0} is a SettingData<bool> but value " +
+					"has type {1} instead of bool, this should not happen since this generic method ensures " +
+					"TSettingValue consistency",
+					boolSetting, value.GetType());
+			}
+		}
+		else if (setting is SettingData<int> intSetting)
+		{
+			if (value is int intValue)
+			{
+				SetIntPreference(intSetting, intValue);
+			}
+			else
+			{
+				DebugUtil.LogErrorFormat(intSetting,
+					"[SettingsManager] SetPreference: intSetting {0} is a SettingData<int> but value " +
+					"has type {1} instead of int, this should not happen since this generic method ensures " +
+					"TSettingValue consistency",
+					intSetting, value.GetType());
+			}
+		}
+		else if (setting is SettingData<float> floatSetting)
+		{
+			if (value is float floatValue)
+			{
+				SetFloatPreference(floatSetting, floatValue);
+			}
+			else
+			{
+				DebugUtil.LogErrorFormat(floatSetting,
+					"[SettingsManager] SetPreference: floatSetting {0} is a SettingData<float> but value " +
+					"has type {1} instead of float, this should not happen since this generic method ensures " +
+					"TSettingValue consistency",
+					floatSetting, value.GetType());
+			}
+		}
+		else if (setting is SettingData<Resolution> resolutionSetting)
+		{
+			if (value is Resolution resolutionValue)
+			{
+				SetResolutionPreference(resolutionSetting, resolutionValue);
+			}
+			else
+			{
+				DebugUtil.LogErrorFormat(resolutionSetting,
+					"[SettingsManager] SetPreference: resolutionSetting {0} is a SettingData<Resolution> but value " +
+					"has type {1} instead of Resolution, this should not happen since this generic method ensures " +
+					"TSettingValue consistency",
+					resolutionSetting, value.GetType());
+			}
+		}
+		else
+		{
+			DebugUtil.LogErrorFormat(setting,
+				"[SettingsManager] SetPreference: Unsupported SettingData<TSettingValue> subclass, setting {0} " +
+				"uses TSettingValue = {1}, we only support bool, int, float and Resolution",
+				setting, setting.GetType().GetGenericArguments()[0]);
+		}
+	}
+
+	/// Set bool player preference
+	private static void SetBoolPreference(SettingData<bool> boolSetting, bool value)
+	{
+		SetPlayerPrefsBool(boolSetting.playerPrefKey, value);
+	}
+
+	/// Set PlayerPrefs bool value for key with value encoded as integer (0: false, 1: true)
+	private static void SetPlayerPrefsBool(string key, bool value)
+	{
+		PlayerPrefs.SetInt(key, value ? 1 : 0);
+	}
+
+	/// Set integer player preference
+	private static void SetIntPreference(SettingData<int> intSetting, int value)
+	{
+		PlayerPrefs.SetInt(intSetting.playerPrefKey, value);
+	}
+
+	/// Set float player preference
+	private static void SetFloatPreference(SettingData<float> floatSetting, float value)
+	{
+		PlayerPrefs.SetFloat(floatSetting.playerPrefKey, value);
+	}
+
+	/// Set Resolution player preference
+	private static void SetResolutionPreference(SettingData<Resolution> resolutionSetting, Resolution resolution)
+	{
+		// Use same convention as LoadResolutionSettingFromPreferences for the key suffixes
+		string resolutionWidthPlayerPrefKey = $"{resolutionSetting.playerPrefKey}.Width";
+		string resolutionHeightPlayerPrefKey = $"{resolutionSetting.playerPrefKey}.Height";
+		string resolutionRefreshRatePlayerPrefKey = $"{resolutionSetting.playerPrefKey}.RefreshRate";
+
+		PlayerPrefs.SetInt(resolutionWidthPlayerPrefKey, resolution.width);
+		PlayerPrefs.SetInt(resolutionHeightPlayerPrefKey, resolution.height);
+		PlayerPrefs.SetInt(resolutionRefreshRatePlayerPrefKey, resolution.refreshRate);
 	}
 
 	#endregion
