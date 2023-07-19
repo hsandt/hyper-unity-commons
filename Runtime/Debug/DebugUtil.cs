@@ -124,12 +124,13 @@ namespace HyperUnityCommons
 		/// <summary>
 		/// Assert that passed list/array of Objects is not null, and that no elements are null
 		/// </summary>
-		/// <param name="list">List list/array of Objects to verify</param>
+		/// <param name="list">List/array of Objects to verify</param>
 		/// <param name="context">Object owning the list/array, if any. Used as context for the Debug Console.</param>
 		/// <param name="listName">Name of list/array variable for debug</param>
 		/// <typeparam name="T">Type of elements in the list/array</typeparam>
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
-		public static void AssertListElementsNotNull<T>(IReadOnlyList<T> list, Object context, string listName) where T : Object
+		public static void AssertListElementsNotNull<T>(IReadOnlyList<T> list, Object context, string listName)
+			where T : Object
 		{
 			if (list != null)
 			{
@@ -138,7 +139,7 @@ namespace HyperUnityCommons
 				for (int i = 0; i < list.Count; i++)
 				{
 					// Just like GetComponentOrFail extension method (but still true in Unity 2021),
-					// we noticed that undefined list entries are not truly null,
+					// we noticed that undefined list entries (with Object type) are not truly null,
 					// but some dummy Object with instance ID = 0, to allow showing an
 					// UnassignedReferenceException with details on which field is undefined to the developer.
 					Debug.AssertFormat(list[i] != null && list[i].GetInstanceID() != 0,
@@ -148,6 +149,39 @@ namespace HyperUnityCommons
 			else
 			{
 				Debug.LogErrorFormat(context, "{0} is null on {1}", listName, context);
+			}
+		}
+
+		/// <summary>
+		/// Assert that passed dictionary of TKey => TValue : Object is not null, and that no values are null
+		/// </summary>
+		/// <typeparam name="TKey">Type of dictionary keys</typeparam>
+		/// <typeparam name="TValue">Type of dictionary values</typeparam>
+		/// <param name="dictionary">Dictionary of TKey => TValue : Object to verify</param>
+		/// <param name="context">Object owning the dictionary, if any. Used as context for the Debug Console.</param>
+		/// <param name="dictName">Name of dictionary variable for debug</param>
+		/// <typeparam name="T">Type of elements in the dictionary</typeparam>
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void AssertDictionaryElementsNotNull<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> dictionary,
+			Object context, string dictName) where TValue : Object
+		{
+			if (dictionary != null)
+			{
+				// Assert on null entry, but not on absence of entry:
+				// entries may be added later by code
+				foreach ((TKey key, TValue value) in dictionary)
+				{
+					// Just like GetComponentOrFail extension method (but still true in Unity 2021),
+					// we noticed that undefined dictionary entries (with Object type) are not truly null,
+					// but some dummy Object with instance ID = 0, to allow showing an
+					// UnassignedReferenceException with details on which field is undefined to the developer.
+					Debug.AssertFormat(value != null && value.GetInstanceID() != 0,
+						context, "{0}[{1}] is null/undefined/missing on {2}", dictName, key, context);
+				}
+			}
+			else
+			{
+				Debug.LogErrorFormat(context, "{0} is null on {1}", dictName, context);
 			}
 		}
 

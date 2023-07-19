@@ -23,7 +23,7 @@ namespace HyperUnityCommons
         private Dictionary<TKey, TValue> m_CachedDictionary = new();
 
 
-        public void InitCache(Object context = null)
+        public void InitCache(Object context = null, bool errorOnNullValue = false)
         {
             // Clearing cached dictionary is required in Editor, as Scriptable object non-serialized fields are still
             // preserved in memory between Play in Editor sessions, causing dictionary to keep existing entries.
@@ -36,15 +36,44 @@ namespace HyperUnityCommons
             {
                 (TKey key, TValue value) = m_KeyValuePairs[i];
 
+                // Remember that C# doesn't allow null keys, and it would likely be an entry the designer forgot
+                // to fill anyway
                 if (key != null)
                 {
+                    #if UNITY_EDITOR
+                    if (errorOnNullValue)
+                    {
+                        if (value == null)
+                        {
+                            // True null: this can happen with dictionary storing pure object values, but it should not
+                            // really happen in our case since this component is made for edit in Inspector, which means
+                            // we must be dealing with UnityEngine.Object (see case below)
+                            Debug.LogErrorFormat("[EditableDictionary] InitCache: value for key " +
+                                "m_KeyValuePairs[{0}].key = {1} is null. It will still be added to cached dictionary, but caller " +
+                                "passed errorOnNullValue = true, so this must be invalid data.",
+                            i, key);
+                        }
+                        // Just like AssertDictionaryElementsNotNull, we need to check for dictionary entries
+                        // (with Object type) that are not truly null, but some dummy Object with instance ID = 0,
+                        // to allow showing an UnassignedReferenceException with details on which field is undefined
+                        // to the developer.
+                        else if (value is Object objectValue && objectValue.GetInstanceID() == 0)
+                        {
+                            Debug.LogErrorFormat("[EditableDictionary] InitCache: value for key " +
+                                "m_KeyValuePairs[{0}].key = {1} is undefined/missing. It will still be added to cached dictionary, but caller " +
+                                "passed errorOnNullValue = true, so this must be invalid data.",
+                                i, key);
+                        }
+                    }
+                    #endif
+
                     bool success = m_CachedDictionary.TryAdd(key, value);
 
                     if (!success)
                     {
                         DebugUtil.LogErrorFormat(context,
                             "[EditableDictionary] InitCache: could not add key " +
-                            "m_KeyValuePairs[{0}] = {1} to cached dictionary. It seems that another entry in " +
+                            "m_KeyValuePairs[{0}].key = {1} to cached dictionary. It seems that another entry in " +
                             "m_KeyValuePairs list already added the same key.",
                             i, key);
                     }
@@ -52,7 +81,7 @@ namespace HyperUnityCommons
                 else
                 {
                     DebugUtil.LogErrorFormat(context,
-                        "[EditableDictionary] InitCache: m_KeyValuePairs[{0}] is null, " +
+                        "[EditableDictionary] InitCache: m_KeyValuePairs[{0}].key is null, " +
                         "cannot add as key to cached dictionary",
                         i);
                 }
