@@ -141,36 +141,27 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : Selectable
                 "should use GetFallbackValueFrom if value from preference was invalid, or GetDefaultValueOnStart if there " +
                 "was no preference, and both should guarantee a valid value. It can happen in rare cases when user " +
                 "changes hardware during the game (e.g. switching to monitor with fewer resolutions), so trying to fall " +
-                "back to closest value with GetFallbackValueFrom.",
+                "back to closest value by calling LoadSettingFromPreferences > ... > GetFallbackValueFrom again.",
                 currentSettingValue, discreteSettingData, this);
 
-            // Looks like the old choice is not valid anymore, it can happen (see log message below)
-            // In this case, let's revert to a good fallback, assumed to be close enough to the current setting.
-            TSettingValue fallbackSettingValue = discreteSettingData.GetFallbackValueFrom(currentSettingValue);
+            SettingsManager.Instance.LoadSettingFromPreferences(discreteSettingData);
+            TSettingValue fallbackSettingValue = SettingsManager.Instance.GetSettingValue(discreteSettingData);
             currentChoiceIndexFromValue = FindChoiceIndex(fallbackSettingValue);
 
             if (currentChoiceIndexFromValue < 0)
             {
                 DebugUtil.LogErrorFormat(discreteSettingData, "[SettingArrowChoiceLabel] Setup: " +
                     "... fallback failed, could not find choice index for fallback value {0}. " +
-                    "Trying default value (using current engine state if needed)",
+                    "Fall back to choice index 0 as ultimate resort, but note that displayed choice will not match " +
+                    "actual setting.",
                     fallbackSettingValue);
 
-                TSettingValue defaultSettingValue = discreteSettingData.GetDefaultValueOnStart();
-                currentChoiceIndexFromValue = FindChoiceIndex(defaultSettingValue);
-
-                if (currentChoiceIndexFromValue < 0)
-                {
-                    DebugUtil.LogErrorFormat(discreteSettingData, "[SettingArrowChoiceLabel] Setup: " +
-                        "... default failed, could not find choice index for default value {0}. " +
-                        "Fall back to choice index 0 as ultimate resort.",
-                        defaultSettingValue);
-
-                    currentChoiceIndexFromValue = 0;
-                }
+                currentChoiceIndexFromValue = 0;
             }
         }
 
+        // Select choice in UI to match current setting
+        // (this means we don't need to call SetSettingForCurrentChoice besides)
         SelectChoice_Internal(currentChoiceIndexFromValue);
     }
 
@@ -264,7 +255,7 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : Selectable
         }
     }
 
-    /// Select a choice by index
+    /// Select a new choice by index
     private void SelectChoice(int index)
     {
         if (index == m_CurrentChoiceIndex)
@@ -272,6 +263,16 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : Selectable
             return;
         }
 
+        SelectChoice_Internal(index);
+
+        // Actual change: for now, we apply setting immediately
+        SetSettingForCurrentChoice();
+    }
+
+    /// Select choice, set associated setting and update UI, no matter what
+    /// UB unless index is valid
+    private void SelectChoice_Internal(int index)
+    {
         if (m_CurrentChoiceIndex < 0 || m_CurrentChoiceIndex > m_ChoiceNames.Count - 1) {
             Debug.LogErrorFormat(this,
                 "[SettingArrowChoiceLabel] SelectChoice: index {0} is out of bounds ({1} entries)",
@@ -279,18 +280,18 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : Selectable
             return;
         }
 
-        SelectChoice_Internal(index);
-    }
-
-    private void SelectChoice_Internal(int index)
-    {
         // Set choice index
         m_CurrentChoiceIndex = index;
 
-        // Set associated setting
-        SettingsManager.Instance.SetSetting(discreteSettingData, m_ChoiceValues[index]);
-
         // Update view
         UpdateUI();
+    }
+
+    private void SetSettingForCurrentChoice()
+    {
+        // This is called when choice actually changes, so we want to apply engine changes (call OnSetValue)
+        // and save new preference
+        SettingsManager.Instance.SetSetting(discreteSettingData, m_ChoiceValues[m_CurrentChoiceIndex],
+            callOnSetValue: true, immediatelySavePreference: true);
     }
 }

@@ -112,20 +112,27 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	}
 
 	/// Set setting in dictionary and call OnSetValue to update any engine value accordingly
-	public void SetSetting<TSettingValue>(SettingData<TSettingValue> settingData, TSettingValue storedValue)
+	public void SetSetting<TSettingValue>(SettingData<TSettingValue> settingData, TSettingValue storedValue,
+		bool callOnSetValue, bool immediatelySavePreference)
 	{
 		SetSetting_Internal(settingData, storedValue);
 
-		// Update any engine value
-		// This is mostly for immediate player feedback, such as tuning BGM volume while listening to it
-		// For heavier changes such as resolution, consider buffering changes and applying them later
-		settingData.OnSetValue(storedValue);
+		if (callOnSetValue)
+		{
+			// Update any engine value
+			// This is mostly for immediate player feedback, such as tuning BGM volume while listening to it
+			// For heavier changes such as resolution, consider buffering changes and applying them later
+			settingData.OnSetValue(storedValue);
+		}
 
-		// Set player preference to new value and save it immediately
-		// When we add a buffer system (see comment above), we will also want to delay setting preferences to confirm
-		// time, and save them all at once
-		SetPreference(settingData, storedValue);
-		PlayerPrefs.Save();
+		if (immediatelySavePreference)
+		{
+			// Set player preference to new value and save it immediately
+			// When we add a buffer system (see comment above), we will also want to delay setting preferences to confirm
+			// time, and save them all at once
+			SetPreference(settingData, storedValue);
+			PlayerPrefs.Save();
+		}
 	}
 
 	/// Just set setting value in dictionary, without calling OnSetValue nor saving any preference
@@ -138,18 +145,23 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	public void SetSettingFromReadableValue<TSettingValue>(SettingData<TSettingValue> settingData, TSettingValue readableValue)
 	{
 		TSettingValue storedValue = settingData.RepresentedToStoredValue(readableValue);
-		SetSetting(settingData, storedValue);
+		SetSetting(settingData, storedValue, callOnSetValue: true, immediatelySavePreference: true);
 	}
 
 	private void SetDefaultSetting<TSettingValue>(SettingData<TSettingValue> setting)
 	{
-		SetSetting(setting, setting.GetDefaultValueOnStart());
+		// We got the default value from engine (if it's an engine setting), so no need to call OnSetValue again,
+		// which is meant to set engine value. Player has no actively changed setting either, so do not save this
+		// default setting as a preference (it means that, if the player exists the game and comes back, but the default
+		// changed due to application update or hardware change, it will use the new default)
+		SetSetting(setting, setting.GetDefaultValueOnStart(),
+			callOnSetValue: false, immediatelySavePreference: false);
 	}
 
 	/// Load setting from player preferences
 	/// If preference value is not valid, fallback to good value based on preference value
 	/// If no preference has been saved, set value to default
-	private void LoadSettingFromPreferences(BaseSettingData setting)
+	public void LoadSettingFromPreferences(BaseSettingData setting)
 	{
 		// Type check is a little brutal, but it works because we know that all setting data are in fact deriving from
 		// SettingData<TSettingValue>.
@@ -195,7 +207,11 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			if (settingData.IsValueValid(playerPrefStoredValue))
 			{
 				// Valid preference value, use it
-				SetSetting(settingData, playerPrefStoredValue);
+				// We've just loaded this setting from preferences, but if it's an engine setting, it has not been
+				// applied to engine yet (unless it is coincidentally the default), so we must call OnSetValue.
+				// It comes from the preferences though, so no need to save the preference again.
+				SetSetting(settingData, playerPrefStoredValue,
+					callOnSetValue: true, immediatelySavePreference: false);
 			}
 			else
 			{
@@ -206,7 +222,25 @@ public class SettingsManager : SingletonManager<SettingsManager>
 					"invalid value, but we don't know better in this generic context, so still using it as fallback",
 					playerPrefStoredValue);
 
-				SetSetting(settingData, fallbackValue);
+				if (!settingData.IsValueValid(fallbackValue))
+				{
+					DebugUtil.AssertFormat(settingData.IsValueValid(fallbackValue),
+						"[SettingsManager] LoadSimpleSettingFromPreferences: GetFallbackValueFrom({0}) returned " +
+						"invalid value, falling back a second time to default value on start as ultimate resort. " +
+						"Make sure to fix GetFallbackValueFrom to return a valid value.",
+						playerPrefStoredValue);
+
+					fallbackValue = settingData.GetDefaultValueOnStart();
+				}
+
+				// We've just loaded the setting from preferences and then found a different fallback,
+				// so if it's an engine setting, it has not been applied to engine yet (unless it is coincidentally the
+				// default), so we must call OnSetValue.
+				// Whether we want to resave the fallback value in preferences is up to design. In this case, player
+				// has not actively changed setting yet, so following the same logic as when player keeps the default
+				// value, we decide not to save it immediately.
+				SetSetting(settingData, fallbackValue,
+					callOnSetValue: true, immediatelySavePreference: false);
 			}
 		}
 		else
@@ -283,18 +317,36 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			if (resolutionSetting.IsValueValid(playerPrefResolution))
 			{
 				// Valid preference value, use it
-				SetSetting(resolutionSetting, playerPrefResolution);
+				// We've just loaded this setting from preferences, but if it's an engine setting, it has not been
+				// applied to engine yet (unless it is coincidentally the default), so we must call OnSetValue.
+				// It comes from the preferences though, so no need to save the preference again.
+				SetSetting(resolutionSetting, playerPrefResolution,
+					callOnSetValue: true, immediatelySavePreference: false);
 			}
 			else
 			{
 				// Invalid preference value, use fallback based on it
 				Resolution fallbackValue = resolutionSetting.GetFallbackValueFrom(playerPrefResolution);
-				DebugUtil.AssertFormat(resolutionSetting.IsValueValid(fallbackValue),
-					"[SettingsManager] LoadResolutionSettingFromPreferences: GetFallbackValueFrom({0}) returned " +
-					"invalid value, but we don't know better in this generic context, so still using it as fallback",
-					playerPrefResolution);
 
-				SetSetting(resolutionSetting, fallbackValue);
+				if (!resolutionSetting.IsValueValid(fallbackValue))
+				{
+					DebugUtil.AssertFormat(resolutionSetting.IsValueValid(fallbackValue),
+						"[SettingsManager] LoadResolutionSettingFromPreferences: GetFallbackValueFrom({0}) returned " +
+						"invalid value, falling back a second time to default value on start as ultimate resort. " +
+						"Make sure to fix GetFallbackValueFrom to return a valid value.",
+						playerPrefResolution);
+
+					fallbackValue = resolutionSetting.GetDefaultValueOnStart();
+				}
+
+				// We've just loaded the setting from preferences and then found a different fallback,
+				// so if it's an engine setting, it has not been applied to engine yet (unless it is coincidentally the
+				// default), so we must call OnSetValue.
+				// Whether we want to resave the fallback value in preferences is up to design. In this case, player
+				// has not actively changed setting yet, so following the same logic as when player keeps the default
+				// value, we decide not to save it immediately.
+				SetSetting(resolutionSetting, fallbackValue,
+					callOnSetValue: true, immediatelySavePreference: false);
 			}
 		}
 		else
