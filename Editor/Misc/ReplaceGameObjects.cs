@@ -113,16 +113,30 @@ namespace HyperUnityCommons.Editor
 
 					GameObject replacedGameObject = t.gameObject;
 
+					// Verify that replaced game object belongs to a scene, as opposed to being an asset prefab
+					// Note: we could also check AssetDatabase.Contains(replacedGameObject)
+					if (!replacedGameObject.scene.IsValid())
+					{
+						Debug.LogErrorFormat(replacedGameObject,
+							"[ReplaceGameObject] Cannot replace selected game object {0} " +
+							"because it's an asset prefab",
+							replacedGameObject);
+						continue;
+					}
+
 					if (currentPrefabStage != null && replacedGameObject == currentPrefabStage.prefabContentsRoot)
 					{
-						Debug.LogErrorFormat("Cannot replace Prefab root {0} in Prefab Edit Mode", replacedGameObject);
+						Debug.LogErrorFormat(replacedGameObject,
+							"[ReplaceGameObject] Cannot replace Prefab root {0} in Prefab Edit Mode",
+							replacedGameObject);
 						continue;
 					}
 
 					if (PrefabUtility.GetPrefabInstanceStatus(replacedGameObject) == PrefabInstanceStatus.Connected && !PrefabUtility.IsOutermostPrefabInstanceRoot(replacedGameObject))
 					{
-						Debug.LogErrorFormat(replacedGameObject, "[ReplaceGameObject] Replace Selected: Cannot delete child {0} of " +
-							"prefab instance {1}, please edit the prefab itself.",
+						Debug.LogErrorFormat(replacedGameObject,
+							"[ReplaceGameObject] Replace Selected: Cannot delete child {0} of prefab instance {1}, " +
+							"please edit the prefab itself.",
 							replacedGameObject, PrefabUtility.GetNearestPrefabInstanceRoot(replacedGameObject));
 						continue;
 					}
@@ -144,6 +158,11 @@ namespace HyperUnityCommons.Editor
 						// Make sure to get the actual prefab for this game object, by using GetPrefabAssetPathOfNearestInstanceRoot.
 						// This will work for both outermost and inner prefab roots.
 						// Other methods like GetCorrespondingObjectFromSource will return the outermost prefab only.
+						// Note: behind the hood, GetPrefabAssetPathOfNearestInstanceRoot calls
+						// GetOriginalSourceOrVariantRoot then GetAssetPath, so we are in fact calling GetAssetPath
+						// followed by LoadAssetAtPath which does the reverse operation and is a bit of a waste.
+						// Unfortunately, GetOriginalSourceOrVariantRoot is internal, so we could use it but it would
+						// need some reflection.
 						string prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(replacingObject);
 						GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
 
@@ -153,10 +172,12 @@ namespace HyperUnityCommons.Editor
 						PrefabUtility.SetPropertyModifications(o, PrefabUtility.GetPropertyModifications(replacingObject));
 					}
 
-					// check if replacing object is an actual prefab asset from Project view
-					// note: we don't check PrefabUtility.GetPrefabAssetType(replacingObject) since a GameObject that
+					// Check if replacing object is an actual prefab asset from Project view, or a game object in the
+					// scene scene
+					// Note: we could also check AssetDatabase.Contains(replacingObject)
+					// Note 2: we don't check PrefabUtility.GetPrefabAssetType(replacingObject) since a GameObject that
 					// is an asset is always a prefab, never PrefabAssetType.NotAPrefab or PrefabAssetType.MissingAsset
-					else if (AssetDatabase.Contains(replacingObject)) {
+					else if (!replacingObject.scene.IsValid()) {
 						// instantiate it with default values, in the same scene as replaced object
 						o = (GameObject)PrefabUtility.InstantiatePrefab(replacingObject, replacedGameObject.scene);
 					}
