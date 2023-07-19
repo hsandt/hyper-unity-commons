@@ -11,34 +11,34 @@ namespace HyperUnityCommons.Editor
 {
 	public class EditorScreenshot : EditorWindow
 	{
-		const string defaultScreenshotFolderPath = "Screenshots";
-		const string defaultScreenshotFilenamePrefix = "screenshot_";
+		private const string defaultScreenshotFolderPath = "Screenshots";
+		private const string defaultScreenshotFilenamePrefix = "screenshot_";
 
 		// EXPERIMENTAL: default parameters for hi-res screenshot
-		const int defaultHiResWidth = 3840;
-		const int defaultHiResHeight = 2160;
+		private const int defaultHiResWidth = 3840;
+		private const int defaultHiResHeight = 2160;
 
-		string screenshotFolderPath = defaultScreenshotFolderPath;
-		string screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
-		int nextScreenshotIndex = 0;
+		private string screenshotFolderPath = defaultScreenshotFolderPath;
+		private string screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
+		private int nextScreenshotIndex = 0;
 
 		// EXPERIMENTAL: parameters for hi-res screenshot
 		public int hiResWidth = defaultHiResWidth;
 		public int hiResHeight = defaultHiResHeight;
 
 		[MenuItem("Window/Hyper Unity Commons/Editor Screenshot")]
-		static void Init()
+		private static void Init()
 		{
 			GetOrCreateWindow();
 		}
 
 		[MenuItem("Tools/Take Screenshot _F11")]
-		static void StaticTakeScreenshot()
+		private static void StaticTakeScreenshot()
 		{
 			GetOrCreateWindow().TakeScreenshot();
 		}
 
-		static EditorScreenshot GetOrCreateWindow()
+		private static EditorScreenshot GetOrCreateWindow()
 		{
 			EditorScreenshot editorScreenshot = GetWindow<EditorScreenshot>(title: "Screenshot");
 
@@ -94,7 +94,7 @@ namespace HyperUnityCommons.Editor
 			return editorScreenshot;
 		}
 
-		void OnGUI()
+		private void OnGUI()
 		{
 			EditorGUI.BeginChangeCheck();
 
@@ -115,6 +115,7 @@ namespace HyperUnityCommons.Editor
 
 			if (GUILayout.Button("Take screenshot")) TakeScreenshot();
 			if (GUILayout.Button("Take hi-res screenshot")) TakeHiresScreenshot();
+			if (GUILayout.Button("Open Screenshots folder")) OpenScreenshotsFolder();
 		}
 
 		private string ConstructScreenshotPath(bool hires)
@@ -130,7 +131,7 @@ namespace HyperUnityCommons.Editor
 			return $"{screenshotFolderPath}/{appPrefix}{screenshotFilenamePrefix}{nextScreenshotIndex:00}{optionalResolutionSuffix}.png";
 		}
 
-		void TakeScreenshot()
+		private void TakeScreenshot()
 		{
 			if (string.IsNullOrWhiteSpace(screenshotFolderPath))
 			{
@@ -180,7 +181,7 @@ namespace HyperUnityCommons.Editor
 		// EXPERIMENTAL: hi-res screenshot
 		// http://answers.unity3d.com/questions/22954/how-to-save-a-picture-take-screenshot-from-a-camer.html
 		// For transparency, insert code from http://answers.unity3d.com/questions/12070/capture-rendered-scene-to-png-with-background-tran.html
-		void TakeHiresScreenshot ()
+		private void TakeHiresScreenshot ()
 		{
 			Camera camera = Camera.main;
 			if (camera == null) {
@@ -226,6 +227,23 @@ namespace HyperUnityCommons.Editor
 		{
 			++nextScreenshotIndex;
 			EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
+		}
+
+		private void OpenScreenshotsFolder()
+		{
+			// Application.dataPath ends with Assets/ so we need to go one directory up to get the project root
+			string projectRootPath = Path.GetDirectoryName(Application.dataPath);
+			string screenshotFolderFullPath = Path.Combine(projectRootPath, screenshotFolderPath);
+
+			// Create directory if needed
+			if (!Directory.Exists(screenshotFolderFullPath))
+			{
+				Directory.CreateDirectory(screenshotFolderFullPath);
+			}
+
+			// Open Screenshots folder
+			// https://forum.unity.com/threads/editorutility-revealinfinder-inconsistency.383939/#post-8431145
+			EditorUtility.OpenWithDefaultApp(screenshotFolderFullPath);
 		}
 	}
 }
