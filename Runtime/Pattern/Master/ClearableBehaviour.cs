@@ -4,7 +4,8 @@ using System.Collections;
 namespace HyperUnityCommons
 {
 
-	/// Base class for behaviours that can be cleared and restarted from their initial states. Recommended for all MonoBehaviours with state variables.
+	/// Base class for behaviours that can be cleared and restarted from their initial states
+	/// Recommended for all MonoBehaviours with state variables.
 	public abstract class ClearableBehaviour : MonoBehaviour {
 
 		/// Setup the object's state vars so that it reaches its initial state. This should be called on Start.

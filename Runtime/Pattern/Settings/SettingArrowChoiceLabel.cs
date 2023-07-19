@@ -9,8 +9,8 @@ using HyperUnityCommons;
 
 /// Component to place on label associated to a setting arrow choice
 /// Requires: AppManager, SettingsManager
-/// SEO: after SettingsManager
-public abstract class SettingArrowChoiceLabel<TSettingValue> : Selectable
+/// SEO: (all subclasses) after SettingsManager
+public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
 {
     [Header("Asset references")]
 
@@ -69,7 +69,6 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : Selectable
             RegisterEvents();
 
             Init();
-            Setup();
         }
     }
 
@@ -123,7 +122,7 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : Selectable
 
     /// Set up choice to match current setting
     /// This is called when this widget is shown so the initial selection is correct
-    private void Setup()
+    public override void Setup()
     {
         // At this point, SettingsManager must have loaded/initialized all settings (from either prefs or defaults)
         // so it's safe to use the current setting value (it will also retrieve engine value if set to

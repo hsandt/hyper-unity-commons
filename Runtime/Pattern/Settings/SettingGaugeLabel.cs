@@ -9,7 +9,8 @@ using HyperUnityCommons;
 
 /// Component to place on label associated to a setting gauge slider
 /// Requires: AppManager, SettingsManager
-public class SettingGaugeLabel : Selectable
+/// SEO: after SettingsManager
+public class SettingGaugeLabel : BaseSettingLabel
 {
     [Header("Asset references")]
 
@@ -45,8 +46,6 @@ public class SettingGaugeLabel : Selectable
             DebugUtil.AssertFormat(gaugeSlider != null, this, "[SettingGaugeLabel] No Gauge Slider set on {0}.", this);
 
             gaugeSlider.onValueChanged.AddListener(OnSliderValueChanged);
-
-            Setup();
         }
     }
 
@@ -60,10 +59,9 @@ public class SettingGaugeLabel : Selectable
         }
     }
 
-    private void Setup()
+    /// Initialize visual to match model, i.e. slider to show current setting as readable value
+    public override void Setup()
     {
-        // Initialize visual to match model
-
         // First, get the readable value from settings: by convention, it's a ratio, so still a normalized value
         float normalizedSliderValue = SettingsManager.Instance.GetSettingAsReadableValue(floatSettingData);
 

@@ -7,6 +7,7 @@ using TMPro;
 /// Component to place on label associated to a setting arrow choice, that sets text directly on value label
 /// (as opposed to setting localized key for localized text)
 /// Requires: AppManager, SettingsManager
+/// SEO: (all subclasses) after SettingsManager
 public abstract class SettingArrowChoiceLabelSimpleText<T> : SettingArrowChoiceLabel<T>
 {
     [Header("Scene references")]

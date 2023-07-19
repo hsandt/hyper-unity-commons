@@ -10,6 +10,7 @@ using HyperUnityCommons;
 
 /// Settings Manager
 /// We recommend creating it and making it DontDestroyOnLoad via some PersistentManagersGenerator (specific to project)
+/// SEO: (possibly via PersistentManagersGenerator) before any setting widget accessing settings
 public class SettingsManager : SingletonManager<SettingsManager>
 {
 	#region New API
@@ -34,17 +35,21 @@ public class SettingsManager : SingletonManager<SettingsManager>
 		foreach (var setting in settings)
 		{
 			setting.AssertIsValid();
+		}
+	}
+
+	private void Start()
+	{
+		// Make sure to load settings on Start so everything has been setup and ready to react to your changes
+		// In practice, only Audio settings needed this, as AudioMixer is not ready at Awake time, and setting an
+		// AudioMixer parameter will silently fail.
+		// Thread: https://forum.unity.com/threads/audiomixer-setfloat-doesnt-work-on-awake.323880/
+		// Issue: https://issuetracker.unity3d.com/issues/audiomixer-dot-setfloat-ignores-new-value-when-it-is-changed-and-saved-during-previous-play-scene-session
+		// closed as "By design"
+		foreach (var setting in settings)
+		{
 			LoadSettingFromPreferences(setting);
 		}
-
-		// AUDIO (SUPERSEDED)
-		// LoadAudioPrefs();
-
-		// CINEMATIC
-		LoadCinematicPrefs();
-
-		// GRAPHICS (SUPERSEDED)
-		// LoadScreenPrefs();
 	}
 
 	/// Return current setting value
