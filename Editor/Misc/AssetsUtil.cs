@@ -41,30 +41,37 @@ namespace HyperUnityCommons.Editor
             return assets;
         }
 
-        /// Create an asset from model if it doesn't exist at path yet OR has the wrong type
-        /// Else, replace asset at path, modifying properties in-place (preserves GUID)
-        public static void CreateOrReplace<T>(UnityEngine.Object model, string path) where T : UnityEngine.Object
+        /// Create an asset from model and return it if no asset already exists at passed path OR
+        /// there is one, but it has the wrong type
+        /// Else, replace asset at path, modifying properties in-place (preserves GUID) and return the existing
+        /// asset that has been modified
+        public static T CreateOrReplace<T>(T model, string path) where T : UnityEngine.Object
         {
-            T output = AssetDatabase.LoadAssetAtPath<T>(path);
-            if (output != null)
+            T existingAsset = AssetDatabase.LoadAssetAtPath<T>(path);
+            if (existingAsset != null)
             {
                 // Preserve original name: indeed, the model is generally a temporary Object not saved yet
                 // (that's the point of replacing), so it has no name matching filename yet, and CopySerialized
                 // will set output.name to an empty string in this case
-                string originalName = output.name;
+                string originalName = existingAsset.name;
 
                 // Edit asset in place to keep GUID, so that references in editor are preserved
-                EditorUtility.CopySerialized(model, output);
+                EditorUtility.CopySerialized(model, existingAsset);
 
                 // Restore original name
-                output.name = originalName;
+                existingAsset.name = originalName;
 
                 // Save changes
                 AssetDatabase.SaveAssets();
+
+                return existingAsset;
             }
             else
             {
+                // Create new asset from model (note that model name will be updated to file name, and the binding is
+                // preserved, so you can use model as context to ping the created asset at path)
                 AssetDatabase.CreateAsset(model, path);
+                return model;
             }
         }
 
