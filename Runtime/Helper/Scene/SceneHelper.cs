@@ -104,7 +104,7 @@ namespace HyperUnityCommons
             if (!sceneReference.LoadedScene.isLoaded)
             {
                 DebugUtil.LogErrorFormat(context,
-                    "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' at '{1}' is active but not loaded, " +
+                    "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' at '{1}' is valid but not loaded, " +
                     "cannot unload scene. If this happened when testing additive scenes directly in the editor " +
                     "(so some scenes have already been added), then it won't be an issue in build. " +
                     "We recommend however to enable RemoveUnloadedScenesDuringPlay editor preference in " +
