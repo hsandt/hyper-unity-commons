@@ -29,16 +29,11 @@ public class MusicManager : SingletonManager<MusicManager>
     [Tooltip("Audio Source for stingers")]
     public AudioSource stingerAudioSource;
 
-
-    /* Cached children references */
-
     #if COM_E7_INTROLOOP
-    /// Introloop player, sibling of bgmAudioSource
-    /// When using Introloop with MusicManager, we should add an IntroloopPlayer component directly besides the
-    /// bgmAudioSource (which would be deactivated). So do not use IntroloopPlayer.Instance to avoid creating
-    /// yet another singleton instance, instead use MusicManager as the singleton parent and IntroloopPlayer as
-    /// its child.
-    private IntroloopPlayer m_IntroloopPlayer;
+    [Tooltip("Introloop Player used as alternative to bgmAudioSource. Place it on a extra child, along with disabled " +
+        "AudioSource for introloop BGM. When playing introloop BGM, we use this directly (instead of " +
+        "IntroloopPlayer.Instance which would create a new one)")]
+    public IntroloopPlayer introloopPlayer;
     #endif
 
 
@@ -48,10 +43,6 @@ public class MusicManager : SingletonManager<MusicManager>
 
         DebugUtil.Assert(bgmAudioSource != null, "[InGameManager] No Bgm Audio Source set on Music Manager", this);
         DebugUtil.Assert(stingerAudioSource != null, "[InGameManager] No Stinger Audio Source set on Music Manager", this);
-
-        #if COM_E7_INTROLOOP
-        m_IntroloopPlayer = bgmAudioSource.GetComponent<IntroloopPlayer>();
-        #endif
     }
 
     public void PlayBgm(AudioClip bgm)
