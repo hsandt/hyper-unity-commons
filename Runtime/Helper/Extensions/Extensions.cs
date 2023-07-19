@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -152,10 +154,11 @@ namespace HyperUnityCommons
 
 	}
 
-	public static class AnimatorExtensions {
-
+	public static class AnimatorExtensions
+	{
 		/// Reset all animator parameters to their default
-		public static void ResetParameters (this Animator animator) {
+		public static void ResetParameters(this Animator animator)
+		{
 			AnimatorControllerParameter[] parameters = animator.parameters;
 
 			for (int i = 0; i < parameters.Length; i++) {
@@ -175,6 +178,89 @@ namespace HyperUnityCommons
 			}
 		}
 
+		/// Return true if the last animation (for the natural chain of animation for the current animator parameters)
+		/// on the given animation layer index has finished at least one cycle
+		/// For a non-looping animation, this simply means finished. But it is convenient to have a method that covers
+		/// both looping and non-looping animations, so you can wait for this to be true without risking being stuck
+		/// in the looping case.
+		/// If there is a transition, this is false while transitioning
+		public static bool HasLastAnimationFinishedOneCycle(this Animator animator, int animationLayerIndex = 0)
+		{
+			// See https://answers.unity.com/questions/362629/how-can-i-check-if-an-animation-is-being-played-or.html
+			// Note that we check for > 1f just in case Unity decides not to transition immediately when value is 1f
+			// (it's hard to test landing on 1f exactly, so safer). This works because normalizedTime keeps increasing
+			// beyond 1 after end of animation if we don't transition immediately (whether looping or not).
+			// We must also check !animator.IsInTransition so we are sure that there is not another animation after that.
+			return animator.GetCurrentAnimatorStateInfo(animationLayerIndex).normalizedTime > 1f &&
+				!animator.IsInTransition(animationLayerIndex);
+		}
+
+		/// Coroutine method to wait for last animation to end or, if looping, finish one cycle
+		public static IEnumerator WaitForLastAnimationFinishedOneCycleCoroutine(this Animator animator, int animationLayerIndex = 0)
+		{
+			// Wait one frame to let the animator enter the next animation first, in case we just set animator
+			// parameters this frame. This is a waste of 1 frame if we were already in the correct animation this frame
+			// (e.g. when it was the Default animation), but safer in general case, so it's worth always doing it.
+			yield return null;
+
+			yield return new WaitUntil(() => HasLastAnimationFinishedOneCycle(animator, animationLayerIndex));
+		}
+
+		/// Async method to wait for last animation to end or, if looping, finish one cycle
+		public static async Task WaitForLastAnimationFinishedOneCycleAsync(this Animator animator, int animationLayerIndex = 0)
+		{
+			while (true)
+			{
+				// Yield before checking condition in the block, so that we are sure to wait one frame at the beginning
+				// to let the animator enter the next animation first before the first check
+				// Same remark as WaitForFirstLayerAnimationEndCoroutine, a waste in some cases, but safer in general
+				await Task.Yield();
+
+				if (HasLastAnimationFinishedOneCycle(animator, animationLayerIndex))
+				{
+					return;
+				}
+			}
+		}
+
+		/// Return true when animator is playing animation with tag (by hash) on animation layer index
+		/// If there is a transition, this is true while transitioning *from* tagged animation, but not
+		/// *to* tagged animation (unless the previous animation has the same tag)
+		public static bool IsTaggedAnimationRunning(this Animator animator, int tagHash, int animationLayerIndex = 0)
+		{
+			// Since we have tag hash already, comparing hashes directly is faster than passing tag string to IsTag
+			return animator.GetCurrentAnimatorStateInfo(animationLayerIndex).tagHash == tagHash;
+		}
+
+		/// Coroutine method to wait for tagged animation to start
+		public static IEnumerator WaitForTaggedAnimationRunningCoroutine(this Animator animator, int tagHash,
+			int animationLayerIndex = 0)
+		{
+			// Wait one frame to let the animator enter the next animation first, in case we just set animator
+			// parameters this frame. This is a waste of 1 frame if we were already in the correct animation this frame
+			// (e.g. when it was the Default animation), but safer in general case, so it's worth always doing it.
+			yield return null;
+
+			yield return new WaitUntil(() => IsTaggedAnimationRunning(animator, tagHash, animationLayerIndex));
+		}
+
+		/// Async method to wait for tagged animation to start
+		public static async Task WaitForTaggedAnimationRunningAsync(this Animator animator, int tagHash,
+			int animationLayerIndex = 0)
+		{
+			while (true)
+			{
+				// Yield before checking condition in the block, so that we are sure to wait one frame at the beginning
+				// to let the animator enter the next animation first before the first check
+				// Same remark as WaitForFirstLayerAnimationEndCoroutine, a waste in some cases, but safer in general
+				await Task.Yield();
+
+				if (IsTaggedAnimationRunning(animator, tagHash, animationLayerIndex))
+				{
+					return;
+				}
+			}
+		}
 	}
 
 	public static class AnimationCurveExtensions {
