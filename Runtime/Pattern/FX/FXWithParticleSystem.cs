@@ -9,6 +9,11 @@ using HyperUnityCommons;
 /// See explanations in FX docstring
 public class FXWithParticleSystem : FX
 {
+    /// Main particle system
+    private ParticleSystem m_MainParticleSystem;
+    public ParticleSystem MainParticleSystem => m_MainParticleSystem;
+
+    /// Task completion source for play one-shot sequence
     private TaskCompletionSource<bool> m_PlayOneShotCompletionSource;
 
     protected override void Init()
@@ -34,6 +39,8 @@ public class FXWithParticleSystem : FX
 
             if (system.gameObject == gameObject)
             {
+                m_MainParticleSystem = system;
+
                 ParticleSystemStopAction stopAction = main.stopAction;
                 if (stopAction != ParticleSystemStopAction.Callback)
                 {

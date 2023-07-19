@@ -5,20 +5,7 @@ using UnityEngine;
 using HyperUnityCommons;
 
 /// FX component for pooled objects
-/// We support 3 main types of FX:
-/// a. FX playing a one-time animation. They should have an FXWithAnimation component and be spawned via
-/// FXPoolManager.Instance.PlayOneShotFXAsync(), which will handle deactivating the game object at the end of the
-/// single animation (calling code can also await it if they want), so it can be reused for pooling.
-/// b. FX playing a looping animation. They should have an FXWithAnimation component and be spawned via
-/// FXPoolManager.Instance.SpawnFX() + await WaitForLastAnimationFinishedOneCycleAsync/WaitForTaggedAnimationRunningAsync
-/// depending on the needs, and let some other code deactivate the game object later when we want to, so it can be reused
-/// for pooling.
-/// c. FX playing a one-time Particle System should have Stop Action on the main particle system set to Callback,
-/// have an FXWithParticleSystem component and be spawned via FXPoolManager.Instance.PlayOneShotFXAsync(), which will
-/// handle deactivating the game object at the end of the particle system.
-/// It is a StandardMasterPooledObject, instead of just a StandardPooledObject, so it can benefit MasterBehaviour's
-/// features to auto-manage Animator and ParticleSystem for Pause/Resume, since FX may use one or the other to represent
-/// a visual effect. We also use reuse slave animator as main animator, if any.
+/// For usage information, see FXPoolManager doc
 public abstract class FX : StandardMasterPooledObject
 {
     [Header("Parameters")]
