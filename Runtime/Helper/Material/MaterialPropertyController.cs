@@ -33,6 +33,25 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
          "do not add the concerned sprite renderers again manually.")]
     private SearchComponentsMode searchComponentsMode = SearchComponentsMode.Self;
 
+    [Header("Parameters")]
+
+    [Tooltip("Check this to enable the two override fields below. The material properties " +
+         "will be set to those values every Update. Use this as an alternative to calling Set... methods " +
+         "by code, for instance to animate a property directly with an animation. " +
+         "To avoid updating all properties for nothing when no animation is running, we recommend to " +
+         "set this to true only when needed, for instance during animations that continuously animate " +
+         "the properties. As a safety, when the value becomes false, the component will automatically " +
+         "call ResetProperties once to clear any remaining override.")]
+    public bool updatePropertiesWithOverride = false;
+
+    [Tooltip("When Update Properties With Override is checked, set all material tints to this value " +
+        "every Update.")]
+    public Color currentTintOverride = Color.white;
+
+    [Tooltip("When Update Properties With Override is checked, set all material brightnesses to this value " +
+        "every Update.")]
+    public float currentBrightnessOverride = 0f;
+
 
     /* Custom components */
 
@@ -55,6 +74,12 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
     /// Dictionary of initial brightnesses, with key: material instance ID
     private readonly Dictionary<int, float> m_InitialBrightnessDict = new();
 
+
+    /* Current state */
+
+    /// Flag that tracks whether updatePropertiesWithOverride was true last frame
+    /// to detect when it becomes false, so we can ResetProperties to reach a clean state.
+    private bool m_WasUpdatingPropertiesWithOverride = false;
 
 
     /* Methods to override */
@@ -113,7 +138,30 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
 
     private void Update()
     {
-        m_PropertyChangeEndTimer.CountDown(Time.deltaTime);
+        if (updatePropertiesWithOverride)
+        {
+            // Update mode: set properties directly from override values
+            SetProperties(currentTintOverride, currentBrightnessOverride);
+        }
+        else
+        {
+            if (m_WasUpdatingPropertiesWithOverride)
+            {
+                // updatePropertiesWithOverride just became false, so we reset all the properties
+                // to reach a clean state, in case some override properties are left
+                ResetProperties();
+            }
+
+            // Manual mode: most of the work is done via direct calls to the Set... methods
+            // but we must also count down timers.
+            // This is not compatible with Update mode (for instance, if we count down the timer,
+            // during Update mode, it may reach 0 and do a ResetProperties only to be overwritten
+            // by the SetProperties above), so we may as well pause all count downs until Update mode
+            // is over.
+            m_PropertyChangeEndTimer.CountDown(Time.deltaTime);
+        }
+
+        m_WasUpdatingPropertiesWithOverride = updatePropertiesWithOverride;
     }
 
 
