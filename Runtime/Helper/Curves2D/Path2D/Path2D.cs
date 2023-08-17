@@ -62,7 +62,22 @@ namespace HyperUnityCommons
             MoveAllControlPointsByOffset(-offset);
         }
 
-        protected abstract void MoveAllControlPointsByOffset(Vector2 offset);
+        protected abstract void ApplyOperationToAllControlPoints(Func<Vector2, Vector2> operationCallback);
+
+        protected void MoveAllControlPointsByOffset(Vector2 offset)
+        {
+            ApplyOperationToAllControlPoints(controlPoint => controlPoint + offset);
+        }
+
+        public void FlipAllControlPointsX()
+        {
+            ApplyOperationToAllControlPoints(controlPoint => new Vector2(-controlPoint.x, controlPoint.y));
+        }
+
+        public void FlipAllControlPointsY()
+        {
+            ApplyOperationToAllControlPoints(controlPoint => new Vector2(controlPoint.x, -controlPoint.y));
+        }
 
         #region PointAndCurveAccessors
 

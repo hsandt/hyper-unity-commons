@@ -121,6 +121,26 @@ namespace HyperUnityCommons.Editor
                 path.SubtractPathStartOffset();
                 SceneView.RepaintAll();
             }
+
+            if (GUILayout.Button("Flip X"))
+            {
+                Path2D path = script.Path;
+                Undo.RecordObject(script, "Flip X");
+
+                path.SanitizePath();
+                path.FlipAllControlPointsX();
+                SceneView.RepaintAll();
+            }
+
+            if (GUILayout.Button("Flip Y"))
+            {
+                Path2D path = script.Path;
+                Undo.RecordObject(script, "Flip Y");
+
+                path.SanitizePath();
+                path.FlipAllControlPointsY();
+                SceneView.RepaintAll();
+            }
         }
 
         private void AddEditModeButton()

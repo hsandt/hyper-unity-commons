@@ -110,11 +110,11 @@ namespace HyperUnityCommons
             }
         }
 
-        protected override void MoveAllControlPointsByOffset(Vector2 offset)
+        protected override void ApplyOperationToAllControlPoints(Func<Vector2, Vector2> operationCallback)
         {
             for (int i = 0; i < m_ControlPoints.Count; i++)
             {
-                m_ControlPoints[i] += offset;
+                m_ControlPoints[i] = operationCallback(m_ControlPoints[i]);
             }
         }
 
