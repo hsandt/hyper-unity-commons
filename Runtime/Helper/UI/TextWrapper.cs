@@ -36,6 +36,8 @@ namespace HyperUnityCommons
         private void Awake()
         {
             Debug.AssertFormat(coreLabel != null || coreTMPLabel != null, this, "No core label nor core TMP label defined on {0}", this);
+            Debug.AssertFormat(coreLabel == null || coreTMPLabel == null, this, "Both core label and core TMP label are defined on {0}, " +
+                "we will only consider core label when getting information", this);
         }
         #endif
 
@@ -62,6 +64,25 @@ namespace HyperUnityCommons
             {
                 outlineTMPLabel.text = text;
             }
+        }
+
+        public Color GetColor()
+        {
+            // As mentioned in second Awake assert, we give priority to core label if both core labels are defined
+
+            if (coreLabel != null)
+            {
+                return coreLabel.color;
+            }
+
+            if (coreTMPLabel != null)
+            {
+                return coreTMPLabel.color;
+            }
+
+            // No need to assert, as we've already checked that at least one label was defined in Awake,
+            // so just fallback to white
+            return Color.white;
         }
 
         public void SetColor(Color color)
