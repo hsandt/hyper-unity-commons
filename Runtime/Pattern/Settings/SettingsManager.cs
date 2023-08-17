@@ -152,13 +152,13 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			}
 			else
 			{
-				DebugUtil.LogWarningFormat("[SettingsManager] InitializeSimpleSetting: " +
-					"getSettingFromPreferencesCallback({0}) returned invalid value {1}, falling back with " +
-					"GetFallbackValueFrom",
-					settingData, playerPrefStoredValue);
-
 				// Invalid preference value, use fallback based on it
 				TSettingValue fallbackValue = settingData.GetFallbackValueFrom(playerPrefStoredValue);
+
+				DebugUtil.LogWarningFormat("[SettingsManager] InitializeSimpleSetting: " +
+					"getSettingFromPreferencesCallback({0}) returned invalid value {1}, falling back with " +
+					"GetFallbackValueFrom to {2}",
+					settingData, playerPrefStoredValue, fallbackValue);
 
 				if (!settingData.IsValueValid(fallbackValue))
 				{
@@ -285,13 +285,13 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			}
 			else
 			{
-				DebugUtil.LogWarningFormat("[SettingsManager] InitializeResolutionSettingFromPreferences: " +
-					"playerPrefResolution ({0}) returned invalid value {1}, falling back with " +
-					"GetFallbackValueFrom",
-					resolutionSettingData, playerPrefResolution);
-
 				// Invalid preference value, use fallback based on it
 				Resolution fallbackValue = resolutionSettingData.GetFallbackValueFrom(playerPrefResolution);
+
+				DebugUtil.LogWarningFormat("[SettingsManager] InitializeResolutionSettingFromPreferences: " +
+					"playerPrefResolution({0}) returned invalid value {1}, falling back with " +
+					"GetFallbackValueFrom to {2}",
+					resolutionSettingData, playerPrefResolution, fallbackValue);
 
 				if (!resolutionSettingData.IsValueValid(fallbackValue))
 				{
