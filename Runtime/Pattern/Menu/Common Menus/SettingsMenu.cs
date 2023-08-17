@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace HyperUnityCommons
@@ -11,14 +12,12 @@ namespace HyperUnityCommons
     {
         [Header("Child references")]
 
-        [Tooltip("Initial selection (if not set, use Button Back)")]
-        public Selectable initialSelectable;
-
         [Tooltip("Parent to place setting entries under")]
         public Transform settingsParent;
 
-        [Tooltip("Default button")]
-        public Button buttonDefault;
+        [Tooltip("(Optional) Reset to defaults button")]
+        [FormerlySerializedAs("buttonDefault")]
+        public Button buttonResetToDefaults;
 
         [Tooltip("Back button")]
         public Button buttonBack;
@@ -35,9 +34,9 @@ namespace HyperUnityCommons
             DebugUtil.AssertFormat(settingsParent != null, this, "[OptionsMenu] Awake: Settings Parent not set on {0}", this);
             DebugUtil.AssertFormat(buttonBack != null, this, "[OptionsMenu] Awake: Button Back not set on {0}", this);
 
-            if (buttonDefault != null)
+            if (buttonResetToDefaults != null)
             {
-                buttonDefault.onClick.AddListener(ResetToDefaults);
+                buttonResetToDefaults.onClick.AddListener(ResetToDefaults);
             }
             buttonBack.onClick.AddListener(GoBack);
 
@@ -76,6 +75,59 @@ namespace HyperUnityCommons
                         settingDataViewPrefab, settingData);
                 }
             }
+
+            // Fix navigation (we assume setting labels are placed vertically, with optionally reset to defaults button
+            // below, and back at the bottom)
+            if (m_SettingLabels.Count > 0)
+            {
+                Navigation lastSettingLabelNavigation = m_SettingLabels[^1].navigation;
+                lastSettingLabelNavigation.mode = Navigation.Mode.Explicit;
+                lastSettingLabelNavigation.selectOnDown = buttonResetToDefaults != null ? buttonResetToDefaults : buttonBack;
+
+                if (m_SettingLabels.Count > 1)
+                {
+                    lastSettingLabelNavigation.selectOnUp = m_SettingLabels[^2];
+                }
+
+                m_SettingLabels[^1].navigation = lastSettingLabelNavigation;
+
+                if (buttonResetToDefaults != null)
+                {
+                    DebugUtil.AssertFormat(buttonResetToDefaults.navigation.mode == Navigation.Mode.Explicit,
+                        buttonResetToDefaults,
+                        "[SettingsMenu] CreateAllSettingLabels: buttonResetToDefaults navigation mode is not Explicit, " +
+                        "navigation fix will be ignored");
+                    DebugUtil.AssertFormat(buttonResetToDefaults.navigation.selectOnDown == buttonBack,
+                        "[SettingsMenu] CreateAllSettingLabels: buttonResetToDefaults navigation selectOnDown is not " +
+                        "buttonBack");
+
+                    Navigation buttonResetToDefaultsNavigation = buttonResetToDefaults.navigation;
+                    buttonResetToDefaultsNavigation.selectOnUp = m_SettingLabels[^1];
+                    buttonResetToDefaults.navigation = buttonResetToDefaultsNavigation;
+
+                    DebugUtil.AssertFormat(buttonBack.navigation.mode == Navigation.Mode.Explicit,
+                        buttonBack,
+                        "[SettingsMenu] CreateAllSettingLabels: buttonBack navigation mode is not Explicit, " +
+                        "navigation fix will be ignored");
+
+                    Navigation buttonBackNavigation = buttonBack.navigation;
+                    buttonBackNavigation.selectOnUp = buttonResetToDefaults;
+                    buttonBackNavigation.selectOnDown = m_SettingLabels[0];
+                    buttonBack.navigation = buttonBackNavigation;
+                }
+                else
+                {
+                    DebugUtil.AssertFormat(buttonBack.navigation.mode == Navigation.Mode.Explicit,
+                        buttonBack,
+                        "[SettingsMenu] CreateAllSettingLabels: buttonBack navigation mode is not Explicit, " +
+                        "navigation fix will be ignored");
+
+                    Navigation buttonBackNavigation = buttonBack.navigation;
+                    buttonBackNavigation.selectOnUp = m_SettingLabels[^1];
+                    buttonBackNavigation.selectOnDown = m_SettingLabels[0];
+                    buttonBack.navigation = buttonBackNavigation;
+                }
+            }
         }
 
         private void SetupAllSettingLabels()
@@ -92,13 +144,13 @@ namespace HyperUnityCommons
             {
                 buttonBack.onClick.RemoveAllListeners();
             }
-            if (buttonDefault != null)
+            if (buttonResetToDefaults != null)
             {
-                buttonDefault.onClick.RemoveAllListeners();
+                buttonResetToDefaults.onClick.RemoveAllListeners();
             }
         }
 
-        public override Selectable GetInitialSelection() => initialSelectable != null ? initialSelectable : buttonBack;
+        public override Selectable GetInitialSelection() => m_SettingLabels.Count > 0 ? m_SettingLabels[0] : buttonBack;
 
         protected override void OnShow()
         {
