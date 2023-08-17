@@ -22,7 +22,6 @@ public class AppManager : SingletonManager<AppManager>
     [SerializeField, Tooltip("When using quick toggle fullscreen, use this to set window height.")]
     private int quickToggleFullScreenWindowHeight = 720;
 
-
     /* Events */
 
     /// Event sent on screen resolution change
@@ -94,8 +93,9 @@ public class AppManager : SingletonManager<AppManager>
     /// Eventually, prefer a proper settings menu to change resolution.
     public void QuickToggleFullScreen()
     {
-        #if !UNITY_EDITOR
-        Debug.Log("[AppManager] Toggle fullscreen (ignored in Editor)");
+        #if UNITY_EDITOR
+        Debug.LogFormat("[AppManager] Toggle fullscreen with dimensions {0}x{1} (ignored in Editor)",
+            quickToggleFullScreenWindowWidth, quickToggleFullScreenWindowHeight);
         #else
 
         if (Screen.fullScreen)
@@ -109,8 +109,12 @@ public class AppManager : SingletonManager<AppManager>
         }
         else
         {
-            // Note that current resolution is the native resolution
-            Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height, FullScreenMode.FullScreenWindow);
+            // Note that Screen.currentResolution is the native resolution in any windowed mode, including fullscreen
+            // window, and we are not in fullscreen in this context anyway, so it can be used as native resolution.
+            // For semantics, we prefer the new Display.main.systemWidth/systemHeight which are subtle nuances,
+            // but both should work the same.
+            // See https://stackoverflow.com/questions/48347734/how-to-get-monitor-display-resolution/48359701#48359701
+            Screen.SetResolution(Display.main.systemWidth, Display.main.systemHeight, FullScreenMode.FullScreenWindow);
         }
 
         // Note: next Update should invoke screenResolutionChanged if any callbacks were registered to it
