@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
@@ -45,6 +44,13 @@ namespace HyperUnityCommons
 
         private void CreateAllSettingLabels()
         {
+            // Destroy any settings already set in scene for previewing
+            // (tag your preview objects as EditorOnly locally if you want to avoid destruction like this in build)c
+            foreach (Transform existingSettingEntry in settingsParent)
+            {
+                Destroy(existingSettingEntry.gameObject);
+            }
+
             List<BaseSettingData> settingDataList = SettingsManager.Instance.settingDataList.entries;
 
             // Set capacity to avoid reallocations later
