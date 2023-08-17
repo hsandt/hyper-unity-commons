@@ -30,6 +30,12 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
     public Button arrowRightButton;
 
 
+    [Header("Parameters")]
+
+    [Tooltip("If true, allow player to navigate between first and last entry when reaching the choice boundary")]
+    public bool cycleNavigation;
+
+
     /* Cached parameters */
 
     /// List of choice values (stored format)
@@ -225,9 +231,23 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
     /// Try to select previous choice, do nothing else (also used by arrow button)
     private void SelectPreviousChoice()
     {
-        if (m_CurrentChoiceIndex > 0)
+        int newChoiceIndex = m_CurrentChoiceIndex - 1;
+
+        if (cycleNavigation)
         {
-            SelectChoice(m_CurrentChoiceIndex - 1);
+            // Cycling with modulo
+            // It's important to use PositiveRemainder instead of % as we may have a negative new index
+            newChoiceIndex = MathUtil.PositiveRemainder(newChoiceIndex, m_ChoiceValues.Count);
+        }
+        else
+        {
+            // No cycling, so clamp if needed
+            newChoiceIndex = Mathf.Max(0, newChoiceIndex);
+        }
+
+        if (newChoiceIndex != m_CurrentChoiceIndex)
+        {
+            SelectChoice(newChoiceIndex);
 
             if (sfxChoiceChange != null)
             {
@@ -239,9 +259,23 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
     /// Try to select next choice, do nothing else (also used by arrow button)
     private void SelectNextChoice()
     {
-        if (m_CurrentChoiceIndex < m_ChoiceNames.Count - 1)
+        int newChoiceIndex = m_CurrentChoiceIndex + 1;
+
+        if (cycleNavigation)
         {
-            SelectChoice(m_CurrentChoiceIndex + 1);
+            // Cycling with modulo
+            // Here, both % and PositiveRemainder work since we have a positive new index
+            newChoiceIndex = MathUtil.PositiveRemainder(newChoiceIndex, m_ChoiceValues.Count);
+        }
+        else
+        {
+            // No cycling, so clamp if needed
+            newChoiceIndex = Mathf.Min(newChoiceIndex, m_ChoiceValues.Count - 1);
+        }
+
+        if (newChoiceIndex != m_CurrentChoiceIndex)
+        {
+            SelectChoice(newChoiceIndex);
 
             if (sfxChoiceChange != null)
             {
@@ -268,10 +302,10 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
     /// UB unless index is valid
     private void SelectChoice_Internal(int index)
     {
-        if (m_CurrentChoiceIndex < 0 || m_CurrentChoiceIndex > m_ChoiceNames.Count - 1) {
+        if (index < 0 || index > m_ChoiceNames.Count - 1) {
             Debug.LogErrorFormat(this,
                 "[SettingArrowChoiceLabel] SelectChoice: index {0} is out of bounds ({1} entries)",
-                m_CurrentChoiceIndex, m_ChoiceNames.Count);
+                index, m_ChoiceNames.Count);
             return;
         }
 
