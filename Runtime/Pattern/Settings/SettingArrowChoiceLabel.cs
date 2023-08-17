@@ -134,6 +134,14 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
 
         if (currentChoiceIndexFromValue < 0)
         {
+            #if UNITY_EDITOR
+            DebugUtil.LogWarningFormat(discreteSettingData,
+                "[SettingArrowChoiceLabel] Setup: could not find choice index {0} for setting {1} on widget {2}. " +
+                "This is common in editor when testing with non-standard resolutions, esp. Free Aspect. Falling back " +
+                "to closest standard value by calling GetFallbackValueFrom. Since editor enforces resolution, the " +
+                "displayed resolution in setting will not match the actual one used by Game view",
+                currentSettingValue, discreteSettingData, this);
+            #else
             DebugUtil.LogWarningFormat(discreteSettingData,
                 "[SettingArrowChoiceLabel] Setup: could not find choice index {0} for setting {1} on widget {2}. " +
                 "This should not happen in normal usage, as LoadSimpleSettingFromPreferences/LoadResolutionSettingFromPreferences " +
@@ -144,7 +152,9 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
                 currentSettingValue, discreteSettingData, this);
 
             SettingsManager.Instance.LoadSettingFromPreferences(discreteSettingData);
-            TSettingValue fallbackSettingValue = SettingsManager.Instance.GetSettingValue(discreteSettingData);
+            #endif
+
+            TSettingValue fallbackSettingValue = discreteSettingData.GetFallbackValueFrom(currentSettingValue);
             currentChoiceIndexFromValue = FindChoiceIndex(fallbackSettingValue);
 
             if (currentChoiceIndexFromValue < 0)
