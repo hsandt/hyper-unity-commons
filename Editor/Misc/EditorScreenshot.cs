@@ -230,7 +230,7 @@ namespace HyperUnityCommons.Editor
 				string path = ConstructScreenshotPath(" (render)");
 				File.WriteAllBytes(path, bytes);
 
-				Debug.LogFormat("Render Screenshot recorded at {0} ({1})", path, UnityStats.screenRes);
+				Debug.LogFormat("Render Screenshot recorded at {0} ({1}x{2})", path, renderWidth, renderHeight);
 
 				IncrementScreenshotIndex();
 			}
@@ -251,6 +251,10 @@ namespace HyperUnityCommons.Editor
 			string path = ConstructScreenshotPath(" (simple transparent)");
 
 			SimpleCaptureTransparentScreenshot(camera, renderWidth, renderHeight, path);
+
+			Debug.LogFormat("Simple Transparent Screenshot recorded at {0} ({1}x{2})", path, renderWidth, renderHeight);
+
+			IncrementScreenshotIndex();
 		}
 
 		private void TakeAdvancedTransparentScreenshot()
@@ -264,6 +268,10 @@ namespace HyperUnityCommons.Editor
 			string path = ConstructScreenshotPath(" (advanced transparent)");
 
 			CaptureTransparentScreenshot(camera, renderWidth, renderHeight, path);
+
+			Debug.LogFormat("Advanced Transparent Screenshot recorded at {0} ({1}x{2})", path, renderWidth, renderHeight);
+
+			IncrementScreenshotIndex();
 		}
 
 		// CaptureTransparentScreenshot and SimpleCaptureTransparentScreenshot come from:
@@ -278,11 +286,28 @@ namespace HyperUnityCommons.Editor
 		// Copyright (c) 2014 Brad Nelson and Play-Em Inc.
 		// CaptureScreenshot is based on Brad Nelson's MIT-licensed AnimationToPng: http://wiki.unity3d.com/index.php/AnimationToPNG
 		// AnimationToPng is based on Twinfox and bitbutter's Render Particle to Animated Texture Scripts.
+
+		// Modifications by Long Nguyen Huu (2022-10-05):
+		// - backup and restore background color too (both methods)
+		// - in Edit mode, use DestroyImmediate instead of Destroy for Texture2D
+
+		// Notes by Long Nguyen Huu comparing the two methods:
+		// Both gave different results, each with advantages and disadvantages:
+		// - both work on sprites mostly opaque. Simple method tends to end with outlines a little more stressed
+		// - a semi-transparent white part will show up clearly with the Advanced method, almost invisible with Simple method
+		// - similarly, semi-transparent dark blue will appear darker with Simple method, closer to original color, but
+		//  a bit too dark on the most transparent areas. While Advanced method will show it brighter and more
+		//  transparent, but the most transparent areas will be far too bright.
+
 		public static void CaptureTransparentScreenshot(Camera cam, int width, int height, string screengrabfile_path)
 		{
 			// This is slower, but seems more reliable.
+
+			// It is critical to revert all properties as this may be called in edit mode, in which case we don't
+			// want to affect the scene (note that there is no Undo at all as we fully revert the parameters)
 			var bak_cam_targetTexture = cam.targetTexture;
 			var bak_cam_clearFlags = cam.clearFlags;
+			var bak_cam_backgroundColor = cam.backgroundColor;
 			var bak_RenderTexture_active = RenderTexture.active;
 
 			var tex_white = new Texture2D(width, height, TextureFormat.ARGB32, false);
@@ -334,20 +359,34 @@ namespace HyperUnityCommons.Editor
 
 			cam.clearFlags = bak_cam_clearFlags;
 			cam.targetTexture = bak_cam_targetTexture;
+			cam.backgroundColor = bak_cam_backgroundColor;
 			RenderTexture.active = bak_RenderTexture_active;
 			RenderTexture.ReleaseTemporary(render_texture);
 
-			Texture2D.Destroy(tex_black);
-			Texture2D.Destroy(tex_white);
-			Texture2D.Destroy(tex_transparent);
+			if (Application.isPlaying)
+			{
+				Destroy(tex_black);
+				Destroy(tex_white);
+				Destroy(tex_transparent);
+			}
+			else
+			{
+				DestroyImmediate(tex_black);
+				DestroyImmediate(tex_white);
+				DestroyImmediate(tex_transparent);
+			}
 		}
 
 		public static void SimpleCaptureTransparentScreenshot(Camera cam, int width, int height,
 			string screengrabfile_path)
 		{
 			// Depending on your render pipeline, this may not work.
+
+			// It is critical to revert all properties as this may be called in edit mode, in which case we don't
+			// want to affect the scene (note that there is no Undo at all as we fully revert the parameters)
 			var bak_cam_targetTexture = cam.targetTexture;
 			var bak_cam_clearFlags = cam.clearFlags;
+			var bak_cam_backgroundColor = cam.backgroundColor;
 			var bak_RenderTexture_active = RenderTexture.active;
 
 			var tex_transparent = new Texture2D(width, height, TextureFormat.ARGB32, false);
@@ -371,10 +410,18 @@ namespace HyperUnityCommons.Editor
 
 			cam.clearFlags = bak_cam_clearFlags;
 			cam.targetTexture = bak_cam_targetTexture;
+			cam.backgroundColor = bak_cam_backgroundColor;
 			RenderTexture.active = bak_RenderTexture_active;
 			RenderTexture.ReleaseTemporary(render_texture);
 
-			Texture2D.Destroy(tex_transparent);
+			if (Application.isPlaying)
+			{
+				Destroy(tex_transparent);
+			}
+			else
+			{
+				DestroyImmediate(tex_transparent);
+			}
 		}
 
 		private void IncrementScreenshotIndex()
