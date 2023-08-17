@@ -46,9 +46,11 @@ namespace HyperUnityCommons
         }
 
         /// Return the positive remainder of Euclidian division
+        /// Use this instead of C# modulo % when dealing with negative numbers to guarantee a remainder
+        /// between 0 and abs(divisor) - 1
         public static int PositiveRemainder(int dividend, int divisor)
         {
-            return (dividend % divisor + divisor) % divisor;
+            return (dividend % divisor + Mathf.Abs(divisor)) % divisor;
         }
 
         /// Complement x on total in place

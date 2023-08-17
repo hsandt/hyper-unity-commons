@@ -103,6 +103,91 @@ namespace HyperUnityCommons.Tests
         }
 
         [Test]
+        public void PositiveRemainder_Dividend_0_Divisor_Positive_Result_0()
+        {
+            Assert.AreEqual(0, MathUtil.PositiveRemainder(0, 2));
+        }
+
+        [Test]
+        public void PositiveRemainder_Dividend_Positive_Less_Than_Positive_Divisor_Result_Same()
+        {
+            Assert.AreEqual(1, MathUtil.PositiveRemainder(1, 2));
+        }
+
+        [Test]
+        public void PositiveRemainder_Dividend_Equals_Positive_Divisor_Result_0()
+        {
+            Assert.AreEqual(0, MathUtil.PositiveRemainder(2, 2));
+        }
+
+        [Test]
+        public void PositiveRemainder_Dividend_Greater_Than_Positive_Divisor_Result_Positive_Remainder()
+        {
+            Assert.AreEqual(1, MathUtil.PositiveRemainder(3, 2));
+        }
+
+        [Test]
+        public void
+        PositiveRemainder_Dividend_Negative_Greater_Than_Opposite_Of_Positive_Divisor_Non0_Result_Positive_Remainder()
+        {
+            Assert.AreEqual(1, MathUtil.PositiveRemainder(-1, 2));
+        }
+
+        [Test]
+        public void PositiveRemainder_Dividend_Opposite_Of_Positive_Divisor_Result_0()
+        {
+            Assert.AreEqual(0, MathUtil.PositiveRemainder(-2, 2));
+        }
+
+        [Test]
+        public void PositiveRemainder_Dividend_Less_Than_Opposite_Of_Positive_Divisor_Result_0()
+        {
+            Assert.AreEqual(1, MathUtil.PositiveRemainder(-3, 2));
+        }
+        [Test]
+        public void PositiveRemainder_Dividend_0_Divisor_Negative_Result_0()
+        {
+            Assert.AreEqual(0, MathUtil.PositiveRemainder(0, -2));
+        }
+
+        [Test]
+        public void PositiveRemainder_Dividend_Positive_Less_Than_Abs_Of_Negative_Divisor_Result_Same()
+        {
+            Assert.AreEqual(1, MathUtil.PositiveRemainder(1, -2));
+        }
+
+        [Test]
+        public void PositiveRemainder_Dividend_Equals_Abs_Of_Negative_Divisor_Result_0()
+        {
+            Assert.AreEqual(0, MathUtil.PositiveRemainder(2, -2));
+        }
+
+        [Test]
+        public void PositiveRemainder_Dividend_Greater_Than_Abs_Of_Negative_Divisor_Result_Positive_Remainder()
+        {
+            Assert.AreEqual(1, MathUtil.PositiveRemainder(3, -2));
+        }
+
+        [Test]
+        public void
+        PositiveRemainder_Dividend_Negative_Greater_Than_Opposite_Of_Abs_Of_Negative_Divisor_Non0_Result_Positive_Remainder()
+        {
+            Assert.AreEqual(1, MathUtil.PositiveRemainder(-1, -2));
+        }
+
+        [Test]
+        public void PositiveRemainder_Dividend_Opposite_Of_Abs_Of_Negative_Divisor_Result_0()
+        {
+            Assert.AreEqual(0, MathUtil.PositiveRemainder(-2, -2));
+        }
+
+        [Test]
+        public void PositiveRemainder_Dividend_Less_Than_Opposite_Of_Abs_Of_Negative_Divisor_Result_0()
+        {
+            Assert.AreEqual(1, MathUtil.PositiveRemainder(-3, -2));
+        }
+
+        [Test]
         public void Remap_BeyondLeftBound()
         {
             Assert.AreEqual(30f, MathUtil.Remap(1f, 2f, 30f, 40f, 0f));
