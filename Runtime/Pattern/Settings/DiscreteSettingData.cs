@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 
 namespace HyperUnityCommons
 {
     /// Base class for setting data with discrete choices
     /// Good TSettingValues are bool, int, Resolution, string
+    /// Prefer specialized sub-classes for the following types:
+    /// - bool => BoolSettingData
+    /// - int for custom setting => IntegerRangeSettingData
     public abstract class DiscreteSettingData<TSettingValue> : SettingData<TSettingValue>
     {
         public override bool IsValueValid(TSettingValue value)

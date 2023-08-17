@@ -8,7 +8,7 @@ using TMPro;
 /// (as opposed to setting localized key for localized text)
 /// Requires: AppManager, SettingsManager
 /// SEO: (all subclasses) after SettingsManager
-public abstract class SettingArrowChoiceLabelSimpleText<T> : SettingArrowChoiceLabel<T>
+public abstract class SettingArrowChoiceLabelSimpleText<TSettingValue> : SettingArrowChoiceLabel<TSettingValue>
 {
     [Header("Scene references")]
 
