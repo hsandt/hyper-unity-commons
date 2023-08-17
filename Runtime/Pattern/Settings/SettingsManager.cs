@@ -130,7 +130,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			settingData.OnSetValue(storedValue);
 		}
 
-		if (immediatelySavePreference)
+		if (immediatelySavePreference && !settingData.ignorePreferences)
 		{
 			// Set player preference to new value and save it immediately
 			// When we add a buffer system (see comment above), we will also want to delay setting preferences to confirm
@@ -206,7 +206,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	private void LoadSimpleSettingFromPreferences<TSettingValue>(SettingData<TSettingValue> settingData,
 		Func<SettingData<TSettingValue>, TSettingValue> getSettingFromPreferencesCallback)
 	{
-		if (PlayerPrefs.HasKey(settingData.playerPrefKey))
+		if (!settingData.ignorePreferences && PlayerPrefs.HasKey(settingData.playerPrefKey))
 		{
 			TSettingValue playerPrefStoredValue = getSettingFromPreferencesCallback(settingData);
 			if (settingData.IsValueValid(playerPrefStoredValue))
@@ -300,7 +300,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 		// The most important preferences are width and height
 		// Obviously, if you work with new code, you should have saved refresh rate too, but in case you are using
 		// old preferences that don't have refresh rate, we support not knowing it
-		if (PlayerPrefs.HasKey(resolutionWidthPlayerPrefKey) && PlayerPrefs.HasKey(resolutionHeightPlayerPrefKey))
+		if (!resolutionSetting.ignorePreferences && PlayerPrefs.HasKey(resolutionWidthPlayerPrefKey) && PlayerPrefs.HasKey(resolutionHeightPlayerPrefKey))
 		{
 			int playerPrefResolutionWidth = PlayerPrefs.GetInt(resolutionWidthPlayerPrefKey);
 			int playerPrefResolutionHeight = PlayerPrefs.GetInt(resolutionHeightPlayerPrefKey);

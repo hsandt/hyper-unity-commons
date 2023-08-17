@@ -27,6 +27,7 @@ namespace HyperUnityCommons
             "which setting could be linked to a given engine value they are changing (possible, but would need " +
             "iteration or clever registration).")]
         public bool alwaysCheckEngineValue = false;
+        public bool ignorePreferences = false;
 
         /// Assert that all parameters have been set properly
         [Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
