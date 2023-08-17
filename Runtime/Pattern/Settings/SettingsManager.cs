@@ -66,7 +66,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			// setting), so the dictionary setting value may not be in sync with the actual current engine value.
 			// Compare them
 			TSettingValue defaultSettingValue = settingData.GetDefaultValueOnStart();
-			if (Comparer<TSettingValue>.Default.Compare(currentSettingValue, defaultSettingValue) != 0)
+			if (!Equals(currentSettingValue, defaultSettingValue))
 			{
 				// The engine value differs from stored dictionary value, engine value should have priority
 				// So set the dictionary value to match engine value (without side effect, since the engine value is
