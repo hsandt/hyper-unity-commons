@@ -68,16 +68,16 @@ namespace HyperUnityCommons
 
 
         [SerializeField, Tooltip("List of control points of each successive CatmullRom curve, concatenated. " +
-             "A curve is defined by 4 successive control points (P0, P1, P2, P3), but is only used to interpolate the" +
-             "section between the two middle control points (P1 and P2). Therefore, the two extreme points of a curve" +
-             "(the first and the last ones) are not part of the interpolated path. However, to avoid \"wasting\" points" +
-             "and ensuring curve continuity (and derivative continuity), we reuse those extreme points as middle points" +
-             "for the neighboring curves (if any)." +
-             "This means that:" +
-             "- curves are overlapping, with two neighbor curves sharing 3 points (but only one is a middle point on both)" +
-             "- each control point, except the ones near the extremities, is shared by 4 curves, playing a different role" +
+             "A curve is defined by 4 successive control points (P0, P1, P2, P3), but is only used to interpolate the " +
+             "section between the two middle control points (P1 and P2). Therefore, the two extreme points of a curve " +
+             "(the first and the last ones) are not part of the interpolated path. However, to avoid \"wasting\" points " +
+             "and ensuring curve continuity (and derivative continuity), we reuse those extreme points as middle points " +
+             "for the neighboring curves (if any).\n" +
+             "This means that:\n" +
+             "- curves are overlapping, with two neighbor curves sharing 3 points (but only one is a middle point on both)\n" +
+             "- each control point, except the ones near the extremities, is shared by 4 curves, playing a different role " +
              "  for each" +
-             "- to iterate on curves, we advance point by point, without skipping any" +
+             "- to iterate on curves, we advance point by point, without skipping any\n" +
              "A valid path must have at least 4 points.")]
         private List<Vector2> m_ControlPoints;
         public override ReadOnlyCollection<Vector2> ControlPoints => m_ControlPoints.AsReadOnly();
@@ -130,7 +130,7 @@ namespace HyperUnityCommons
         {
             for (int i = 0; i < m_ControlPoints.Count; i++)
             {
-                m_ControlPoints[i] -= offset;
+                m_ControlPoints[i] += offset;
             }
         }
 

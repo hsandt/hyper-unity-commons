@@ -59,7 +59,7 @@ namespace HyperUnityCommons
         public void SubtractPathStartOffset()
         {
             Vector2 offset = GetPathStartPoint();
-            MoveAllControlPointsByOffset(offset);
+            MoveAllControlPointsByOffset(-offset);
         }
 
         protected abstract void MoveAllControlPointsByOffset(Vector2 offset);

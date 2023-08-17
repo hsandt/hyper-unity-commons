@@ -114,7 +114,7 @@ namespace HyperUnityCommons
         {
             for (int i = 0; i < m_ControlPoints.Count; i++)
             {
-                m_ControlPoints[i] -= offset;
+                m_ControlPoints[i] += offset;
             }
         }
 
