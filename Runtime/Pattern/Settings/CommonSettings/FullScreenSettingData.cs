@@ -42,6 +42,10 @@ namespace HyperUnityCommons
 
         public void SetValue(bool storedValue)
         {
+            #if UNITY_EDITOR
+            DebugUtil.LogFormat("[FullScreenSettingData] Set Screen.fullScreen = {0} (ignored in Editor)", storedValue);
+            #endif
+
             // Preserve resolution (set via another setting), and just set fullScreen flag
             Screen.fullScreen = storedValue;
         }

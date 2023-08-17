@@ -133,6 +133,10 @@ namespace HyperUnityCommons
 
         public void SetValue(Resolution resolution)
         {
+	        #if UNITY_EDITOR
+	        DebugUtil.LogFormat("[FullScreenSettingData] Set screen resolution to {0} (ignored in Editor)", resolution);
+	        #endif
+
 	        // Preserve FullScreen Mode (set via another setting), and set the other 3 settings from Resolution fields
 	        Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreenMode, resolution.refreshRate);
         }
