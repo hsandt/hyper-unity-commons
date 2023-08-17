@@ -81,7 +81,8 @@ public class SettingGaugeLabel : BaseSettingLabel
 
         if (sfxSliderMove != null)
         {
-            UISfxPoolManager.Instance.PlaySfx(sfxSliderMove, context: this, debugClipName: "sfxSliderMove");
+            UISfxPoolManager.Instance.PlaySfx(sfxSliderMove, useThrottle: true,
+                context: this, debugClipName: "sfxSliderMove");
         }
     }
 

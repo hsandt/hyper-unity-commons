@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 using HyperUnityCommons;
+using Object = UnityEngine.Object;
 
 /// Base class for Pool Manager allowing to easily play SFX
 /// Has a feature to adjust volume automatically when many SFX of the same type are played
@@ -35,6 +37,17 @@ public abstract class BaseSfxPoolManager<T> : PoolManager<Sfx, T> where T : Base
     [Range(0f, 1f)]
     private float sameClipStackVolumeModifierFactor = 1f;
 
+    [SerializeField,
+     Tooltip("Minimum time (s) required between playing the same SFX twice. " +
+         "Only used when calling PlaySfx with useThrottle. Ignored if 0.")]
+    [Min(0f)]
+    private float sameClipThrottleInterval = 0.1f;
+
+
+    /* State */
+
+    private readonly Dictionary<AudioClip, float> m_ThrottleRemainingTimePerAudioClip = new();
+
 
     protected override void Init()
     {
@@ -47,15 +60,51 @@ public abstract class BaseSfxPoolManager<T> : PoolManager<Sfx, T> where T : Base
         base.Init();
     }
 
+    private void Update()
+    {
+        // Make sure to iterate on copy of keys to allow modifying value and entry removal
+        List<AudioClip> audioClipsCopy = new (m_ThrottleRemainingTimePerAudioClip.Keys);
+        foreach (AudioClip audioClip in audioClipsCopy)
+        {
+            m_ThrottleRemainingTimePerAudioClip[audioClip] -= Time.deltaTime;
+            if (m_ThrottleRemainingTimePerAudioClip[audioClip] <= 0f)
+            {
+                // Throttle is over, remove from dict
+                m_ThrottleRemainingTimePerAudioClip.Remove(audioClip);
+            }
+        }
+    }
+
     /// Play SFX clip on pooled SFX object at volumeScale, with optional context and debugClipName to log error
     /// if SFX could not be acquired.
     /// If useStackVolumeModifier is true, apply stack volume modifier for this clip based on
     /// sameClipStackVolumeModifierFactor and count of other SFXs playing same clip
+    /// If useThrottle is true, do not play sound if a throttle is still active for the same clip, i.e. the same clip
+    /// was played with useThrottle less than [sameClipThrottleInterval] seconds ago.
     /// Return played SFX unless it could not be acquired, or the same clip stack volume modifier is 0.
-    public Sfx PlaySfx(AudioClip clip, float volumeScale = 1f, bool useStackVolumeModifier = false, Object context = null, string debugClipName = null)
+    public Sfx PlaySfx(AudioClip clip, float volumeScale = 1f, bool useStackVolumeModifier = false,
+        bool useThrottle = false, Object context = null, string debugClipName = null)
     {
         if (clip != null)
         {
+            if (useThrottle)
+            {
+                if (m_ThrottleRemainingTimePerAudioClip.ContainsKey(clip))
+                {
+                    // Same clip was played less than throttle interval ago, so ignore this call
+                    // Note that we don't need to check that value is positive, since we only add throttle entry
+                    // with positive interval (see below), and we remove an entry as soon as timer reaches 0 (see Update)
+                    return null;
+                }
+                else if (sameClipThrottleInterval > 0f)
+                {
+                    // No active throttle, so start a throttle for this clip now
+                    m_ThrottleRemainingTimePerAudioClip[clip] = sameClipThrottleInterval;
+
+                    // then continue execution normally to play the SFX
+                }
+            }
+
             Sfx sfx = AcquireFreeObject();
 
             if (sfx != null)
