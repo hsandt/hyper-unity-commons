@@ -8,11 +8,11 @@ namespace HyperUnityCommons
     /// Good TSettingValues are float, double
     public abstract class ContinuousSettingData<TSettingValue> : SettingData<TSettingValue>
     {
-        [SerializeField, Tooltip("Minimum value allowed")]
-        protected TSettingValue rangeMin;
+        [Tooltip("Minimum value allowed")]
+        public TSettingValue rangeMin;
 
-        [SerializeField, Tooltip("Maximum value allowed")]
-        protected TSettingValue rangeMax;
+        [Tooltip("Maximum value allowed")]
+        public TSettingValue rangeMax;
 
 
         /* SettingData<TSettingValue> */

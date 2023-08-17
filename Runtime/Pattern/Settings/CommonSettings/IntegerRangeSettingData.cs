@@ -14,14 +14,14 @@ namespace HyperUnityCommons
     [CreateAssetMenu(fileName = "IntegerRangeSettingData", menuName = "Settings/Integer Range Setting Data")]
     public abstract class IntegerRangeSettingData : DiscreteSettingData<int>, ICustomSetting<int>
     {
-        [SerializeField, Tooltip("Initial value used when no player preference is set")]
-        private int defaultValue;
+        [Tooltip("Initial value used when no player preference is set")]
+        public int defaultValue;
 
-        [SerializeField, Tooltip("Minimum integer range")]
-        private int rangeMin;
+        [Tooltip("Minimum integer range")]
+        public int rangeMin;
 
-        [SerializeField, Tooltip("Maximum integer range")]
-        private int rangeMax;
+        [Tooltip("Maximum integer range")]
+        public int rangeMax;
 
 
         /* BaseSettingData */
