@@ -46,7 +46,7 @@ namespace HyperUnityCommons
 
         private void CreateAllSettingLabels()
         {
-            List<BaseSettingData> settingDataList = SettingsManager.Instance.settingDataList;
+            List<BaseSettingData> settingDataList = SettingsManager.Instance.settingDataList.entries;
 
             // Set capacity to avoid reallocations later
             m_SettingLabels.Capacity = settingDataList.Count;

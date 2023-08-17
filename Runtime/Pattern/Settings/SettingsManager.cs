@@ -22,12 +22,13 @@ public class SettingsManager : SingletonManager<SettingsManager>
 {
 	#region New API
 
-	// Note that we need BaseSettingData to add any setting data in the inspector
-	// SettingData<object> would not work, as it would show all SettingData<T> in the assignment popup, but only accept
-	// SettingData specifically bound to type `object`, which we never use.
-	[Tooltip("List of settings of any type to show in order")]
+	[Tooltip("Asset containing list of settings of any type to show in order")]
+	public SettingDataList settingDataList;
+
+	[Tooltip("OLD field kept so existing projects can transition to the new settingDataList")]
 	[FormerlySerializedAs("settings")]
-	public List<BaseSettingData> settingDataList;
+	[FormerlySerializedAs("settingDataList")]
+	public List<BaseSettingData> OLD_settingDataList;
 
 
 	/* State */
@@ -45,9 +46,15 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 	protected override void Init()
 	{
-		DebugUtil.AssertListElementsNotNull(settingDataList, this, nameof(settingDataList));
+		if (settingDataList == null)
+		{
+			DebugUtil.LogErrorFormat(this, "[SettingsManager] settingDataList not set on {0}", this);
+			return;
+		}
 
-		foreach (var setting in settingDataList)
+		settingDataList.AssertIsValid();
+
+		foreach (var setting in settingDataList.entries)
 		{
 			setting.AssertIsValid();
 		}
@@ -66,7 +73,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 	private void InitializeAllSettings()
 	{
-		foreach (var setting in settingDataList)
+		foreach (var setting in settingDataList.entries)
 		{
 			InitializeSetting(setting);
 		}
@@ -508,7 +515,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	/// Reset all settings to default values, optionally saving preferences
 	public void ResetAllSettingsToDefaultValues(bool immediatelySavePreference)
 	{
-		foreach (var setting in settingDataList)
+		foreach (var setting in settingDataList.entries)
 		{
 			ResetSettingToDefaultValue(setting, immediatelySavePreference);
 		}
