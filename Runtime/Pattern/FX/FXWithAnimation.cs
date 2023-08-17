@@ -11,6 +11,8 @@ public class FXWithAnimation : FX
 {
     /* Sibling components (optional) */
 
+    // Note: we didn't add Animator as this is already stored in slaveAnimator
+
     private SpriteRenderer[] m_SpriteRenderers;
     public SpriteRenderer[] SpriteRenderers => m_SpriteRenderers;
 
@@ -25,17 +27,23 @@ public class FXWithAnimation : FX
     {
         base.Setup();
 
-        // Clear the sprite(s)
-        // While generally not useful as animation would set the sprite before next render,
-        // when an FX is spawned from a Timeline signal, this happens late in the frame, after Animator update and
-        // before SpriteRenderer render.
-        // As a result, the FX would be shown for 1 frame with its default sprite(s) set in prefab
-        // (often a representative sprite in the middle of the animation), and the Animator will set
-        // the sprite to the first sprite of the animation only on next frame, leaving a visual glitch.
-        // https://forum.unity.com/threads/animation-lags-by-1-frame-when-activating-object-via-timeline-signal-callback.1293825/
-        foreach (SpriteRenderer spriteRenderer in m_SpriteRenderers)
+        if (slaveAnimator != null)
         {
-            spriteRenderer.sprite = null;
+            // When an FX is spawned from a Timeline signal, this happens late in the frame, after Animator update and
+            // before render (e.g. of SpriteRenderer). As a result, the FX would be shown for 1 frame with its default
+            // state set in prefab (e.g. a representative sprite with alpha = 1), instead of showing the first key of
+            // the animation (e.g. a sprite with alpha = 0, a different sprite than the representative one, etc.),
+            // leaving a visual glitch.
+            // One trick is to Update the animator by delta time to force refresh animation to show the first frame.
+            // https://forum.unity.com/threads/animation-lags-by-1-frame-when-activating-object-via-timeline-signal-callback.1293825/
+            slaveAnimator.Update(Time.deltaTime);
+        }
+        else
+        {
+            DebugUtil.LogErrorFormat(this,
+                "[FXWithAnimation] Setup: no slave animator on {0}. " +
+                "Make sure to set it manually or check Add Sibling Components As Slaves",
+                this);
         }
     }
 
@@ -54,7 +62,7 @@ public class FXWithAnimation : FX
         else
         {
             DebugUtil.LogErrorFormat(this,
-                "[FX] WaitForLastAnimationFinishedOneCycleAsync: no slave animator on {0}. " +
+                "[FXWithAnimation] WaitForLastAnimationFinishedOneCycleAsync: no slave animator on {0}. " +
                 "Make sure to set it manually or check Add Sibling Components As Slaves",
                 this);
         }
@@ -69,7 +77,7 @@ public class FXWithAnimation : FX
         else
         {
             DebugUtil.LogErrorFormat(this,
-                "[FX] WaitForTaggedAnimationRunningAsync: no slave animator on {0}. " +
+                "[FXWithAnimation] WaitForTaggedAnimationRunningAsync: no slave animator on {0}. " +
                 "Make sure to set it manually or check Add Sibling Components As Slaves",
                 this);
         }
