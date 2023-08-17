@@ -32,7 +32,12 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 	/* State */
 
-	/// Dictionary of current custom setting values of any type, using boxing
+	/// Dictionary of engine setting default value, using boxing, per engine setting data
+	/// It is filled on start from actual engine values set in project, before loading preferences
+	/// (default resolution may vary as Unity remembers the last resolution on its own)
+	private readonly Dictionary<BaseSettingData, object> defaultEngineSettingValueDictionary = new();
+
+	/// Dictionary of current custom setting values of any type, using boxing, per custom setting data
 	private readonly Dictionary<BaseSettingData, object> currentCustomSettingValueDictionary = new();
 
 
@@ -70,33 +75,33 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 	/// Initialize setting depending on its value type, retrieving player preference value if possible,
 	/// else using default value
-	public void InitializeSetting(BaseSettingData setting)
+	private void InitializeSetting(BaseSettingData settingData)
 	{
 		// Type check is a little brutal, but it works because we know that all setting data classes are in fact
 		// deriving from SettingData<TSettingValue>.
 		// The alternative is to use polymorphism, but that means we should define:
 		// BoolDiscreteSettingData, IntDiscreteSettingData, FloatContinuousSettingData that would implement some
-		// LoadSettingFromPreferences method accordingly, and make sure to subclass them (and not
+		// InitializeSetting method accordingly, and make sure to subclass them (and not
 		// SettingData<bool/int/float>) directly to define the final setting data classes.
-		switch (setting)
+		switch (settingData)
 		{
-			case SettingData<bool> boolSetting:
-				InitializeSimpleSetting(boolSetting, GetBoolSettingFromPreferences);
+			case SettingData<bool> boolSettingData:
+				InitializeSimpleSetting(boolSettingData, GetBoolSettingFromPreferences);
 				break;
-			case SettingData<int> intSetting:
-				InitializeSimpleSetting(intSetting, GetIntSettingFromPreferences);
+			case SettingData<int> intSettingData:
+				InitializeSimpleSetting(intSettingData, GetIntSettingFromPreferences);
 				break;
-			case SettingData<float> floatSetting:
-				InitializeSimpleSetting(floatSetting, GetFloatSettingFromPreferences);
+			case SettingData<float> floatSettingData:
+				InitializeSimpleSetting(floatSettingData, GetFloatSettingFromPreferences);
 				break;
-			case SettingData<Resolution> resolutionSetting:
-				InitializeResolutionSetting(resolutionSetting);
+			case SettingData<Resolution> resolutionSettingData:
+				InitializeResolutionSetting(resolutionSettingData);
 				break;
 			default:
-				DebugUtil.LogErrorFormat(setting,
+				DebugUtil.LogErrorFormat(settingData,
 					"[SettingsManager] InitializeSetting: {0} has unsupported BaseSettingData subclass {1}, " +
 					"as it doesn't have a TSettingValue of type bool, int, float nor Resolution",
-					setting, setting.GetType());
+					settingData, settingData.GetType());
 				break;
 		}
 	}
@@ -110,6 +115,32 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	private void InitializeSimpleSetting<TSettingValue>(SettingData<TSettingValue> settingData,
 		Func<SettingData<TSettingValue>, TSettingValue> getSettingFromPreferencesCallback)
 	{
+		IEngineSetting<TSettingValue> engineSetting = null;
+		ICustomSetting<TSettingValue> customSetting = null;
+
+		switch (settingData)
+		{
+			case IEngineSetting<TSettingValue> engineSettingData:
+				engineSetting = engineSettingData;
+				break;
+			case ICustomSetting<TSettingValue> customSettingData:
+				customSetting = customSettingData;
+				break;
+			default:
+				DebugUtil.LogErrorFormat(settingData,
+					"[SettingsManager] InitializeSimpleSetting: settingData ({0}) has unsupported " +
+					"BaseSettingData subclass {1}, as it doesn't implement IEngineSetting<> nor ICustomSetting<>. STOP.",
+					settingData, settingData.GetType());
+				return;
+		}
+
+		if (engineSetting != null)
+		{
+			// Store engine setting default value as the initial value read from engine,
+			// before loading any preference
+			defaultEngineSettingValueDictionary[settingData] = engineSetting.GetValue();
+		}
+
 		if (!settingData.ignorePreferences && PlayerPrefs.HasKey(settingData.playerPrefKey))
 		{
 			TSettingValue playerPrefStoredValue = getSettingFromPreferencesCallback(settingData);
@@ -131,32 +162,24 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 				if (!settingData.IsValueValid(fallbackValue))
 				{
-					switch (settingData)
+					if (engineSetting != null)
 					{
-						case IEngineSetting<TSettingValue> engineSetting:
-							DebugUtil.LogErrorFormat(settingData,
-								"[SettingsManager] InitializeSimpleSetting: GetFallbackValueFrom({0}) returned " +
-								"invalid value {1}. {2} is an engine setting, so just do nothing to keep the default value.",
-								playerPrefStoredValue, fallbackValue, engineSetting);
-							break;
-						case ICustomSetting<TSettingValue> customSetting:
-							DebugUtil.LogErrorFormat(settingData,
-								"[SettingsManager] InitializeSimpleSetting: GetFallbackValueFrom({0}) returned " +
-								"invalid value {1}, {2} is a custom setting, so falling back a second time to " +
-								"default value as ultimate resort. Make sure to fix GetFallbackValueFrom to return a " +
-								"valid value.",
-								playerPrefStoredValue, fallbackValue, customSetting);
-							fallbackValue = customSetting.GetDefaultValue();
-							break;
-						default:
-							DebugUtil.LogErrorFormat(settingData,
-								"[SettingsManager] InitializeSimpleSetting: GetFallbackValueFrom({0}) returned " +
-								"invalid value {1}, but {2} has unsupported BaseSettingData subclass {3}, as it " +
-								"doesn't implement IEngineSetting<> or ICustomSetting<>. " +
-								"Use default value as ultimate fallback.",
-								playerPrefStoredValue, fallbackValue, settingData, settingData.GetType());
-							fallbackValue = default;
-							break;
+						DebugUtil.LogErrorFormat(settingData,
+							"[SettingsManager] InitializeSimpleSetting: GetFallbackValueFrom({0}) returned " +
+							"invalid value {1}. {2} is an engine setting, so just do nothing to keep the default value.",
+							playerPrefStoredValue, fallbackValue, engineSetting);
+						// Note the return to do nothing
+						return;
+					}
+					else  // customSetting != null
+					{
+						DebugUtil.LogErrorFormat(settingData,
+							"[SettingsManager] InitializeSimpleSetting: GetFallbackValueFrom({0}) returned " +
+							"invalid value {1}, {2} is a custom setting, so falling back a second time to " +
+							"default value as ultimate resort. Make sure to fix GetFallbackValueFrom to return a " +
+							"valid value.",
+							playerPrefStoredValue, fallbackValue, customSetting);
+						fallbackValue = customSetting.GetDefaultValue();
 					}
 				}
 
@@ -175,7 +198,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			// preferences, but if you enabled preference save from the beginning, then this should only be reached on
 			// fresh start)
 			// Custom setting: set default setting from implementation
-			if (settingData is ICustomSetting<TSettingValue> customSetting)
+			if (customSetting != null)
 			{
 				// Note that this will not save any preference
 				// The player did not actively change setting to default, so this is what we want
@@ -191,6 +214,36 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	{
 		// Implementation is similar to LoadSimpleSettingFromPreferences, but specialized
 		// for Resolution which is a compounded type
+
+		IEngineSetting<Resolution> engineSetting = null;
+		ICustomSetting<Resolution> customSetting = null;
+
+		switch (resolutionSettingData)
+		{
+			case IEngineSetting<Resolution> engineSettingData:
+				engineSetting = engineSettingData;
+				break;
+			// ! Resolution setting is very likely an IEngineSetting, but for completion we support the case of
+			// ! ICustomSetting. You'll notice how your IDE may even warn you that it never happens.
+			case ICustomSetting<Resolution> customSettingData:
+				customSetting = customSettingData;
+				break;
+			default:
+				DebugUtil.LogErrorFormat(resolutionSettingData,
+					"[SettingsManager] InitializeResolutionSetting: settingData ({0}) has unsupported " +
+					"BaseSettingData subclass {1}, as it doesn't implement IEngineSetting<> nor ICustomSetting<>. STOP.",
+					resolutionSettingData, resolutionSettingData.GetType());
+				return;
+		}
+
+		if (engineSetting != null)
+		{
+			// Store engine setting default value as the initial value read from engine,
+			// before loading any preference
+			defaultEngineSettingValueDictionary[resolutionSettingData] = engineSetting.GetValue();
+		}
+
+		// Preference keys are split in 3 for Resolution
 		// Note that Unity also natively remembers its own resolution info:
 		// - Screenmanager Resolution Width/Height
 		// - Screenmanager Fullscreen mode
@@ -242,18 +295,19 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 				if (!resolutionSettingData.IsValueValid(fallbackValue))
 				{
-					switch (resolutionSettingData)
+					if (engineSetting != null)
 					{
-						case IEngineSetting<Resolution> engineSetting:
-							DebugUtil.LogErrorFormat(resolutionSettingData,
-								"[SettingsManager] InitializeSimpleSetting: GetFallbackValueFrom({0}) returned " +
-								"invalid value {1}. {2} is an engine setting, so just do nothing to keep the default value.",
-								playerPrefResolution, fallbackValue, engineSetting);
-							// Note the return to do nothing
-							return;
+						DebugUtil.LogErrorFormat(resolutionSettingData,
+							"[SettingsManager] InitializeSimpleSetting: GetFallbackValueFrom({0}) returned " +
+							"invalid value {1}. {2} is an engine setting, so just do nothing to keep the default value.",
+							playerPrefResolution, fallbackValue, engineSetting);
+						// Note the return to do nothing
+						return;
+					}
+					else  // customSetting != null
+					{
 						// ! Resolution setting is very likely an IEngineSetting, but for completion we support the case of
 						// ! ICustomSetting. You'll notice how your IDE may even warn you that it never happens.
-						case ICustomSetting<Resolution> customSetting:
 							DebugUtil.LogErrorFormat(resolutionSettingData,
 								"[SettingsManager] InitializeSimpleSetting: GetFallbackValueFrom({0}) returned " +
 								"invalid value {1}, {2} is a custom setting, so falling back a second time to " +
@@ -261,16 +315,6 @@ public class SettingsManager : SingletonManager<SettingsManager>
 								"valid value.",
 								playerPrefResolution, fallbackValue, customSetting);
 							fallbackValue = customSetting.GetDefaultValue();
-							break;
-						default:
-							DebugUtil.LogErrorFormat(resolutionSettingData,
-								"[SettingsManager] InitializeSimpleSetting: GetFallbackValueFrom({0}) returned " +
-								"invalid value {1}, but {2} has unsupported BaseSettingData subclass {3}, as it " +
-								"doesn't implement IEngineSetting<> or ICustomSetting<>. " +
-								"Use default value as ultimate fallback.",
-								playerPrefResolution, fallbackValue, resolutionSettingData, resolutionSettingData.GetType());
-							fallbackValue = default;
-							break;
 					}
 				}
 
@@ -286,7 +330,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			// No preference found at all, use default value as in InitializeSimpleSetting
 			// ! Resolution setting is very likely an IEngineSetting, but for completion we support the case of
 			// ! ICustomSetting. You'll notice how your IDE may even warn you that it never happens.
-			if (resolutionSettingData is ICustomSetting<Resolution> customSetting)
+			if (customSetting != null)
 			{
 				// Note that this will not save any preference
 				// The player did not actively change setting to default, so this is what we want
@@ -295,10 +339,67 @@ public class SettingsManager : SingletonManager<SettingsManager>
 		}
 	}
 
+	private void InitializeCustomSettingToDefaultValue<TSettingValue>(ICustomSetting<TSettingValue> customSetting)
+	{
+		// Set custom setting to default value at low level
+		// This will not save any preference, which is what we want when initializing to default, with no player action
+		TSettingValue defaultValue = customSetting.GetDefaultValue();
+		SetCustomSettingValue(customSetting, defaultValue);
+	}
+
 	#endregion
 
 
 	#region SettingValue
+
+	private TSettingValue GetDefaultSettingValue<TSettingValue>(SettingData<TSettingValue> settingData)
+	{
+		switch (settingData)
+		{
+			case IEngineSetting<TSettingValue> engineSetting:
+				return GetDefaultEngineSettingValue(engineSetting);
+			case ICustomSetting<TSettingValue> customSetting:
+				return customSetting.GetDefaultValue();
+			default:
+				DebugUtil.LogErrorFormat(settingData,
+					"[SettingsManager] GetDefaultSettingValue: {0} has unsupported BaseSettingData subclass {1}, " +
+					"as it doesn't implement IEngineSetting<> or ICustomSetting<>. Falling back to default.",
+					settingData, settingData.GetType());
+				return default;
+		}
+	}
+
+	/// Return default setting value for engine setting data
+	private TSettingValue GetDefaultEngineSettingValue<TSettingValue>(IEngineSetting<TSettingValue> engineSettingData)
+	{
+		var settingData = (SettingData<TSettingValue>) engineSettingData;
+		if (defaultEngineSettingValueDictionary.TryGetValue(settingData, out object value))
+		{
+			try
+			{
+				return (TSettingValue) value;
+			}
+			catch (InvalidCastException e)
+			{
+				DebugUtil.LogErrorFormat(settingData,
+					"[SettingsManager] GetEngineSettingDefaultValue: incorrect unboxing of value associated " +
+					"to setting data {0}. Should be of type {1}. Falling back to default ({2}). " +
+					"InvalidCastException message: {3}",
+					engineSettingData, typeof(TSettingValue), default, e.Message);
+			}
+		}
+		else
+		{
+			DebugUtil.LogErrorFormat(settingData,
+				"[SettingsManager] GetEngineSettingDefaultValue: could not get value for setting key {0} " +
+				"(with setting value of type ({1})) in customSettingValueDictionary. " +
+				"Make sure to add that setting data to SettingsManager's Setting Data List and to call this method " +
+				"after Start > InitializeAllSettings. Falling back to default ({2}). ",
+				engineSettingData, typeof(TSettingValue), default);
+		}
+
+		return default;
+	}
 
 	/// Return current setting value for setting data
 	/// Engine setting: return value from engine
@@ -342,14 +443,12 @@ public class SettingsManager : SingletonManager<SettingsManager>
 		}
 		else
 		{
-			#if UNITY_EDITOR
-			Debug.LogErrorFormat(settingData,
-				"[SettingsManager] GetCustomSettingValue: could not get value for setting key {0} (of type ({1}))" +
-				"in customSettingValueDictionary. Make sure to add that setting data to SettingsManager's Setting " +
-				"Data List and to call this method after Start > LoadSettingFromPreferences. Falling back to default " +
-				"({2}). ",
+			DebugUtil.LogErrorFormat(settingData,
+				"[SettingsManager] GetCustomSettingValue: could not get value for setting key {0} " +
+				"(with setting value of type ({1})) in customSettingValueDictionary. " +
+				"Make sure to add that setting data to SettingsManager's Setting Data List and to call this method " +
+				"after Start > InitializeAllSettings. Falling back to default ({2}). ",
 				customSettingData, typeof(TSettingValue), default);
-			#endif
 		}
 
 		return default;
@@ -406,12 +505,46 @@ public class SettingsManager : SingletonManager<SettingsManager>
 		SetSettingValue(settingData, storedValue, immediatelySavePreference: true);
 	}
 
-	private void InitializeCustomSettingToDefaultValue<TSettingValue>(ICustomSetting<TSettingValue> customSetting)
+	/// Reset all settings to default values, optionally saving preferences
+	public void ResetAllSettingsToDefaultValues(bool immediatelySavePreference)
 	{
-		// Set custom setting to default value at low level
-		// This will not save any preference, which is what we want when initializing to default, with no player action
-		TSettingValue defaultValue = customSetting.GetDefaultValue();
-		SetCustomSettingValue(customSetting, defaultValue);
+		foreach (var setting in settingDataList)
+		{
+			ResetSettingToDefaultValue(setting, immediatelySavePreference);
+		}
+	}
+
+	/// Reset passed setting (as base type) to default values, optionally saving preference
+	private void ResetSettingToDefaultValue(BaseSettingData settingData, bool immediatelySavePreference)
+	{
+		// This is just bridging code to work from non-generic to generic setting data
+		switch (settingData)
+		{
+			case SettingData<bool> boolSettingData:
+				ResetSettingToDefaultValue(boolSettingData, immediatelySavePreference);
+				break;
+			case SettingData<int> intSettingData:
+				ResetSettingToDefaultValue(intSettingData, immediatelySavePreference);
+				break;
+			case SettingData<float> floatSettingData:
+				ResetSettingToDefaultValue(floatSettingData, immediatelySavePreference);
+				break;
+			case SettingData<Resolution> resolutionSettingData:
+				ResetSettingToDefaultValue(resolutionSettingData, immediatelySavePreference);
+				break;
+			default:
+				DebugUtil.LogErrorFormat(settingData,
+					"[SettingsManager] ResetSettingToDefaultValue: {0} has unsupported BaseSettingData subclass {1}, " +
+					"as it doesn't have a TSettingValue of type bool, int, float nor Resolution",
+					settingData, settingData.GetType());
+				break;
+		}
+	}
+
+	/// Reset passed setting (as generic type) to default value, optionally saving preference
+	private void ResetSettingToDefaultValue<TSettingValue>(SettingData<TSettingValue> settingData, bool immediatelySavePreference)
+	{
+		SetSettingValue(settingData, GetDefaultSettingValue(settingData), immediatelySavePreference);
 	}
 
 	#endregion
@@ -446,55 +579,55 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 	/// Set player preference to value
 	/// ! You must call PlayerPrefs.Save() after setting all the preferences you needed to change, to save them
-	private void SetPreference<TSettingValue>(SettingData<TSettingValue> setting, TSettingValue value)
+	private void SetPreference<TSettingValue>(SettingData<TSettingValue> settingData, TSettingValue value)
 	{
-		// Type check is a little brutal, same remark as LoadSettingFromPreferences
-		if (setting is SettingData<bool> boolSetting)
+		// Type check is a little brutal, same remark as InitializeSetting
+		if (settingData is SettingData<bool> boolSettingData)
 		{
 			if (value is bool boolValue)
 			{
-				SetBoolPreference(boolSetting, boolValue);
+				SetBoolPreference(boolSettingData, boolValue);
 			}
 			else
 			{
-				DebugUtil.LogErrorFormat(boolSetting,
-					"[SettingsManager] SetPreference: boolSetting {0} is a SettingData<bool> but value " +
+				DebugUtil.LogErrorFormat(boolSettingData,
+					"[SettingsManager] SetPreference: boolSettingData {0} is a SettingData<bool> but value " +
 					"has type {1} instead of bool, this should not happen since this generic method ensures " +
 					"TSettingValue consistency",
-					boolSetting, value.GetType());
+					boolSettingData, value.GetType());
 			}
 		}
-		else if (setting is SettingData<int> intSetting)
+		else if (settingData is SettingData<int> intSettingData)
 		{
 			if (value is int intValue)
 			{
-				SetIntPreference(intSetting, intValue);
+				SetIntPreference(intSettingData, intValue);
 			}
 			else
 			{
-				DebugUtil.LogErrorFormat(intSetting,
-					"[SettingsManager] SetPreference: intSetting {0} is a SettingData<int> but value " +
+				DebugUtil.LogErrorFormat(intSettingData,
+					"[SettingsManager] SetPreference: intSettingData {0} is a SettingData<int> but value " +
 					"has type {1} instead of int, this should not happen since this generic method ensures " +
 					"TSettingValue consistency",
-					intSetting, value.GetType());
+					intSettingData, value.GetType());
 			}
 		}
-		else if (setting is SettingData<float> floatSetting)
+		else if (settingData is SettingData<float> floatSettingData)
 		{
 			if (value is float floatValue)
 			{
-				SetFloatPreference(floatSetting, floatValue);
+				SetFloatPreference(floatSettingData, floatValue);
 			}
 			else
 			{
-				DebugUtil.LogErrorFormat(floatSetting,
-					"[SettingsManager] SetPreference: floatSetting {0} is a SettingData<float> but value " +
+				DebugUtil.LogErrorFormat(floatSettingData,
+					"[SettingsManager] SetPreference: floatSettingData {0} is a SettingData<float> but value " +
 					"has type {1} instead of float, this should not happen since this generic method ensures " +
 					"TSettingValue consistency",
-					floatSetting, value.GetType());
+					floatSettingData, value.GetType());
 			}
 		}
-		else if (setting is SettingData<Resolution> resolutionSetting)
+		else if (settingData is SettingData<Resolution> resolutionSetting)
 		{
 			if (value is Resolution resolutionValue)
 			{
@@ -511,17 +644,17 @@ public class SettingsManager : SingletonManager<SettingsManager>
 		}
 		else
 		{
-			DebugUtil.LogErrorFormat(setting,
+			DebugUtil.LogErrorFormat(settingData,
 				"[SettingsManager] SetPreference: Unsupported SettingData<TSettingValue> subclass, setting {0} " +
 				"uses TSettingValue = {1}, we only support bool, int, float and Resolution",
-				setting, setting.GetType().GetGenericArguments()[0]);
+				settingData, settingData.GetType().GetGenericArguments()[0]);
 		}
 	}
 
 	/// Set bool player preference
-	private static void SetBoolPreference(SettingData<bool> boolSetting, bool value)
+	private static void SetBoolPreference(SettingData<bool> boolSettingData, bool value)
 	{
-		SetPlayerPrefsBool(boolSetting.playerPrefKey, value);
+		SetPlayerPrefsBool(boolSettingData.playerPrefKey, value);
 	}
 
 	/// Set PlayerPrefs bool value for key with value encoded as integer (0: false, 1: true)
@@ -531,15 +664,15 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	}
 
 	/// Set integer player preference
-	private static void SetIntPreference(SettingData<int> intSetting, int value)
+	private static void SetIntPreference(SettingData<int> intSettingData, int value)
 	{
-		PlayerPrefs.SetInt(intSetting.playerPrefKey, value);
+		PlayerPrefs.SetInt(intSettingData.playerPrefKey, value);
 	}
 
 	/// Set float player preference
-	private static void SetFloatPreference(SettingData<float> floatSetting, float value)
+	private static void SetFloatPreference(SettingData<float> floatSettingData, float value)
 	{
-		PlayerPrefs.SetFloat(floatSetting.playerPrefKey, value);
+		PlayerPrefs.SetFloat(floatSettingData.playerPrefKey, value);
 	}
 
 	/// Set Resolution player preference
