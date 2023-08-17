@@ -5,22 +5,22 @@ using UnityEngine;
 
 namespace HyperUnityCommons
 {
-    /// Base class for settings whose value evolves in a fixed integer range
+    /// SO class for settings whose value evolves in a fixed integer range
     /// This is useful to define custom integer settings such as a difficulty level (override RepresentedValueToText
     /// to display the level names).
     /// For dynamic integer settings that need more context to define their range, such as Graphics Quality,
     /// prefer subclassing DiscreteSettingData&lt;int&gt; and overriding GetAvailableValues yourself.
     /// See GraphicsQualitySettingData as an example.
-    [CreateAssetMenu(fileName = "IntegerRangeSettingData", menuName = "Settings/Integer Range Setting Data")]
-    public abstract class IntegerRangeSettingData : DiscreteSettingData<int>, ICustomSetting<int>
+    [CreateAssetMenu(fileName = "CustomIntegerSettingData", menuName = "Settings/Custom Integer Setting Data")]
+    public class CustomIntegerSettingData : DiscreteSettingData<int>, ICustomSetting<int>
     {
         [Tooltip("Initial value used when no player preference is set")]
         public int defaultValue;
 
-        [Tooltip("Minimum integer range")]
+        [Tooltip("Minimum range integer")]
         public int rangeMin;
 
-        [Tooltip("Maximum integer range")]
+        [Tooltip("Maximum range integer")]
         public int rangeMax;
 
 

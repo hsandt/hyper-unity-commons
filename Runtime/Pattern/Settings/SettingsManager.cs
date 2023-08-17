@@ -428,7 +428,7 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	}
 
 	/// Return custom setting value for setting data
-	private TSettingValue GetCustomSettingValue<TSettingValue>(ICustomSetting<TSettingValue> customSettingData)
+	public TSettingValue GetCustomSettingValue<TSettingValue>(ICustomSetting<TSettingValue> customSettingData)
 	{
 		var settingData = (SettingData<TSettingValue>) customSettingData;
 		if (currentCustomSettingValueDictionary.TryGetValue(settingData, out object value))
