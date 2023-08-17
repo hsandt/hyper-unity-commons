@@ -17,7 +17,16 @@ namespace HyperUnityCommons
 		public override Resolution GetDefaultValueOnStart()
 		{
 			// This is called during SettingsManager.Init, so default value is the one set in engine on start
-			return Screen.currentResolution;
+			// Screen.currentResolution returns full display resolution in any windowed mode (including fullscreen
+			// window), so we must get dimensions from Screen.width/height instead (for refresh rate, you can extract
+			// it from Screen.currentResolution).
+			// See https://forum.unity.com/threads/screen-setresolution-not-changing-resolution.654817/
+			return new Resolution
+			{
+				width = Screen.width,
+				height = Screen.height,
+				refreshRate = Screen.currentResolution.refreshRate
+			};
 		}
 
 		public override Resolution GetFallbackValueFrom(Resolution referenceResolution)
