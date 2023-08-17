@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEditor;
 
@@ -27,8 +28,29 @@ namespace HyperUnityCommons.Editor
 					UpdateBuildVersionEditor.UpdateBuildVersionTextSiblingOf(script);
 				}
 			}
+
+			if (GUILayout.Button("Open Build folder"))
+			{
+				OpenBuildFolder();
+			}
 		}
 
+		private void OpenBuildFolder()
+		{
+			// Application.dataPath ends with Assets/ so we need to go one directory up to get the project root
+			string projectRootPath = Path.GetDirectoryName(Application.dataPath);
+			string buildFolderFullPath = Path.Combine(projectRootPath, "Build");
+
+			// Create directory if needed
+			if (!Directory.Exists(buildFolderFullPath))
+			{
+				Directory.CreateDirectory(buildFolderFullPath);
+			}
+
+			// Open Screenshots folder
+			// https://forum.unity.com/threads/editorutility-revealinfinder-inconsistency.383939/#post-8431145
+			EditorUtility.OpenWithDefaultApp(buildFolderFullPath);
+		}
 	}
 
 }
