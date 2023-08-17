@@ -26,6 +26,11 @@ namespace HyperUnityCommons.Editor
 		public int hiResWidth = defaultHiResWidth;
 		public int hiResHeight = defaultHiResHeight;
 
+		[Tooltip("If true, use RGBA32 instead of RGB24, allowing alpha transparency when camera uses a transparent " +
+			"solid color as background")]
+		public bool hiResTransparent = false;
+
+
 		[MenuItem("Window/Hyper Unity Commons/Editor Screenshot")]
 		private static void Init()
 		{
@@ -189,18 +194,17 @@ namespace HyperUnityCommons.Editor
 				return;
 			}
 
-			RenderTexture rt = new RenderTexture(hiResWidth, hiResHeight, 24);
+			RenderTexture rt = RenderTexture.GetTemporary(hiResWidth, hiResHeight, 24);
 			camera.targetTexture = rt;
-			Texture2D screenShot = new Texture2D(hiResWidth, hiResHeight, TextureFormat.RGB24, false);
+			TextureFormat textureFormat = hiResTransparent ? TextureFormat.RGBA32 : TextureFormat.RGB24;
+			Texture2D screenShot = new Texture2D(hiResWidth, hiResHeight, textureFormat, false);
 			camera.Render();
 			RenderTexture.active = rt;
 			screenShot.ReadPixels(new Rect(0, 0, hiResWidth, hiResHeight), 0, 0);
 			camera.targetTexture = null;
 			RenderTexture.active = null; // JC: added to avoid errors
-			if (EditorApplication.isPlaying)  // ADDED
-				Destroy(rt);
-			else
-				DestroyImmediate(rt);
+			RenderTexture.ReleaseTemporary(rt);
+
 			byte[] bytes = screenShot.EncodeToPNG();
 
 			try
