@@ -10,7 +10,7 @@ public abstract class FX : StandardMasterPooledObject
 {
     [Header("Parameters")]
 
-    [Tooltip("If checked, SFX will be played using Stack Volume Modifier set on SfxPoolManager. " +
+    [SerializeField, Tooltip("If checked, SFX will be played using Stack Volume Modifier set on SfxPoolManager. " +
         "Recommended when it's possible to spawn many instances of that FX (or at least playing the same SFX) " +
         "to avoid sound clutter.")]
     private bool sfxUseStackVolumeModifier = true;
