@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace HyperUnityCommons
 {
-    public class OptionsMenu : MenuBehaviour
+    public class SettingsMenu : MenuBehaviour
     {
         [Header("Child references")]
 
