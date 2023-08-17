@@ -56,37 +56,39 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
     protected abstract void UpdateText(string currentChoiceName);
 
 
-    // Bug IN-10813: when inheriting from Selectable, in the editor:
-    // - Awake is not called on Play, only on Stop
-    // - Start sometimes work, but is not reliable
-    // - OnEnable is called when expected, but also on Application Quit to setup values in the editor
-    // => The most reliable is to check and initialize members in OnEnable, after base call, but only if application is
-    // not quitting; and also do any required symmetrical operations like even unregistration in OnDisable.
-    protected override void OnEnable()
+    /* UIBehaviour */
+
+    protected override void OnDestroy()
     {
-        base.OnEnable();
-
-        if (AppManager.IsNotQuitting())
-        {
-            DebugUtil.AssertFormat(discreteSettingData != null, this, "[SettingArrowChoiceLabel] No discreteSettingData found on {0}.", this);
-            DebugUtil.AssertFormat(arrowLeftButton != null, this, "[SettingArrowChoiceLabel] No arrowLeftButton found on {0}.", this);
-            DebugUtil.AssertFormat(arrowRightButton != null, this, "[SettingArrowChoiceLabel] No arrowRightButton found on {0}.", this);
-
-            RegisterEvents();
-
-            Init();
-        }
-    }
-
-    protected override void OnDisable()
-    {
-        base.OnDisable();
+        base.OnDestroy();
 
         UnregisterEvents();
     }
 
-    private void Init()
+
+    /* BaseSettingLabel */
+
+    public override BaseSettingData GetSettingData()
     {
+        return discreteSettingData;
+    }
+
+    public override void SetSettingData(BaseSettingData settingData)
+    {
+        discreteSettingData = settingData as DiscreteSettingData<TSettingValue>;
+
+        DebugUtil.AssertFormat(discreteSettingData != null,
+            "[SettingGaugeLabel] SetSettingData: passed setting data {0} is not a DiscreteSettingData<TSettingValue ({1})>",
+            settingData, typeof(TSettingValue));
+    }
+
+    protected override void OnInit()
+    {
+        DebugUtil.AssertFormat(discreteSettingData != null, this,
+            "[SettingArrowChoiceLabel] No discreteSettingData found on {0}.", this);
+        DebugUtil.AssertFormat(arrowLeftButton != null, this, "[SettingArrowChoiceLabel] No arrowLeftButton found on {0}.", this);
+        DebugUtil.AssertFormat(arrowRightButton != null, this, "[SettingArrowChoiceLabel] No arrowRightButton found on {0}.", this);
+
         // Initialize choices
         m_ChoiceValues = discreteSettingData.GetAvailableValues();
         DebugUtil.AssertFormat(m_ChoiceValues.Count > 0, discreteSettingData,
@@ -95,35 +97,8 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
 
         m_ChoiceNames = m_ChoiceValues.Select(value => discreteSettingData
             .StoredValueToRepresentedText(value)).ToList();
-    }
 
-    private void RegisterEvents()
-    {
-        arrowLeftButton.onClick.AddListener(OnLeftArrowClick);
-        arrowRightButton.onClick.AddListener(OnRightArrowClick);
-    }
-
-    private void UnregisterEvents()
-    {
-        if (arrowLeftButton != null)
-        {
-            arrowLeftButton.onClick.RemoveListener(OnLeftArrowClick);
-        }
-
-        if (arrowRightButton != null)
-        {
-            arrowRightButton.onClick.RemoveListener(OnRightArrowClick);
-        }
-    }
-
-    private void OnLeftArrowClick()
-    {
-        SelectPreviousChoice();
-    }
-
-    private void OnRightArrowClick()
-    {
-        SelectNextChoice();
+        RegisterEvents();
     }
 
     /// Set up choice to match current setting
@@ -164,6 +139,36 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
         // Select choice in UI to match current setting
         // (this means we don't need to call SetSettingForCurrentChoice besides)
         SelectChoice_Internal(currentChoiceIndexFromValue);
+    }
+
+
+    private void RegisterEvents()
+    {
+        arrowLeftButton.onClick.AddListener(OnLeftArrowClick);
+        arrowRightButton.onClick.AddListener(OnRightArrowClick);
+    }
+
+    private void UnregisterEvents()
+    {
+        if (arrowLeftButton != null)
+        {
+            arrowLeftButton.onClick.RemoveAllListeners();
+        }
+
+        if (arrowRightButton != null)
+        {
+            arrowRightButton.onClick.RemoveAllListeners();
+        }
+    }
+
+    private void OnLeftArrowClick()
+    {
+        SelectPreviousChoice();
+    }
+
+    private void OnRightArrowClick()
+    {
+        SelectNextChoice();
     }
 
     private void UpdateUI()

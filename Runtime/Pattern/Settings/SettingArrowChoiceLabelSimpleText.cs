@@ -16,23 +16,13 @@ public abstract class SettingArrowChoiceLabelSimpleText<TSettingValue> : Setting
     public TextMeshProUGUI valueTextWidget;
 
 
-    // Bug IN-10813: when inheriting from Selectable, in the editor:
-    // - Awake is not called on Play, only on Stop
-    // - Start sometimes work, but is not reliable
-    // - OnEnable is called when expected, but also on Application Quit to setup values in the editor
-    // => The most reliable is to check and initialize members in OnEnable, after base call, but only if application is
-    // not quitting; and also do any required symmetrical operations like even unregistration in OnDisable.
-    protected override void OnEnable()
+    protected override void OnInit()
     {
-        // Better to assert before base call, because base call eventually calls Setup which will use verified members
-        if (AppManager.IsNotQuitting())
-        {
-            DebugUtil.AssertFormat(valueTextWidget != null, this,
-                "[SettingArrowChoiceLabelSimpleText] No valueTextWidget found on {0}.",
-                this);
-        }
+        base.OnInit();
 
-        base.OnEnable();
+        DebugUtil.AssertFormat(valueTextWidget != null, this,
+            "[SettingArrowChoiceLabelSimpleText] No valueTextWidget found on {0}.",
+            this);
     }
 
     protected override void UpdateText(string currentChoiceName)

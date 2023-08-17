@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace HyperUnityCommons
 {
@@ -25,8 +26,15 @@ namespace HyperUnityCommons
             "recommend using the custom settings preferences for more flexibility, such as saving Refresh Rate too)")]
         public bool ignorePreferences = false;
 
+        [Tooltip("Prefab used to represent the setting entry in the settings menu")]
+        public GameObject viewPrefab;
+
+
         /// Assert that all parameters have been set properly
         [Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
-        public virtual void AssertIsValid() {}
+        public virtual void AssertIsValid()
+        {
+            Debug.AssertFormat(viewPrefab != null, this, "[BaseSettingData] viewPrefab is not set on {0}", this);
+        }
     }
 }

@@ -28,7 +28,9 @@ namespace HyperUnityCommons
 
         public override void AssertIsValid()
         {
-            DebugUtil.AssertFormat(rangeMin <= rangeMax,
+            base.AssertIsValid();
+
+            Debug.AssertFormat(rangeMin <= rangeMax,
                 "[IntegerRangeSettingData] Invalid parameters: rangeMin ({0}) > rangeMax ({1})",
                 rangeMin, rangeMax);
         }

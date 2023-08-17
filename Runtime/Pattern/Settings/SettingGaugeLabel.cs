@@ -30,33 +30,40 @@ public class SettingGaugeLabel : BaseSettingLabel
     public Slider gaugeSlider;
 
 
-    // Bug IN-10813: when inheriting from Selectable, in the editor:
-    // - Awake is not called on Play, only on Stop
-    // - Start sometimes work, but is not reliable
-    // - OnEnable is called when expected, but also on Application Quit to setup values in the editor
-    // => The most reliable is to check and initialize members in OnEnable, after base call, but only if application is
-    // not quitting; and also do any required symmetrical operations like even unregistration in OnDisable.
-    protected override void OnEnable()
+    /* UIBehaviour */
+
+    protected override void OnDestroy()
     {
-        base.OnEnable();
-
-        if (AppManager.IsNotQuitting())
-        {
-            DebugUtil.AssertFormat(floatSettingData != null, this, "[SettingGaugeLabel] No floatSettingData found on {0}.", gameObject);
-            DebugUtil.AssertFormat(gaugeSlider != null, this, "[SettingGaugeLabel] No Gauge Slider set on {0}.", this);
-
-            gaugeSlider.onValueChanged.AddListener(OnSliderValueChanged);
-        }
-    }
-
-    protected override void OnDisable()
-    {
-        base.OnDisable();
+        base.OnDestroy();
 
         if (gaugeSlider != null)
         {
-            gaugeSlider.onValueChanged.RemoveListener(OnSliderValueChanged);
+            gaugeSlider.onValueChanged.RemoveAllListeners();
         }
+    }
+
+
+    /* BaseSettingData */
+
+    public override BaseSettingData GetSettingData()
+    {
+        return floatSettingData;
+    }
+
+    public override void SetSettingData(BaseSettingData settingData)
+    {
+        floatSettingData = settingData as ContinuousSettingData<float>;
+
+        DebugUtil.AssertFormat(floatSettingData != null,
+            "[SettingGaugeLabel] SetSettingData: passed setting data {0} is not a ContinuousSettingData<float>",
+            settingData);
+    }
+
+    protected override void OnInit()
+    {
+        DebugUtil.AssertFormat(gaugeSlider != null, this, "[SettingGaugeLabel] No Gauge Slider set on {0}.", this);
+
+        gaugeSlider.onValueChanged.AddListener(OnSliderValueChanged);
     }
 
     /// Initialize visual to match model, i.e. slider to show current setting as readable value

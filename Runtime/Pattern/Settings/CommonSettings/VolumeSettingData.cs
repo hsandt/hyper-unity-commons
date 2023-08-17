@@ -29,6 +29,8 @@ namespace HyperUnityCommons
 
         public override void AssertIsValid()
         {
+            base.AssertIsValid();
+
             Debug.AssertFormat(audioMixer, this,
                 "[VolumeSettingData] Audio Mixer not set on Volume Setting Data {0}", this);
             Debug.AssertFormat(!string.IsNullOrEmpty(audioParameterName), this,
