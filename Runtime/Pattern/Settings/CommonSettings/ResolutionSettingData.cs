@@ -6,7 +6,7 @@ using UnityEngine;
 namespace HyperUnityCommons
 {
 	[CreateAssetMenu(fileName = "ResolutionSettingData", menuName = "Settings/Resolution Setting Data")]
-	public class ResolutionSettingData : DiscreteSettingData<Resolution>
+	public class ResolutionSettingData : DiscreteSettingData<Resolution>, IEngineSetting<Resolution>
 	{
 		[Tooltip("String format used to display value as text. There must be 3 arguments, representing resp. width, " +
 			"height and refresh rate. If empty or whitespace, fallback to Unity's native Resolution.ToString() i.e. " +
@@ -14,20 +14,7 @@ namespace HyperUnityCommons
 		public string overrideStringFormat = "{0} x {1} @ {2}Hz";
 
 
-		public override Resolution GetDefaultValueOnStart()
-		{
-			// This is called during SettingsManager.Init, so default value is the one set in engine on start
-			// Screen.currentResolution returns full display resolution in any windowed mode (including fullscreen
-			// window), so we must get dimensions from Screen.width/height instead (for refresh rate, you can extract
-			// it from Screen.currentResolution).
-			// See https://forum.unity.com/threads/screen-setresolution-not-changing-resolution.654817/
-			return new Resolution
-			{
-				width = Screen.width,
-				height = Screen.height,
-				refreshRate = Screen.currentResolution.refreshRate
-			};
-		}
+		/* SettingData<Resolution> */
 
 		public override Resolution GetFallbackValueFrom(Resolution referenceResolution)
 		{
@@ -91,12 +78,6 @@ namespace HyperUnityCommons
 			return resolutions[^1];
 		}
 
-		public override void OnSetValue(Resolution storedValue)
-        {
-            // Preserve FullScreen Mode (set via another setting), and set the other 3 settings from Resolution fields
-            Screen.SetResolution(storedValue.width, storedValue.height, Screen.fullScreenMode, storedValue.refreshRate);
-        }
-
         public override string RepresentedValueToText(Resolution representedValue)
         {
             // Add refresh rate suffix, unless not indicated (value 0)
@@ -112,6 +93,9 @@ namespace HyperUnityCommons
 	            return representedValue.ToString();
             }
         }
+
+
+        /* DiscreteSettingData<Resolution> */
 
         public override List<Resolution> GetAvailableValues()
         {
@@ -129,5 +113,28 @@ namespace HyperUnityCommons
             // Show refresh rate if meaningful (not 0)
             return resolutions.ToList();
         }
-    }
+
+
+        /* IEngineSetting */
+
+        public Resolution GetValue()
+        {
+	        // Screen.currentResolution returns native display resolution in any windowed mode (including fullscreen
+	        // window), so this is not what we want here. Instead, we must get dimensions from Screen.width/height.
+	        // We need the refresh rate though, so this one is extracted from Screen.currentResolution.
+	        // See https://forum.unity.com/threads/screen-setresolution-not-changing-resolution.654817/
+	        return new Resolution
+	        {
+		        width = Screen.width,
+		        height = Screen.height,
+		        refreshRate = Screen.currentResolution.refreshRate
+	        };
+        }
+
+        public void SetValue(Resolution resolution)
+        {
+	        // Preserve FullScreen Mode (set via another setting), and set the other 3 settings from Resolution fields
+	        Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreenMode, resolution.refreshRate);
+        }
+	}
 }

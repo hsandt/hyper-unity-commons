@@ -12,7 +12,7 @@ namespace HyperUnityCommons
     /// prefer subclassing DiscreteSettingData&lt;int&gt; and overriding GetAvailableValues yourself.
     /// See GraphicsQualitySettingData as an example.
     [CreateAssetMenu(fileName = "IntegerRangeSettingData", menuName = "Settings/Integer Range Setting Data")]
-    public abstract class IntegerRangeSettingData : DiscreteSettingData<int>
+    public abstract class IntegerRangeSettingData : DiscreteSettingData<int>, ICustomSetting<int>
     {
         [SerializeField, Tooltip("Initial value used when no player preference is set")]
         private int defaultValue;
@@ -43,11 +43,6 @@ namespace HyperUnityCommons
             return rangeMin <= value && value <= rangeMax;
         }
 
-        public override int GetDefaultValueOnStart()
-        {
-            return defaultValue;
-        }
-
         public override int GetFallbackValueFrom(int referenceValue)
         {
             // Return closest value in range
@@ -60,6 +55,14 @@ namespace HyperUnityCommons
         public override List<int> GetAvailableValues()
         {
             return Enumerable.Range(rangeMin, rangeMax - rangeMin + 1).ToList();
+        }
+
+
+        /* ICustomSetting<int> */
+
+        public int GetDefaultValue()
+        {
+            return defaultValue;
         }
     }
 }

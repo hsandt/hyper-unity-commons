@@ -19,24 +19,9 @@ namespace HyperUnityCommons
             return true;
         }
 
-        public override bool GetDefaultValueOnStart()
-        {
-            // This is called during SettingsManager.Init, so default value is the one set in engine on start
-            return Screen.fullScreen;
-        }
-
         public override bool GetFallbackValueFrom(bool referenceValue)
         {
             throw new System.NotImplementedException();
-        }
-
-        public override void OnSetValue(bool storedValue)
-        {
-            DebugUtil.LogFormat("[FullScreenSettingData] OnSetValue: set fullScreen to {0} (not visible in Editor)",
-                storedValue);
-
-            // Preserve resolution (set via another setting), and just set fullScreen flag
-            Screen.fullScreen = storedValue;
         }
 
 
@@ -45,6 +30,20 @@ namespace HyperUnityCommons
         public override List<bool> GetAvailableValues()
         {
             return new List<bool>{true, false};
+        }
+
+
+        /* IEngineSetting<bool> */
+
+        public bool GetValue()
+        {
+            return Screen.fullScreen;
+        }
+
+        public void SetValue(bool storedValue)
+        {
+            // Preserve resolution (set via another setting), and just set fullScreen flag
+            Screen.fullScreen = storedValue;
         }
     }
 }

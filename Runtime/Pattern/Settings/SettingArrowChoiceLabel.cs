@@ -137,36 +137,22 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
             #if UNITY_EDITOR
             DebugUtil.LogWarningFormat(discreteSettingData,
                 "[SettingArrowChoiceLabel] Setup: could not find choice index {0} for setting {1} on widget {2}. " +
-                "This is common in editor when testing with non-standard resolutions, esp. Free Aspect. Falling back " +
-                "to closest standard value by calling GetFallbackValueFrom. Since editor enforces resolution, the " +
-                "displayed resolution in setting will not match the actual one used by Game view",
+                "This can happen in editor when testing with non-standard resolutions. " +
+                "Falling back to choice index 0 so we can at least display something, but note that displayed choice " +
+                "will not match the actual setting. ",
                 currentSettingValue, discreteSettingData, this);
             #else
             DebugUtil.LogWarningFormat(discreteSettingData,
                 "[SettingArrowChoiceLabel] Setup: could not find choice index {0} for setting {1} on widget {2}. " +
-                "This should not happen in normal usage, as LoadSimpleSettingFromPreferences/LoadResolutionSettingFromPreferences " +
-                "should use GetFallbackValueFrom if value from preference was invalid, or GetDefaultValueOnStart if there " +
-                "was no preference, and both should guarantee a valid value. It can happen in rare cases when user " +
-                "changes hardware during the game (e.g. switching to monitor with fewer resolutions), so trying to fall " +
-                "back to closest value by calling LoadSettingFromPreferences > ... > GetFallbackValueFrom again.",
+                "This should not happen in normal usage, as InitializeSimpleSetting/InitializeResolutionSetting " +
+                "should use GetFallbackValueFrom if value from preference was invalid, or get custom default value "+
+                "or engine current value if there was no preference, and both should guarantee a valid value. " +
+                "Falling back to choice index 0 so we can at least display something, but note that displayed choice " +
+                "will not match the actual setting.",
                 currentSettingValue, discreteSettingData, this);
-
-            SettingsManager.Instance.LoadSettingFromPreferences(discreteSettingData);
             #endif
 
-            TSettingValue fallbackSettingValue = discreteSettingData.GetFallbackValueFrom(currentSettingValue);
-            currentChoiceIndexFromValue = FindChoiceIndex(fallbackSettingValue);
-
-            if (currentChoiceIndexFromValue < 0)
-            {
-                DebugUtil.LogErrorFormat(discreteSettingData, "[SettingArrowChoiceLabel] Setup: " +
-                    "... fallback failed, could not find choice index for fallback value {0}. " +
-                    "Fall back to choice index 0 as ultimate resort, but note that displayed choice will not match " +
-                    "actual setting.",
-                    fallbackSettingValue);
-
-                currentChoiceIndexFromValue = 0;
-            }
+            currentChoiceIndexFromValue = 0;
         }
 
         // Select choice in UI to match current setting
@@ -300,7 +286,6 @@ public abstract class SettingArrowChoiceLabel<TSettingValue> : BaseSettingLabel
     {
         // This is called when choice actually changes, so we want to apply engine changes (call OnSetValue)
         // and save new preference
-        SettingsManager.Instance.SetSetting(discreteSettingData, m_ChoiceValues[m_CurrentChoiceIndex],
-            callOnSetValue: true, immediatelySavePreference: true);
+        SettingsManager.Instance.SetSettingValue(discreteSettingData, m_ChoiceValues[m_CurrentChoiceIndex], immediatelySavePreference: true);
     }
 }
