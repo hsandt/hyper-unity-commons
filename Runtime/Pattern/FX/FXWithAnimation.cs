@@ -13,12 +13,15 @@ public class FXWithAnimation : FX
 
     // Note: we didn't add Animator as this is already stored in slaveAnimator
 
+    /// Sprite renderers: used by Fighter
     private SpriteRenderer[] m_SpriteRenderers;
     public SpriteRenderer[] SpriteRenderers => m_SpriteRenderers;
 
 
     protected override void Init()
     {
+        base.Init();
+
         // Optional
         m_SpriteRenderers = GetComponentsInChildren<SpriteRenderer>();
     }
