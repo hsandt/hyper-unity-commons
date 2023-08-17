@@ -1,8 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+
+#if NL_ELRACCOONE_TWEENS
+using ElRaccoone.Tweens;
+#endif
 
 namespace HyperUnityCommons
 {
@@ -72,5 +78,27 @@ namespace HyperUnityCommons
                 coreTMPLabel.color = color;
             }
         }
+
+        #if NL_ELRACCOONE_TWEENS
+        public async Task FadeOutAsync(float duration)
+        {
+            List<Task> tasks = new();
+
+            if (coreLabel != null)
+            {
+                tasks.Add(coreLabel.TweenGraphicAlpha(0f, duration).Await());
+            }
+
+            if (coreTMPLabel != null)
+            {
+                tasks.Add(coreTMPLabel.TweenGraphicAlpha(0f, duration).Await());
+            }
+
+            tasks.AddRange(outlineLabels.Select(outlineLabel => outlineLabel.TweenGraphicAlpha(0f, duration).Await()));
+            tasks.AddRange(outlineTMPLabels.Select(outlineTMPLabel => outlineTMPLabel.TweenGraphicAlpha(0f, duration).Await()));
+
+            await Task.WhenAll(tasks);
+        }
+        #endif
     }
 }
