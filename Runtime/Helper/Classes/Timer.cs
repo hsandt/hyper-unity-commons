@@ -8,7 +8,10 @@ namespace HyperUnityCommons
 	/// Usage: create new Timer(initial time, callback), call CountDown on it every Update or FixedUpdate,
 	/// and process case when it returns true if you don't rely on the callback.
 	/// Call SetTime(duration) when you want to (re)start the timer.
+	/// It is only serializable in editor for debug, do not count on it for production
+	#if UNITY_EDITOR
 	[Serializable]
+	#endif
 	public struct Timer
 	{
 	    /* Parameters */
@@ -71,4 +74,3 @@ namespace HyperUnityCommons
 		}
 	}
 }
-
