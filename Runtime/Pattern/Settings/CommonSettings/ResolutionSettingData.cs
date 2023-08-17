@@ -20,62 +20,36 @@ namespace HyperUnityCommons
 		{
 			Resolution[] resolutions = Screen.resolutions;
 
-			// Initialize candidate resolution matching width and height with default struct
-			// We will know if it has been filled later by checking if any field is not 0
-			Resolution dimensionMatchingResolution = default;
+			// Min search pattern: search closest resolution using custom distance measurement
+			float closestResolutionDistance = float.PositiveInfinity;
+			Resolution closestResolution = default;
 
-			for (int i = 0; i < resolutions.Length; i++)
+			foreach (Resolution resolution in resolutions)
 			{
-				Resolution resolution = resolutions[i];
+				// Define custom distance measurement here
+				// Dimensions are the most important, so they use square distance,
+				// then refresh rate is secondary, so represent it with a fraction (always lower than dimension
+				// distances, since width and height are integers) by dividing by a number of the scale of the highest
+				// refresh rates (60Hz is common, 144 Hz is high end and very rarely 240Hz, so 200 is good enough,
+				// esp. as differences between dimensions are already pretty big)
+				float resolutionDistance = Mathf.Pow(referenceResolution.width - resolution.width, 2f) +
+					Mathf.Pow(referenceResolution.height - resolution.height, 2f) +
+					Mathf.Abs(referenceResolution.refreshRate - resolution.refreshRate) / 200f;
 
 				// Look for the closest match in the available resolutions. Focus on dimensions first.
-				if (resolution.width == referenceResolution.width && resolution.height == referenceResolution.height)
+				if (resolutionDistance == 0f)
 				{
-					// Now compare refresh rate in case there are multiple ones available
-					if (resolution.refreshRate == referenceResolution.refreshRate)
-					{
-						// We found a perfect match among available resolutions, use it
-						return referenceResolution;
-					}
-					else
-					{
-						// We found a perfect match for width and height, not resolution, so that's still the second best
-						// candidate. Remember it, and pick it unless we find a complete perfect match later (i.e.
-						// except for the return above, all other paths leading to return should check
-						// if dimensionMatchingResolution has been filled first).
-						// Don't bother picking the one with the closest referenceResolution.refreshRate, we'll just
-						// remember the last one (so probably the one with biggest refresh rate).
-						dimensionMatchingResolution = resolution;
-					}
+					// We found a perfect match among available resolutions, use it
+					return referenceResolution;
 				}
-				else if (resolution.width > referenceResolution.width)
+				else if (resolutionDistance < closestResolutionDistance)
 				{
-					// This is a return path, so check for filled dimensionMatchingResolution first
-					if (dimensionMatchingResolution.width > 0)
-					{
-						return dimensionMatchingResolution;
-					}
-
-					// Unity guarantees that resolutions are ordered by width ASC, so we just crossed the width we wanted
-					// Pick the resolution just below, so its width will be less than or equal to the reference one
-					// If this is the first entry, we cannot pick the previous entry, so clamp the index after decrement
-					// Note that this doesn't take height into account, so we may get a pretty different height
-					// If you want to fix this, prefer an algorithm that searches available resolution with minimal
-					// distance to reference resolution
-					int clampedPreviousIndex = Mathf.Max(0, i - 1);
-					return resolutions[clampedPreviousIndex];
+					closestResolutionDistance = resolutionDistance;
+					closestResolution = resolution;
 				}
 			}
 
-			// This is a return path, so check for filled dimensionMatchingResolution first
-			if (dimensionMatchingResolution.width > 0)
-			{
-				return dimensionMatchingResolution;
-			}
-
-			// We couldn't find a matching resolution, nor one with greater or equal width, so just pick the last one,
-			// as it will be the greatest, so still the closest to the reference resolution (at least for width)
-			return resolutions[^1];
+			return closestResolution;
 		}
 
         public override string RepresentedValueToText(Resolution representedValue)
