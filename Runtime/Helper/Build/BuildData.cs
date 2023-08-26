@@ -5,7 +5,7 @@ using UnityEngine;
 namespace HyperUnityCommons
 {
 	/// Build version data. Create one asset in Resources/Build to let the Build window access it.
-	[CreateAssetMenu(fileName = "BuildData", menuName = "Data/Build Data", order = 1)]
+	[CreateAssetMenu(fileName = "BuildData", menuName = "Build/Build Data", order = 1)]
 	public class BuildData : ScriptableObject
 	{
 		// Copy of UnityEditor.ManagedStrippingLevel to avoid adding a UNITY_EDITOR-only
@@ -41,10 +41,10 @@ namespace HyperUnityCommons
 			"cross-platform build (if module is available but not installed, it will still try and fail).")]
 		public bool releaseShouldBuildIL2CPP = true;
 
-		[Tooltip("Managed stripping level used for the development build. If using Visual Scripting, set it to Low or less.")]
+		[Tooltip("Managed stripping level used for the development build")]
 		public ManagedStrippingLevel devBuildStrippingLevel = ManagedStrippingLevel.Medium;
 
-		[Tooltip("Managed stripping level used for the release build. If using Visual Scripting, set it to Low or less. " +
+		[Tooltip("Managed stripping level used for the release build. " +
 		         "Note that IL2CPP needs at least Low stripping.")]
 		public ManagedStrippingLevel releaseBuildStrippingLevel = ManagedStrippingLevel.High;
 
