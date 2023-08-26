@@ -25,6 +25,16 @@ namespace HyperUnityCommons
 
 		[Header("Parameters")]
 
+		[SerializeField, Tooltip("Determines how to handle children already set up under a pool transform " +
+			 "in the scene (generally for previewing purpose). UseActiveExistingChildren is a good default because it " +
+			 "means we are pragmatic, and only use the existing children that are already visible in the scene. " +
+			 "Note that all existing children to be use should have the correct IPooledObject component, and all " +
+			 "unused children are destroyed on initialization to avoid desync between child count and " +
+			 "pooled object count. " +
+			 "Generally, existing children are instances of pooledObjectPrefab, but they may have some undesired overrides, " +
+			 "so if you want to use them, you must make sure to revert such overrides in the scene.")]
+		protected PoolHandleExistingChildrenMode handleExistingChildrenMode = PoolHandleExistingChildrenMode.UseActiveExistingChildren;
+
 		[SerializeField, Tooltip("Initial pool size (may change if Instantiate New Object On Starvation is true)")]
 		protected int initialPoolSize = 5;
 
@@ -39,7 +49,47 @@ namespace HyperUnityCommons
 		{
 			TPooledObject prefabPooledObject = pooledObjectPrefab.GetComponentOrFail<TPooledObject>();
 			m_Pool = new Pool<TPooledObject>(prefabPooledObject, transform);
-			m_Pool.InitCheckingExistingChildren(initialPoolSize);
+
+			switch (handleExistingChildrenMode)
+			{
+				case PoolHandleExistingChildrenMode.UseAllExistingChildren:
+					// Register all existing children
+					m_Pool.InitCheckingExistingChildren(initialPoolSize);
+					break;
+
+				case PoolHandleExistingChildrenMode.UseActiveExistingChildren:
+					// Destroy deactivated children to be clear
+					// Pool.InitCheckingExistingChildren will iterate on children right after this, and it also itself
+					// calls Pool.LazyInstantiatePooledObjects which has an assert comparing child count and registered
+					// object count,
+					// but Destroy applies at the end of the frame, so for child iteration and count to be correct,
+					// we must detach the parent (immediate operation) too.
+					foreach (Transform child in transform)
+					{
+						if (!child.gameObject.activeSelf)
+						{
+							child.SetParent(null);
+							Destroy(child.gameObject);
+						}
+					}
+
+					// Now we can register the remaining children, which are all active
+					m_Pool.InitCheckingExistingChildren(initialPoolSize);
+					break;
+
+				case PoolHandleExistingChildrenMode.DontUseExistingChildren:
+					// Destroy all children to be clear
+					foreach (Transform child in transform)
+					{
+						Destroy(child.gameObject);
+					}
+
+					m_Pool.InitIgnoringExistingChildren(initialPoolSize);
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
         /// Acquire the first [count] objects under pool transform,
