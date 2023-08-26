@@ -18,7 +18,7 @@ namespace HyperUnityCommons
     /// 1. Init
     /// var slicedCurveAnimator = new SlicedCurveAnimator();
     /// slicedCurveAnimator.StartCurve(MyData.slicedCurve);
-    /// // From here, slicedCurveAnimator.IsRunning() returns true until next Setup()
+    /// // From here, slicedCurveAnimator.IsRunning() returns true until next Setup() (called in constructor)
     ///
     /// 2. Update & Evaluate (can be done in different methods as long as Update is done first)
     /// slicedCurveAnimator.Update(Time.deltaTime)
@@ -57,9 +57,7 @@ namespace HyperUnityCommons
 
         /// Current time inside the current slice
         private float m_CurrentSliceTime;
-        #if UNITY_EDITOR
         public float CurrentSliceTime => m_CurrentSliceTime;
-        #endif
 
         public SlicedCurveAnimator()
         {
@@ -125,14 +123,37 @@ namespace HyperUnityCommons
             m_CurrentSliceTime = 0f;
         }
 
+        /// Update current slice time. Expect slice to be started, so current phase must not be None
+        /// - Intro and Outro phases: advance time and automatically enter next phase if reached end of current phase
+        /// - Sustain phase: advance time (and let user code enter next phase with their own condition, using time or
+        ///                  something else)
+        /// - End phase: do not advance time
+        /// <param name="deltaTime"></param>
         public void Update(float deltaTime)
         {
+            if (m_CurrentPhase == SlicedCurvePhase.None)
+            {
+                DebugUtil.LogErrorFormat("[SlicedCurveAnimator] Update: m_CurrentPhase is None, " +
+                    "make sure to call StartCurve since the last construction/Setup before calling Update");
+
+                return;
+            }
+
+            if (m_CurrentPhase == SlicedCurvePhase.End)
+            {
+                // Updating in End phase is supported, to allow user code to keep evaluating curve at last value,
+                // but don't advance time as not relevant
+                return;
+            }
+
+            // Always advance current slice time:
+            // - for Intro and Outro, we have a slice curve so it will be compared to wanted duration below
+            // - for Sustain, this allows user code to check CurrentSliceTime manually in case it must play
+            //   Outro after a fixed duration in Sustain phase
+            m_CurrentSliceTime += deltaTime;
+
             if (m_CurrentSliceCurve != null)
             {
-                // We are indeed using a curve for this phase (should be Intro or Outro),
-                // so we must update time and
-                m_CurrentSliceTime += deltaTime;
-
                 // Check if the current curve is finished
                 if (m_CurrentSliceTime > m_CurrentSliceCurve.GetDuration())
                 {
