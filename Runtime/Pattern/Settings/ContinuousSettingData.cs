@@ -15,6 +15,18 @@ namespace HyperUnityCommons
         public TSettingValue rangeMax;
 
 
+        /* BaseSettingData */
+
+        public override void AssertIsValid()
+        {
+            base.AssertIsValid();
+
+            Debug.AssertFormat(Comparer<TSettingValue>.Default.Compare(rangeMin, rangeMax) <= 0,
+                "[ContinuousSettingData<{0}>] Invalid parameters: rangeMin ({1}) > rangeMax ({2})",
+                typeof(TSettingValue), rangeMin, rangeMax);
+        }
+
+
         /* SettingData<TSettingValue> */
 
         public override bool IsValueValid(TSettingValue value)
