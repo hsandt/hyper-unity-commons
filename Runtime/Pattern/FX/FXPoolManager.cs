@@ -45,7 +45,8 @@ public class FXPoolManager : MultiPoolManager<FX, FXPoolManager>
     /// deactivating it if needed so it's considered released for reuse in pooling.
     public async Task<FX> PlayOneShotFXAsync(string fxName, Vector3 anchorPosition, float sfxVolumeScale = 1f)
     {
-        // Start like SpawnFX
+        // Start like SpawnFX. The only reason we don't just call it is to insert the custom non-looping check
+        // in the middle
         FX fx = AcquireFreeObject(fxName);
         if (fx != null)
         {
@@ -84,43 +85,28 @@ public class FXPoolManager : MultiPoolManager<FX, FXPoolManager>
     }
 
 
-    /// Spawn looping FX by name at [anchorPosition] and play any associated SFX at [sfxVolumeScale]
-    /// Keep it running, but return FX so the caller can stop it later (including deactivation) when they need to,
-    /// so it can be reused for pooling.
-    public FX PlayLoopingFX(string fxName, Vector3 anchorPosition, float sfxVolumeScale = 1f)
+    /// Spawn FX by name at [anchorPosition] and play any associated SFX at [sfxVolumeScale]
+    /// Looping FX must use this. One-shot FX can use this too, but if you don't need to store the returned FX
+    /// immediately before waiting for completion, consider PlayOneShotFXAsync instead.
+    /// Keep it running, but return FX so the caller can:
+    /// a. await fx.WaitForPlayOneShotCompletion for one-shot FX if they want to do something after playing,
+    ///    generally Release
+    /// b. stop it manually later (with immediate deactivation or fade-out), so it can be reused for pooling
+    ///    (generally for looping FX, but could also be done to interrupt a one-shot FX before it ends)
+    /// If the FX is looping but you need to wait for one cycle, or that the FX finishes some intro,
+    /// consider getting the returned fx then call fx.WaitForLastAnimationFinishedOneCycleAsync or
+    /// fx.WaitForTaggedAnimationRunningAsync.
+    public FX SpawnFX(string fxName, Vector3 anchorPosition, float sfxVolumeScale = 1f)
     {
         // Acquire FX. This will activate the game object. We assume the FX starts playing automatically.
         FX fx = AcquireFreeObject(fxName);
         if (fx != null)
         {
-            #if UNITY_EDITOR
-            // If FX uses Particle System, check that it is looping
-            // For FX using Animator, it's harder to decide as non-looping animations may still result in a looping
-            // animator state cycle if the animator states are connected in circle, etc.
-            if (fx is FXWithParticleSystem fxWithParticleSystem)
-            {
-                DebugUtil.AssertFormat(fxWithParticleSystem.MainParticleSystem.main.loop,
-                    fxWithParticleSystem.MainParticleSystem,
-                    "[FXPoolManager] PlayOneShotFXAsync: FX '{0}' uses Particle System but the latter is not " +
-                    "set to loop, so it shouldn't be played as one-shot.",
-                    fx);
-            }
-            #endif
-
             // Setup, as it's a MasterBehaviour, and besides FX subclass may have additional setup
             fx.Setup();
 
             fx.WarpTo(anchorPosition);
             fx.PlaySfxIfAny(sfxVolumeScale);
-
-            // No async waiting in this method, as looping has indefinite duration until the FX must be stopped by an
-            // external reason. So just return FX and let caller use that.
-            // If FX can be cast to subclass FXWithAnimation, then caller can await
-            // fx.WaitForLastAnimationFinishedOneCycleAsync/fx.WaitForTaggedAnimationRunningAsync just to guarantee
-            // some FX intro before proceeding.
-            // Either way, it can stop the FX when it doesn't need it anymore, either with an immediate Release, or
-            // in a smooth manner by playing some fade out Animation or stopping Particle System emission, depending
-            // on the type of FX.
             return fx;
         }
 
