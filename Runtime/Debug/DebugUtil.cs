@@ -135,7 +135,7 @@ namespace HyperUnityCommons
 		/// </summary>
 		/// <param name="list">List/array of Objects to verify</param>
 		/// <param name="context">Object owning the list/array, if any. Used as context for the Debug Console.</param>
-		/// <param name="listName">Name of list/array variable for debug</param>
+		/// <param name="listName">Name of list/array variable for debug. We recommend passing nameof(list)</param>
 		/// <typeparam name="T">Type of elements in the list/array</typeparam>
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
 		public static void AssertListElementsNotNull<T>(IReadOnlyList<T> list, Object context, string listName)
