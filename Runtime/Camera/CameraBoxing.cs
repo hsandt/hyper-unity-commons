@@ -27,6 +27,14 @@ namespace HyperUnityCommons
         private Camera m_Camera;
 
 
+        /* State */
+
+        /// This flag exists to delay the refresh to avoid using Screen.width/height which are known to return
+        /// Inspector size when called inside OnEnable/OnDisable due to toggling component via inspector:
+        /// https://issuetracker.unity3d.com/issues/screen-dot-width-slash-screen-dot-height-in-onenable-shows-inspector-window-size-when-the-component-is-enabled-by-a-toggle-in-inspector-window
+        private bool m_NeedsRefresh = false;
+
+
         private void Awake()
         {
             m_Camera = this.GetComponentOrFail<Camera>();
@@ -41,8 +49,11 @@ namespace HyperUnityCommons
                 AppManager.Instance.screenResolutionChanged += OnScreenResolutionChanged;
             }
 
-            // Call the callback once in case we're already in non-target aspect ratio
-            OnScreenResolutionChanged();
+            // On scene load / camera spawn, we must do a initial refresh to get the correct boxing
+            // If we disabled the component momentarily and just re-enabled it, we also want a refresh now
+            // However, as explained in flag doc comment, we must avoid using Screen.width/height in this context,
+            // so delay call to OnScreenResolutionChanged to next Update using this flag
+            m_NeedsRefresh = true;
         }
 
         private void OnDisable()
@@ -55,6 +66,15 @@ namespace HyperUnityCommons
             }
         }
 
+        private void Update()
+        {
+            if (m_NeedsRefresh)
+            {
+                m_NeedsRefresh = false;
+                OnScreenResolutionChanged();
+            }
+        }
+
         private void OnScreenResolutionChanged()
         {
             // Code snippet based on: https://forum.unity.com/threads/how-to-force-black-bar-widescreen.21238/
@@ -62,7 +82,7 @@ namespace HyperUnityCommons
             // Changes by huulong:
             // - instead of using main camera, use sibling Camera component so we can apply this to Base + Overlay
             //   cameras
-            // - width/height are parametered
+            // - target width/height are parametered
             Vector2 resTarget = new Vector2( targetWidth, targetHeight );
             Vector2 resViewport = new Vector2( Screen.width, Screen.height );
             Vector2 resNormalized = resTarget / resViewport; // target res in viewport space
