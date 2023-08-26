@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
+using JetBrains.Annotations;
 
 namespace HyperUnityCommons
 {
@@ -24,12 +25,14 @@ namespace HyperUnityCommons
 		}
 
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		[StringFormatMethod("format")]
 		public static void LogFormat(string format, params object[] args)
 		{
 			Debug.LogFormat(format, args);
 		}
 
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		[StringFormatMethod("format")]
 		public static void LogFormat(Object context, string format, params object[] args)
 		{
 			Debug.LogFormat(context, format, args);
@@ -48,12 +51,14 @@ namespace HyperUnityCommons
 		}
 
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		[StringFormatMethod("format")]
 		public static void LogWarningFormat(string format, params object[] args)
 		{
 			Debug.LogWarningFormat(format, args);
 		}
 
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		[StringFormatMethod("format")]
 		public static void LogWarningFormat(Object context, string format, params object[] args)
 		{
 			Debug.LogWarningFormat(context, format, args);
@@ -72,12 +77,14 @@ namespace HyperUnityCommons
 		}
 
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		[StringFormatMethod("format")]
 		public static void LogErrorFormat(string format, params object[] args)
 		{
 			Debug.LogErrorFormat(format, args);
 		}
 
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		[StringFormatMethod("format")]
 		public static void LogErrorFormat(Object context, string format, params object[] args)
 		{
 			Debug.LogErrorFormat(context, format, args);
@@ -108,12 +115,14 @@ namespace HyperUnityCommons
 		}
 
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		[StringFormatMethod("format")]
 		public static void AssertFormat(bool condition, string format, params object[] args)
 		{
 			Debug.AssertFormat(condition, format, args);
 		}
 
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		[StringFormatMethod("format")]
 		public static void AssertFormat(bool condition, Object context, string format, params object[] args)
 		{
 			Debug.AssertFormat(condition, context, format, args);
