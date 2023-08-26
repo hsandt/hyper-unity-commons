@@ -19,6 +19,9 @@ namespace HyperUnityCommons
             "so if you check this, do not add sibling slaves manually at all.")]
         private bool addSiblingComponentsAsSlaves = true;
 
+        [SerializeField, Tooltip("If checked, all the slave particles are paused and resumed with their children.")]
+        private bool pauseSlaveParticleSystemsWithChildren = true;
+
 
         [Header("Slave components")]
 
@@ -47,7 +50,7 @@ namespace HyperUnityCommons
 
         /* State */
 
-        // True iff this entity is paused
+        /// True iff this entity is paused
         private bool m_IsPaused = false;
 
 
@@ -158,6 +161,9 @@ namespace HyperUnityCommons
         /// Pause all slave behaviours
         public virtual void Pause()
         {
+            // Note that the master script itself is not disabled by Pause(), in case it needs to keep processing things
+            // during the pause. For master script custom pause behaviour, override Pause
+            // (and remember to call base.Pause() inside)
             m_IsPaused = true;
 
             foreach (Behaviour slaveBehaviour in slaveBehaviours)
@@ -179,7 +185,10 @@ namespace HyperUnityCommons
 
             foreach (ParticleSystem slaveParticle in slaveParticles)
             {
-                if (slaveParticle != null && slaveParticle.isPlaying) slaveParticle.Pause();
+                if (slaveParticle != null && slaveParticle.isPlaying)
+                {
+                    slaveParticle.Pause(pauseSlaveParticleSystemsWithChildren);
+                }
             }
         }
 
@@ -200,7 +209,10 @@ namespace HyperUnityCommons
 
             foreach (ParticleSystem slaveParticle in slaveParticles)
             {
-                if (slaveParticle != null && slaveParticle.isPaused) slaveParticle.Play();
+                if (slaveParticle != null && slaveParticle.isPaused)
+                {
+                    slaveParticle.Play(pauseSlaveParticleSystemsWithChildren);
+                }
             }
         }
 
