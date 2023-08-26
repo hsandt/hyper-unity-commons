@@ -176,7 +176,7 @@ public class MusicManager : SingletonManager<MusicManager>
     #if COM_E7_INTROLOOP
 
     /// Play Introloop BGM if new, track it, and stop any BGM currently playing (including native BGM)
-    public void PlayIntroloopBgm(IntroloopAudio introloopBgm)
+    public void PlayIntroloopBgm(IntroloopAudio introloopBgm, float fadeLengthSeconds = 0)
     {
         DebugUtil.AssertFormat(introloopBgm != null,
             "[MusicManager] PlayIntroloopBgm: passed introloopBgm is null. " +
@@ -193,7 +193,7 @@ public class MusicManager : SingletonManager<MusicManager>
             m_CurrentIntroloopBgm = introloopBgm;
             m_IsIntroloopBgmPlaying = true;
 
-            introloopPlayer.Play(introloopBgm);
+            introloopPlayer.Play(introloopBgm, fadeLengthSeconds);
 
             // We should only play one BGM at a time, so stop native BGM if any
             // Note that if both the new native BGM and the current Introloop BGM share the same base AudioClip
