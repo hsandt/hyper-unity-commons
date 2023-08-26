@@ -23,6 +23,16 @@ namespace HyperUnityCommons
 
 		[Header("Parameters")]
 
+		[SerializeField, Tooltip("Determines how to handle children already set up under a pool transform " +
+			 "in the scene (generally for previewing purpose). UseActiveExistingChildren is a good default because it " +
+			 "means we are pragmatic, and only use the existing children that are already visible in the scene. " +
+			 "Note that all existing children to be use should have the correct IPooledObject component, and all " +
+			 "unused children are destroyed on initialization to avoid desync between child count and " +
+			 "pooled object count. " +
+			 "Generally, existing children are instances of pooledObjectPrefab, but they may have some undesired overrides, " +
+			 "so if you want to use them, you must make sure to revert such overrides in the scene.")]
+		protected PoolHandleExistingChildrenMode handleExistingChildrenMode = PoolHandleExistingChildrenMode.UseActiveExistingChildren;
+
 		[SerializeField, Tooltip("Initial pool size (may change if Instantiate New Object On Starvation is true)")]
 		protected int initialPoolSize = 20;
 
@@ -49,7 +59,7 @@ namespace HyperUnityCommons
 			int initialPoolSizeOverride = prefabPooledObject.InitialPoolSizeOverride;
 			int actualInitialPoolSize = initialPoolSizeOverride > 0 ? initialPoolSizeOverride : initialPoolSize;
 
-			m_Pool.InitCheckingExistingChildren(actualInitialPoolSize);
+			m_Pool.InitHandlingExistingChildren(handleExistingChildrenMode, actualInitialPoolSize);
 		}
 
 		[Obsolete("Use AcquireFreeObject (then no need to Acquire/activate manually)")]

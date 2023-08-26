@@ -97,6 +97,9 @@ namespace HyperUnityCommons
 			int initialPoolSizeOverride = prefabPooledObject.InitialPoolSizeOverride;
 			int actualInitialPoolSize = initialPoolSizeOverride > 0 ? initialPoolSizeOverride : initialPoolSize;
 
+			// No PoolHandleExistingChildrenMode parameter here, follow DontUseExistingChildren behavior
+			// since multi-pooled objects are placed under the same parent so we must not register nor destroy children
+			// representing other types of pooled objects
 			m_MultiPool[prefabName].InitIgnoringExistingChildren(actualInitialPoolSize);
 
 #if DEBUG_MULTI_POOL_MANAGER

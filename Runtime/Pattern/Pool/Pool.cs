@@ -31,6 +31,50 @@ namespace HyperUnityCommons
             m_PoolTransform = poolTransform;
         }
 
+        public void InitHandlingExistingChildren(PoolHandleExistingChildrenMode handleExistingChildrenMode, int _initialPoolSize)
+        {
+            switch (handleExistingChildrenMode)
+            {
+                case PoolHandleExistingChildrenMode.UseAllExistingChildren:
+                    // Register all existing children
+                    InitCheckingExistingChildren(_initialPoolSize);
+                    break;
+
+                case PoolHandleExistingChildrenMode.UseActiveExistingChildren:
+                    // Destroy deactivated children to be clear
+                    // Pool.InitCheckingExistingChildren will iterate on children right after this, and it also itself
+                    // calls Pool.LazyInstantiatePooledObjects which has an assert comparing child count and registered
+                    // object count,
+                    // but Destroy applies at the end of the frame, so for child iteration and count to be correct,
+                    // we must detach the parent (immediate operation) too.
+                    foreach (Transform child in m_PoolTransform)
+                    {
+                        if (!child.gameObject.activeSelf)
+                        {
+                            child.SetParent(null);
+                            Object.Destroy(child.gameObject);
+                        }
+                    }
+
+                    // Now we can register the remaining children, which are all active
+                    InitCheckingExistingChildren(_initialPoolSize);
+                    break;
+
+                case PoolHandleExistingChildrenMode.DontUseExistingChildren:
+                    // Destroy all children to be clear
+                    foreach (Transform child in m_PoolTransform)
+                    {
+                        Object.Destroy(child.gameObject);
+                    }
+
+                    InitIgnoringExistingChildren(_initialPoolSize);
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         /// Initialise pool with [initialPoolSize] free objects (not in use)
         /// If the pool transform already contains sample objects (children),
         /// reuse them. This part is mostly useful for OrderedPoolContainer used for UI, as we often want to test

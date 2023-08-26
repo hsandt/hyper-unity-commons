@@ -50,49 +50,15 @@ namespace HyperUnityCommons
 			TPooledObject prefabPooledObject = pooledObjectPrefab.GetComponentOrFail<TPooledObject>();
 			m_Pool = new Pool<TPooledObject>(prefabPooledObject, transform);
 
-			switch (handleExistingChildrenMode)
-			{
-				case PoolHandleExistingChildrenMode.UseAllExistingChildren:
-					// Register all existing children
-					m_Pool.InitCheckingExistingChildren(initialPoolSize);
-					break;
+			// Check for initial pool size override (generally not useful for single pool, but checked
+			// for consistency)
+			int initialPoolSizeOverride = prefabPooledObject.InitialPoolSizeOverride;
+			int actualInitialPoolSize = initialPoolSizeOverride > 0 ? initialPoolSizeOverride : initialPoolSize;
 
-				case PoolHandleExistingChildrenMode.UseActiveExistingChildren:
-					// Destroy deactivated children to be clear
-					// Pool.InitCheckingExistingChildren will iterate on children right after this, and it also itself
-					// calls Pool.LazyInstantiatePooledObjects which has an assert comparing child count and registered
-					// object count,
-					// but Destroy applies at the end of the frame, so for child iteration and count to be correct,
-					// we must detach the parent (immediate operation) too.
-					foreach (Transform child in transform)
-					{
-						if (!child.gameObject.activeSelf)
-						{
-							child.SetParent(null);
-							Destroy(child.gameObject);
-						}
-					}
-
-					// Now we can register the remaining children, which are all active
-					m_Pool.InitCheckingExistingChildren(initialPoolSize);
-					break;
-
-				case PoolHandleExistingChildrenMode.DontUseExistingChildren:
-					// Destroy all children to be clear
-					foreach (Transform child in transform)
-					{
-						Destroy(child.gameObject);
-					}
-
-					m_Pool.InitIgnoringExistingChildren(initialPoolSize);
-					break;
-
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			m_Pool.InitHandlingExistingChildren(handleExistingChildrenMode, actualInitialPoolSize);
 		}
 
-        /// Acquire the first [count] objects under pool transform,
+		/// Acquire the first [count] objects under pool transform,
         /// release all the other ones, and return an enumerable to those [count] objects
         /// Instantiate as many new objects as needed, but warn on new instantiation
         /// so we can spot pools where we set an initial size too low.
