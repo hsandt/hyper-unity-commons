@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -41,10 +42,15 @@ namespace HyperUnityCommons.Editor
             return assets;
         }
 
-        /// Create an asset from model and return it if no asset already exists at passed path OR
-        /// there is one, but it has the wrong type
-        /// Else, replace asset at path, modifying properties in-place (preserves GUID) and return the existing
-        /// asset that has been modified
+        /// Create or replace an asset of type T from model located at path
+        /// - if no asset of type T exists at path, create a brand new one at path, creating any intermediate directory
+        ///   if needed. Return the new asset.
+        /// - if an asset of type T already exists at path, replace its properties (name and content) in-place,
+        ///   preserving GUID and therefore references to it. Return the existing asset.
+        /// - if an asset of another type already exists at path, replace it completely, not preserving GUID.
+        ///   Note that we don't support partial property preservation even if the two types have a parent-child
+        ///   relationship.
+        /// This automatically saves any changes, so you don't need to call AssetDatabase.SaveAssets afterward.
         public static T CreateOrReplace<T>(T model, string path) where T : UnityEngine.Object
         {
             T existingAsset = AssetDatabase.LoadAssetAtPath<T>(path);
@@ -56,7 +62,7 @@ namespace HyperUnityCommons.Editor
                 string originalName = existingAsset.name;
 
                 // Edit asset in place to keep GUID, so that references in editor are preserved
-                EditorUtility.CopySerialized(model, existingAsset);
+                EditorUtility.CopySerializedIfDifferent(model, existingAsset);
 
                 // Restore original name
                 existingAsset.name = originalName;
@@ -68,8 +74,18 @@ namespace HyperUnityCommons.Editor
             }
             else
             {
+                // Create intermediate directories if needed (prefer Directory.CreateDirectory to
+                // AssetDatabase.CreateFolder to allow recursion)
+                string targetDirectoryPath = Path.GetDirectoryName(path);
+                if (!Directory.Exists(targetDirectoryPath))
+                {
+                    Directory.CreateDirectory(targetDirectoryPath);
+                }
+
                 // Create new asset from model (note that model name will be updated to file name, and the binding is
                 // preserved, so you can use model as context to ping the created asset at path)
+                // If there was an existing asset of a different type than T at path, it will be overwritten.
+                // This is automatically saved.
                 AssetDatabase.CreateAsset(model, path);
                 return model;
             }
