@@ -2,9 +2,9 @@
 // Raphael Marques
 // adapted by Long Nguyen Huu (hsandt)
 
+using System.Collections;
 using UnityEngine;
 using UnityEditor;
-using System.Collections;
 
 namespace HyperUnityCommons.Editor
 {
