@@ -7,7 +7,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
+#if COM_EFLATUN_SCENEREFERENCE
 using Eflatun.SceneReference;
+#endif
 
 namespace HyperUnityCommons
 {
