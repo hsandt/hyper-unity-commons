@@ -44,11 +44,24 @@ namespace HyperUnityCommons
 
         /// Acquire the first [count] objects under pool transform,
         /// release all the other ones, and return an enumerable to those [count] objects
-        /// Instantiate as many new objects as needed.
+        /// Instantiate as many new objects as needed, but warn on new instantiation
+        /// so we can spot pools where we set an initial size too low.
 		public IEnumerable<TPooledObject> AcquireOnlyFirstObjects(int count)
 		{
 			return m_Pool.AcquireOnlyFirstObjects(count);
 		}
+
+        /// Retrieve a released instance in the pool of objects, acquire it and return it
+        /// Instantiate new object if needed, but warn on new instantiation
+        /// so we can spot pools where we set an initial size too low.
+        /// While OrderedPoolContainer is normally used for a range of contiguous active objects starting from index 0,
+        /// providing this method makes the container a little more flexible and usable for cases when some objects
+        /// can be released in an undefined order. Ultimately, we will probably make this class support the complete
+        /// single pool API, effectively working like PoolManager but without being a singleton.
+        public TPooledObject AcquireFreeObject()
+        {
+	        return m_Pool.AcquireFreeObject(instantiateNewObjectOnStarvation: true);
+        }
 
         /// Return the count of all objects, active or inactive
         public int CountAllObjects()

@@ -87,12 +87,24 @@ namespace HyperUnityCommons
 
         /// Acquire the first [count] objects under pool transform,
         /// release all the other ones, and return an enumerable to those [count] objects
-        /// Instantiate as many new objects as needed.
+        /// Instantiate as many new objects as needed, but warn on new instantiation
+        /// so we can spot pools where we set an initial size too low.
         /// ! This is meant for Single Pool only !
         public IEnumerable<TPooledObject> AcquireOnlyFirstObjects(int count)
         {
             // 1. Instantiate any remaining objects to reach [count]
-            LazyInstantiatePooledObjects(count);
+            // Note that we try to avoid this step by setting an initial pool size big enough, so if this step is
+            // applied, there is a warning.
+            if (count > m_Objects.Count)
+            {
+                DebugUtil.LogWarningFormat("[Pool] LazyInstantiatePooledObjects: target count {0} > m_Objects.Count {1}, " +
+                    "so we must instantiate new objects to reach the target count (similarly to AcquireFreeObject " +
+                    "starvation, but with batch instantiation). Consider increasing initial pool size to at least {2} " +
+                    "to avoid this situation.",
+                    count, m_Objects.Count, count);
+
+                LazyInstantiatePooledObjects(count);
+            }
 
             // Note: at this point, we have no assumption on whether an instantiated object
             // should be in use or not, as it depends on TPooledObject type.
@@ -195,7 +207,7 @@ namespace HyperUnityCommons
                 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogWarningFormat("[Pool] AcquireFreeObject: pool for prefab pooled object '{0}' is starving at size {1} but " +
                                        "instantiateNewObjectOnStarvation is true, so we will instantiate a new object as fallback. " +
-                                       "Consider increasing pool size to at least {2} to avoid this situation.",
+                                       "Consider increasing initial pool size to at least {2} to avoid this situation.",
                     m_PrefabPooledObject, m_Objects.Count, m_Objects.Count + 1);
                 #endif
 
