@@ -109,6 +109,9 @@ namespace HyperUnityCommons.Editor
 
                 path.SanitizePath();
                 path.AddKeyPoint(Vector2.zero);
+
+                PrefabUtility.RecordPrefabInstancePropertyModifications(script);
+
                 SceneView.RepaintAll();
             }
 
@@ -119,6 +122,9 @@ namespace HyperUnityCommons.Editor
 
                 path.SanitizePath();
                 path.SubtractPathStartOffset();
+
+                PrefabUtility.RecordPrefabInstancePropertyModifications(script);
+
                 SceneView.RepaintAll();
             }
 
@@ -129,6 +135,9 @@ namespace HyperUnityCommons.Editor
 
                 path.SanitizePath();
                 path.FlipAllControlPointsX();
+
+                PrefabUtility.RecordPrefabInstancePropertyModifications(script);
+
                 SceneView.RepaintAll();
             }
 
@@ -139,6 +148,9 @@ namespace HyperUnityCommons.Editor
 
                 path.SanitizePath();
                 path.FlipAllControlPointsY();
+
+                PrefabUtility.RecordPrefabInstancePropertyModifications(script);
+
                 SceneView.RepaintAll();
             }
         }
