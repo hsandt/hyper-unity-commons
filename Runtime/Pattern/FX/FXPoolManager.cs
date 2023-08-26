@@ -43,6 +43,8 @@ public class FXPoolManager : MultiPoolManager<FX, FXPoolManager>
     /// Spawn one-shot (non-looping) FX by name at [anchorPosition] and play any associated SFX at [sfxVolumeScale]
     /// Assume that FX is played automatically on activation and wait for FX end,
     /// deactivating it if needed so it's considered released for reuse in pooling.
+    /// ! Do not auto-Release the FX in animation event at the end of the animation, or it will prevent animation end
+    /// detection and awaiting this method will never end !
     public async Task<FX> PlayOneShotFXAsync(string fxName, Vector3 anchorPosition, float sfxVolumeScale = 1f)
     {
         // Start like SpawnFX. The only reason we don't just call it is to insert the custom non-looping check
