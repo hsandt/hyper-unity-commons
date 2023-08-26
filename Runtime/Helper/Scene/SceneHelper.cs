@@ -28,15 +28,19 @@ namespace HyperUnityCommons
             bool loadAsActiveScene = false, double isDonePollingPeriodSeconds = 0.1f,
             Object context = null, string debugSceneReferenceName = null)
         {
-            if (string.IsNullOrEmpty(sceneReference.AssetGuidHex))
+            DebugUtil.AssertFormat(sceneReference.HasValue, context,
+                "[SceneHelper] LoadSceneAsync: Scene reference '{0}' is not set, so it is not safe to use",
+                debugSceneReferenceName);
+
+            if (!sceneReference.IsSafeToUse)
             {
                 DebugUtil.LogErrorFormat(context,
-                    "[SceneHelper] LoadSceneAsync: Scene reference '{0}' is not set, cannot load scene",
+                    "[SceneHelper] LoadSceneAsync: Scene reference '{0}' is not safe to use, cannot load scene",
                     debugSceneReferenceName);
                 return;
             }
 
-            // Load scene with passed mode and wait
+            // Check if scene to load has already been added
             Scene existingLoadedScene = sceneReference.LoadedScene;
             if (existingLoadedScene.IsValid())
             {
@@ -65,6 +69,7 @@ namespace HyperUnityCommons
                 }
             }
 
+            // Load scene with passed mode and wait
             AsyncOperation asyncLoading = SceneManager.LoadSceneAsync(sceneReference.BuildIndex, loadSceneMode);
             await AwaitOperationIsDone(asyncLoading, isDonePollingPeriodSeconds);
 
@@ -84,27 +89,33 @@ namespace HyperUnityCommons
         public static async Task UnloadSceneAsync(SceneReference sceneReference, double isDonePollingPeriodSeconds = 0.1f,
             Object context = null, string debugSceneReferenceName = null)
         {
-            if (string.IsNullOrEmpty(sceneReference.AssetGuidHex))
+            DebugUtil.AssertFormat(sceneReference.HasValue, context,
+                "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' is not set, so it is not safe to use",
+                debugSceneReferenceName);
+
+            if (!sceneReference.IsSafeToUse)
             {
                 DebugUtil.LogErrorFormat(context,
-                    "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' is not set, cannot unload scene",
+                    "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' is not safe to use, cannot load scene",
                     debugSceneReferenceName);
                 return;
             }
 
+            // Check if scene to unload has already been added
             if (!sceneReference.LoadedScene.IsValid())
             {
                 DebugUtil.LogErrorFormat(context,
-                    "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' at '{1}' is not loaded, " +
+                    "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' at '{1}' has not been added, " +
                     "cannot unload scene",
                     debugSceneReferenceName, sceneReference.Path);
                 return;
             }
 
+            // Check if scene to unload is actually loaded
             if (!sceneReference.LoadedScene.isLoaded)
             {
                 DebugUtil.LogErrorFormat(context,
-                    "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' at '{1}' is valid but not loaded, " +
+                    "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' at '{1}' has been added, but not loaded, " +
                     "cannot unload scene. If this happened when testing additive scenes directly in the editor " +
                     "(so some scenes have already been added), then it won't be an issue in build. " +
                     "We recommend however to enable RemoveUnloadedScenesDuringPlay editor preference in " +
