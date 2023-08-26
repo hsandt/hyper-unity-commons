@@ -48,7 +48,8 @@ See [LICENSE](LICENSE) for all original scripts.
 
 Some scripts are based on code snippets found online, sometimes with multiple contributors before myself. In this case, known contributors are listed at the beginning of the file, and the code license effective on the platform at the time the code snippet was posted applies instead (for instance, CC BY-SA 4.0 on Stack Overflow).
 
-Sometimes there is a complete folder copied from another open source project, generally because development stopped so this was the only way to salvage it. In this case, said folder will have its own LICENSE file.
+Sometimes there is a complete folder copied from another open source project, because either development stopped so this was the only way to salvage it, or it was not convenient to use it as a submodule (e.g. when the repository was not formatted with the proper package structure).
+In this case, said folder will have its own LICENSE file.
 
 The Runtime/Helper/Collider2D/PolygonColliderSimplification-master-2017-06-09, Runtime/Helper/Types/Unity, Editor/StagPoint, Editor/UnityToolbag folders have their own LICENSE.
 
