@@ -82,6 +82,19 @@ public class MusicManager : SingletonManager<MusicManager>
         }
     }
 
+    /// Play current BGM
+    /// Can be used to resume a paused BGM
+    public void PlayCurrentBgm()
+    {
+        bgmAudioSource.Play();
+    }
+
+    /// Pause current BGM
+    public void PauseBgm()
+    {
+        bgmAudioSource.Pause();
+    }
+
     /// Stop current BGM
     public void StopBgm()
     {
