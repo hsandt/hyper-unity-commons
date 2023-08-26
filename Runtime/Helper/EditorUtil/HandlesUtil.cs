@@ -609,7 +609,7 @@ namespace HyperUnityCommons
             Color circleColor, Color handleColor, Color solidArcColor, Handles.CapFunction centerCapFunction = null,
             float screenSizeScale = 1f, int? controlID = null)
         {
-            Vector2 direction = VectorUtil.Rotate(Vector2.left, angle);
+            Vector2 direction = VectorUtil.Rotate(referenceDirection, angle);
             Vector2 handlePosition = center + radius * direction;
 
             // Circle
@@ -647,10 +647,10 @@ namespace HyperUnityCommons
             Color solidArcColor, Handles.CapFunction centerCapFunction = null, float screenSizeScale = 1f,
             int? controlID = null)
         {
-            Vector2 startDirection = VectorUtil.Rotate(Vector2.left, startAngle);
+            Vector2 startDirection = VectorUtil.Rotate(referenceDirection, startAngle);
             Vector2 startHandlePosition = center + radius * startDirection;
 
-            Vector2 endDirection = VectorUtil.Rotate(Vector2.left, endAngle);
+            Vector2 endDirection = VectorUtil.Rotate(referenceDirection, endAngle);
             Vector2 endHandlePosition = center + radius * endDirection;
 
             // Circle
