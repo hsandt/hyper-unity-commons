@@ -36,7 +36,8 @@ namespace HyperUnityCommons
 				taggedGameObjects.Remove(tag);
 				Debug.LogWarningFormat("Game object with tag {0} was memoized but got destroyed in the meantime. " +
 				                       "Please avoid using Locator.Instance.FindWithTag() with objects that may be destroyed " +
-				                       "while LocatorManager instance survives.", tag);
+				                       "while LocatorManager instance survives. Avoid making LocatorManager persistent " +
+				                       "(DontDestroyOnLoad) in particular.", tag);
 			}
 
 			// search object with tag
