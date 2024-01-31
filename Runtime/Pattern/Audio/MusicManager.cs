@@ -66,10 +66,6 @@ public class MusicManager : SingletonManager<MusicManager>
         DebugUtil.AssertFormat(bgmAudioSource.loop,
             "[MusicManager] bgmAudioSource is not set to loop. BGM will still be played once, and natural end " +
             "of track will be detected, but this is probably a misconfiguration. Use Stinger for this instead.");
-
-        #if COM_E7_INTROLOOP
-        DebugUtil.Assert(introloopPlayer != null, "[MusicManager] introloopPlayer not set on Music Manager", this);
-        #endif
     }
 
 
