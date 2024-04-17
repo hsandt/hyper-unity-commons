@@ -11,14 +11,8 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "COM_UNITY_INPUTSYSTEM"
+        "ENABLE_INPUT_SYSTEM"
     ],
-    "versionDefines": [
-        {
-            "name": "com.unity.inputsystem",
-            "expression": "1",
-            "define": "COM_UNITY_INPUTSYSTEM"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }
