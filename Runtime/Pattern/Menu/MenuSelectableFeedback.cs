@@ -93,7 +93,15 @@ public class MenuSelectableFeedback : MonoBehaviour, IPointerMoveHandler, ISelec
     {
         if (sfxUIConfirm != null)
         {
-            UISfxPoolManager.Instance.PlaySfx(sfxUIConfirm, context: this, debugClipName: "sfxUISubmit");
+            UISfxPoolManager.Instance.PlaySfx(sfxUIConfirm, context: this, debugClipName: "sfxUIConfirm");
+        }
+        else
+        {
+            AudioClip defaultSfxUIConfirm = m_MenuSystem.menuSystemParameters.sfxUIConfirm;
+            if (defaultSfxUIConfirm)
+            {
+                UISfxPoolManager.Instance.PlaySfx(defaultSfxUIConfirm, context: this, debugClipName: "sfxUISubmit");
+            }
         }
     }
 

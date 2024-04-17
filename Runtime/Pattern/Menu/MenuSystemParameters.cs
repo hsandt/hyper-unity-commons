@@ -21,7 +21,7 @@ public class MenuSystemParameters : ScriptableObject
     [Tooltip("SFX played when changing selection")]
     public AudioClip sfxUISelect;
 
-    [Tooltip("SFX played on non-Back button confirm (submit or click)")]
+    [Tooltip("Default SFX played on non-Back button confirm (submit or click)")]
     public AudioClip sfxUIConfirm;
 
     [Tooltip("SFX played on Back button confirm or Cancel input")]
