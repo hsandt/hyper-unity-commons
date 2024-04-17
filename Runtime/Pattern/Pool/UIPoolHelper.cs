@@ -19,13 +19,15 @@ namespace HyperUnityCommons
         /// Note that the caller still needs to initialise the widget's content itself after the call,
         /// as this function is unaware of the specific component types on widgetPrefab, nor their initialisation methods.
         ///
+        /// Return: the number of instantiated widgets
+        ///
         /// Usage example: a Load menu that shows 20 save slots, where a save slot is represented by a prefab
         /// In the editor we placed 3 save slots to see what they look like, but didn't want to pre-place too many
         /// of them to avoid cluttering the scene, and because we cannot visualize them all due to the paging system
         /// anyway.
         ///
         /// Post-condition: parent must have at least targetCount children
-        public static void LazyInstantiateWidgets(GameObject widgetPrefab, int targetCount, Transform parent)
+        public static int LazyInstantiateWidgets(GameObject widgetPrefab, int targetCount, Transform parent)
         {
             // There may already be one or more widgets under parent to help us visualize the layout in the editor,
             // or because they were previously created last time we opened the sub-menu that required those widgets.
@@ -66,6 +68,8 @@ namespace HyperUnityCommons
                 "[UIPoolHelper] LazyInstantiateWidgets: childCount on parent {0} didn't reach targetCount {1}, " +
                 "post-condition is not respected.", targetCount, parent);
             #endif
+
+            return targetCount - currentWidgetsCount;
         }
 
         /// Get and activate available pooled widget without deactivating all the others
