@@ -262,14 +262,15 @@ public class MusicManager : SingletonManager<MusicManager>
     #region AnyBgm
 
     /// Play BGM wrapper and return true if any, else do nothing return false
-    public bool PlayBgmWrapperIfAny(AudioAssetWrapper bgmWrapper)
+    /// Introloop only: fade to next BGM over [introloopFadeLengthSeconds] seconds
+    public bool PlayBgmWrapperIfAny(AudioAssetWrapper bgmWrapper, float introloopFadeLengthSeconds = 0)
     {
         if (bgmWrapper != null)
         {
             #if COM_E7_INTROLOOP
             if (bgmWrapper.introloopAudio != null)
             {
-                PlayIntroloopBgm(bgmWrapper.introloopAudio);
+                PlayIntroloopBgm(bgmWrapper.introloopAudio, introloopFadeLengthSeconds);
                 return true;
             }
             #endif
@@ -285,9 +286,10 @@ public class MusicManager : SingletonManager<MusicManager>
     }
 
     /// Play BGM wrapper
-    public void PlayBgmWrapper(AudioAssetWrapper bgmWrapper)
+    /// Introloop only: fade to next BGM over [introloopFadeLengthSeconds] seconds
+    public void PlayBgmWrapper(AudioAssetWrapper bgmWrapper, float introloopFadeLengthSeconds = 0)
     {
-        bool success = PlayBgmWrapperIfAny(bgmWrapper);
+        bool success = PlayBgmWrapperIfAny(bgmWrapper, introloopFadeLengthSeconds);
         DebugUtil.AssertFormat(success, "[MusicManager] PlayBgmWrapper: bgmWrapper is null, could not play");
     }
 
