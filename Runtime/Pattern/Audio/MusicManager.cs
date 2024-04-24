@@ -270,13 +270,31 @@ public class MusicManager : SingletonManager<MusicManager>
             #if COM_E7_INTROLOOP
             if (bgmWrapper.introloopAudio != null)
             {
-                PlayIntroloopBgm(bgmWrapper.introloopAudio, introloopFadeLengthSeconds);
-                return true;
+                if (introloopPlayer != null)
+                {
+                    PlayIntroloopBgm(bgmWrapper.introloopAudio, introloopFadeLengthSeconds);
+                    return true;
+                }
+                else
+                {
+                    DebugUtil.LogWarningFormat(this, "[MusicManager] PlayBgmWrapperIfAny: passed bgmWrapper has an introloopAudio ({0}), " +
+                        "but there is no introloopPlayer set on the MusicManager. BGM will still be played, but natively (ignoring fading).",
+                        bgmWrapper.introloopAudio);
+                }
             }
             #endif
 
             if (bgmWrapper.nativeAudioClip != null)
             {
+                #if UNITY_EDITOR || DEVELOPMENT_BUILD
+                if (introloopFadeLengthSeconds > 0)
+                {
+                    DebugUtil.LogWarningFormat(this, "[MusicManager] PlayBgmWrapperIfAny: passed introloopFadeLengthSeconds is positive ({0}), " +
+                        "but it is not supported when using native audio. BGM will still be played, but without fading.",
+                        introloopFadeLengthSeconds);
+                }
+                #endif
+
                 PlayBgm(bgmWrapper.nativeAudioClip);
                 return true;
             }
