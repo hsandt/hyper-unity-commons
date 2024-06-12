@@ -132,12 +132,12 @@ namespace HyperUnityCommons
         }
 
         /// <summary>
-        /// Transition from previous scene to next scene using transition scene
+        /// Transition from previous scenes to next scene using transition scene
         /// The transition scene is mandatory even if you don't have anything special to show for the transition
         /// (for instance if you show a transition overlay in caller code side for more control), just to avoid
-        /// unloading the last scene in case there is no scene loaded besides the previous scene.
+        /// unloading the last scene in case there is no scene loaded besides the previous scenes.
         /// In this case, just prepare an empty scene that you will use as transition scene.
-        /// Note that this will work even when called from an object that will be destroyed with previous scene unloading,
+        /// Note that this will work even when called from an object that will be destroyed with previous scenes unloading,
         /// because Tasks are running on their own
         /// </summary>
         /// <param name="previousSceneReferences">List of scenes currently loaded that will be unloaded in order during the transition. Must be loaded when calling this method.</param>
