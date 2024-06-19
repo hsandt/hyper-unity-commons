@@ -30,10 +30,12 @@ public class SplashScreenManager : SingletonManager<SplashScreenManager>
 
     #if UNITY_EDITOR
 
+    #if NL_ELRACCOONE_TWEENS
     [Header("Editor only")]
 
     [SerializeField, Tooltip("Check to skip splash screen for quicker iterations")]
     private bool skipSplashScreen = false;
+    #endif
 
     #endif
 

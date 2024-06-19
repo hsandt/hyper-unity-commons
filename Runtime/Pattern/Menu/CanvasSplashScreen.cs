@@ -34,10 +34,12 @@ public class CanvasSplashScreen : MonoBehaviour
 
     #if UNITY_EDITOR
 
+    #if NL_ELRACCOONE_TWEENS
     [Header("Editor only")]
 
     [SerializeField, Tooltip("Check to skip splash screen for quicker iterations")]
     private bool editorSkipSplashScreen = false;
+    #endif
 
     #endif
 
