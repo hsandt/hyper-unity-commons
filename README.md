@@ -24,12 +24,18 @@ To avoid breaking compilation due to scripts referencing assets/packages that ha
 
 In most cases, the Define Constraints are defined automatically using Version Defines to automatically detect installed package versions (see [documentation](https://docs.unity3d.com/Manual/ScriptCompilationAssemblyDefinitionFiles.html#define-symbols)).
 
-The following packages are optional:
+The following free 3rd party packages are optional:
 
 - [UnityExtensions.InspectInline (d4160's fork)](https://github.com/d4160/UnityExtensions.InspectInline) (available on [openupm](https://openupm.com/packages/garettbass.unity-extensions.inspect-in-line/); if present, UNITY_EXTENSIONS_INSPECT_IN_LINE is defined)
 - [nl.elraccoone.tweens](https://github.com/jeffreylanters/unity-tweens) (available on [openupm](https://openupm.com/packages/nl.jeffreylanters.tweens/); if present, NL_ELRACCOONE_TWEENS is defined)
 - [com.eflatun.scenereference](https://github.com/starikcetin/Eflatun.SceneReference) (available on [openupm](https://openupm.com/packages/com.eflatun.scenereference/); if present, COM_EFLATUN_SCENEREFERENCE is defined)
-- [com.e7.introloop](https://exceed7.com/introloop) (paid asset; if present, COM_E7_INTROLOOP is defined)
+
+Quick command-line to install all free 3rd party packages (requires `openupm`):
+
+`openupm add garettbass.unity-extensions.inspect-in-line nl.jeffreylanters.tweens com.eflatun.scenereference`
+
+The following paid packages are optional:
+- [com.e7.introloop](https://exceed7.com/introloop) (if present, COM_E7_INTROLOOP is defined)
 
 However, in the case of assets like DOTween which have a peculiar install process, you must define the Define Constraints manually: go to Project Settings > Player > Script Compilation > Scripting Define Symbols and enter the required symbols in the list.
 
