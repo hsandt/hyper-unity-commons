@@ -30,15 +30,11 @@ namespace HyperUnityCommons
             bool loadAsActiveScene = false, double isDonePollingPeriodSeconds = 0.1f,
             Object context = null, string debugSceneReferenceName = null)
         {
-            DebugUtil.AssertFormat(sceneReference.HasValue, context,
-                "[SceneHelper] LoadSceneAsync: Scene reference '{0}' is not set, so it is not safe to use",
-                debugSceneReferenceName);
-
-            if (!sceneReference.IsSafeToUse)
+            if (sceneReference.State == SceneReferenceState.Unsafe)
             {
                 DebugUtil.LogErrorFormat(context,
-                    "[SceneHelper] LoadSceneAsync: Scene reference '{0}' is not safe to use, cannot load scene",
-                    debugSceneReferenceName);
+                    "[SceneHelper] LoadSceneAsync: Scene reference '{0}' is unsafe because {1}, cannot load scene",
+                    debugSceneReferenceName, sceneReference.UnsafeReason);
                 return;
             }
 
@@ -91,15 +87,11 @@ namespace HyperUnityCommons
         public static async Task UnloadSceneAsync(SceneReference sceneReference, double isDonePollingPeriodSeconds = 0.1f,
             Object context = null, string debugSceneReferenceName = null)
         {
-            DebugUtil.AssertFormat(sceneReference.HasValue, context,
-                "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' is not set, so it is not safe to use",
-                debugSceneReferenceName);
-
-            if (!sceneReference.IsSafeToUse)
+            if (sceneReference.State == SceneReferenceState.Unsafe)
             {
                 DebugUtil.LogErrorFormat(context,
-                    "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' is not safe to use, cannot load scene",
-                    debugSceneReferenceName);
+                    "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' is unsafe because {1}, cannot unload scene",
+                    debugSceneReferenceName, sceneReference.UnsafeReason);
                 return;
             }
 
