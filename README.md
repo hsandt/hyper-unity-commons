@@ -15,8 +15,8 @@ Improvement suggestions are welcome. I don't take pull requests at the moment, b
 
 ## Dependencies
 
-- Unity.InputSystem
-- Unity.TextMeshPro
+- Unity.TextMeshPro (installed by default)
+- Unity.InputSystem (requires manual installation)
 
 ## Optional assemblies and Scripting Define Symbols
 
