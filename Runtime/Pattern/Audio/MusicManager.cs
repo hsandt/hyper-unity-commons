@@ -19,6 +19,7 @@ using E7.Introloop;
 /// NL_ELRACCOONE_TWEENS and you will unlock FadeOutBgmAsync.
 /// If you have installed Introloop, Hyper Unity Commons Runtime assembly definition should define COM_E7_INTROLOOP
 /// and you will unlock Introloop-specific API (and you don't need nl.elraccoone.tweens to fade out Introloop BGM).
+/// To use FadeOutAnyBgmAsync you need at least one of the two packages, nl.elraccoone.tweens or Introloop.
 /// We recommend to use the MusicManager_Base prefab provided in Commons Pattern/Audio, which has a child with
 /// an audio source set as bgmAudioSource.
 /// Then, if you need to customize things further (e.g. set Audio Source Output Mixer to game-specific BGM channel),
@@ -369,6 +370,7 @@ public class MusicManager : SingletonManager<MusicManager>
         }
     }
 
+    #if COM_E7_INTROLOOP || NL_ELRACCOONE_TWEENS
     /// Fade out current BGM of any type over [duration] seconds
     public async void FadeOutAnyBgm(float duration)
     {
@@ -389,11 +391,14 @@ public class MusicManager : SingletonManager<MusicManager>
         }
         #endif
 
+        #if NL_ELRACCOONE_TWEENS
         if (bgmAudioSource.isPlaying)
         {
             await FadeOutBgmAsync(duration);
         }
+        #endif
     }
+    #endif
 
     #endregion
 

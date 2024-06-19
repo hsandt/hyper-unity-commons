@@ -7,9 +7,14 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using HyperUnityCommons;
+
+#if NL_ELRACCOONE_TWEENS
 using ElRaccoone.Tweens;
+#endif
 
 /// Main component of Canvas Splash Screen
+/// Async methods require ElRaccoone.Tweens and without them,
+/// this class doesn't do much, so it is strongly recommended to install that package
 public class CanvasSplashScreen : MonoBehaviour
 {
     [Header("Parameters data")]
@@ -60,6 +65,7 @@ public class CanvasSplashScreen : MonoBehaviour
         splashLogo.color = splashLogoColor;
     }
 
+    #if NL_ELRACCOONE_TWEENS
     /// Show splash logo with fading, but stop just before fading out background itself
     public Task PlaySplashScreenSequenceAsync()
     {
@@ -120,4 +126,5 @@ public class CanvasSplashScreen : MonoBehaviour
             gameObject.SetActive(false);
         }
     }
+    #endif
 }

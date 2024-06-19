@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-using ElRaccoone.Tweens;
 using HyperUnityCommons;
+
+#if NL_ELRACCOONE_TWEENS
+using ElRaccoone.Tweens;
+#endif
 
 /// Splash Screen Manager
 [Obsolete("Use CanvasSplashScreen (not singleton) instead, then use Tag or subclass/sibling singleton " +
@@ -55,6 +58,7 @@ public class SplashScreenManager : SingletonManager<SplashScreenManager>
         }
     }
 
+    #if NL_ELRACCOONE_TWEENS
     public async Task PlaySplashScreenSequence()
     {
         #if UNITY_EDITOR
@@ -71,4 +75,5 @@ public class SplashScreenManager : SingletonManager<SplashScreenManager>
             await splashLogo.TweenGraphicAlpha(0f, splashScreenParameters.logoFadeOutDuration).Await();
         }
     }
+    #endif
 }
