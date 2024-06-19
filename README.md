@@ -27,12 +27,12 @@ In most cases, the Define Constraints are defined automatically using Version De
 The following free 3rd party packages are optional:
 
 - [UnityExtensions.InspectInline (d4160's fork)](https://github.com/d4160/UnityExtensions.InspectInline) (available on [openupm](https://openupm.com/packages/garettbass.unity-extensions.inspect-in-line/); if present, UNITY_EXTENSIONS_INSPECT_IN_LINE is defined)
-- [nl.elraccoone.tweens](https://github.com/jeffreylanters/unity-tweens) (available on [openupm](https://openupm.com/packages/nl.jeffreylanters.tweens/); if present, NL_ELRACCOONE_TWEENS is defined)
+- [nl.elraccoone.tweens](https://github.com/jeffreylanters/unity-tweens) v2.1.0 (available on [openupm](https://openupm.com/packages/nl.jeffreylanters.tweens/), but mind that you must use `nl.elraccoone.tweens` instead of `nl.jeffreylanters.tweens` to stop at v2; if present, NL_ELRACCOONE_TWEENS is defined)
 - [com.eflatun.scenereference](https://github.com/starikcetin/Eflatun.SceneReference) v4.1.1 (available on [openupm](https://openupm.com/packages/com.eflatun.scenereference/); if present, COM_EFLATUN_SCENEREFERENCE is defined)
 
 Quick command-line to install all free 3rd party packages (requires `openupm`):
 
-`openupm add garettbass.unity-extensions.inspect-in-line nl.jeffreylanters.tweens com.eflatun.scenereference`
+`openupm add garettbass.unity-extensions.inspect-in-line nl.elraccoone.tweens com.eflatun.scenereference`
 
 The following paid packages are optional:
 - [com.e7.introloop](https://exceed7.com/introloop) (if present, COM_E7_INTROLOOP is defined)
