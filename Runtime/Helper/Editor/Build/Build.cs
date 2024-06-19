@@ -67,6 +67,35 @@ namespace HyperUnityCommons.Editor
 			return Resources.Load<BuildData>(buildDataPathInResources);
 		}
 
+		[MenuItem("Build/Get or Create Build Data in Default Path")]
+		public static BuildData GetOrCreateBuildDataInDefaultPath()
+		{
+			BuildData buildData = GetBuildData();
+			if (buildData == null)
+			{
+				string fullBuildDataPath = Path.Combine("Assets", defaultResourcesDirectoryPath, buildDataPathInResources);
+				Debug.Log(
+					$"[Build] No BuildData found at any Resources/{buildDataPathInResources}. Creating one at {fullBuildDataPath}.");
+
+				// create directory recursively if it doesn't exist yet
+				string buildDataDirectory = Path.GetDirectoryName(fullBuildDataPath);
+				if (buildDataDirectory != null && !Directory.Exists(buildDataDirectory))
+				{
+					Directory.CreateDirectory(buildDataDirectory);
+				}
+
+				// create missing BuildData asset
+				buildData = ScriptableObject.CreateInstance<BuildData>();
+				buildData.appName = PlayerSettings.productName;
+				// AssetDatabase.CreateAsset needs extension .asset to create with correct file name
+				AssetDatabase.CreateAsset(buildData, $"{fullBuildDataPath}.asset");
+			}
+
+			EditorGUIUtility.PingObject(buildData);
+
+			return buildData;
+		}
+
 		/// Build the player for a target, with a build platform name (Windows, OSX, Android, etc.), a build target name (Windows 64, OSX, Android),
 		/// whether it is a development build, and extra options (not used in this script, but useful for command line scripts using Unity headless mode)
 		/// This requires to have a BuildData ScriptableObject asset in some Resources/Build folder.
@@ -79,25 +108,7 @@ namespace HyperUnityCommons.Editor
 
 			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
 
-			BuildData buildData = GetBuildData();
-			if (buildData == null)
-			{
-				string fullBuildDataPath = Path.Combine("Assets", defaultResourcesDirectoryPath, buildDataPathInResources);
-				Debug.Log($"[Build] No BuildData found at any Resources/{buildDataPathInResources}. Creating one at {fullBuildDataPath}.");
-
-				// create directory recursively if it doesn't exist yet
-				string buildDataDirectory = Path.GetDirectoryName(fullBuildDataPath);
-				if (!Directory.Exists(buildDataDirectory))
-				{
-					Directory.CreateDirectory(buildDataDirectory);
-				}
-
-				// create missing BuildData asset
-				buildData = ScriptableObject.CreateInstance<BuildData>();
-				buildData.appName = PlayerSettings.productName;
-				// AssetDatabase.CreateAsset needs extension .asset to create with correct file name
-				AssetDatabase.CreateAsset(buildData, $"{fullBuildDataPath}.asset");
-			}
+			BuildData buildData = GetOrCreateBuildDataInDefaultPath();
 
 			// Example: "Tactical Ops v3.1.7 (WIP) - Windows 64 dev"
 			string baseName = $"{buildData.appName} {buildData.GetVersionString()} - " +
