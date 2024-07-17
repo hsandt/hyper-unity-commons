@@ -23,12 +23,10 @@ namespace HyperUnityCommons
         /// <param name="sceneReference">Scene to load</param>
         /// <param name="loadSceneMode">Whether to load as Single or Additive scene</param>
         /// <param name="loadAsActiveScene">If true, the loaded scene will be set as Active scene</param>
-        /// <param name="isDonePollingPeriodSeconds">Period (seconds) used to poll whether loading is finished</param>
         /// <param name="context">Optional context for debugging</param>
         /// <param name="debugSceneReferenceName">Optional scene name or full symbol with namespace used to access scene reference for debugging</param>
         public static async Task LoadSceneAsync(SceneReference sceneReference, LoadSceneMode loadSceneMode,
-            bool loadAsActiveScene = false, double isDonePollingPeriodSeconds = 0.1f,
-            Object context = null, string debugSceneReferenceName = null)
+            bool loadAsActiveScene = false, Object context = null, string debugSceneReferenceName = null)
         {
             if (sceneReference.State == SceneReferenceState.Unsafe)
             {
@@ -68,8 +66,7 @@ namespace HyperUnityCommons
             }
 
             // Load scene with passed mode and wait
-            AsyncOperation asyncLoading = SceneManager.LoadSceneAsync(sceneReference.BuildIndex, loadSceneMode);
-            await AwaitOperationIsDone(asyncLoading, isDonePollingPeriodSeconds);
+            await SceneManager.LoadSceneAsync(sceneReference.BuildIndex, loadSceneMode);
 
             if (loadAsActiveScene)
             {
@@ -81,10 +78,9 @@ namespace HyperUnityCommons
         /// Unload scene asynchronously
         /// </summary>
         /// <param name="sceneReference">Scene to unload</param>
-        /// <param name="isDonePollingPeriodSeconds">Period (seconds) used to poll whether unloading is finished</param>
         /// <param name="context">Optional context for debugging</param>
         /// <param name="debugSceneReferenceName">Optional scene name or full symbol with namespace used to access scene reference for debugging</param>
-        public static async Task UnloadSceneAsync(SceneReference sceneReference, double isDonePollingPeriodSeconds = 0.1f,
+        public static async Task UnloadSceneAsync(SceneReference sceneReference,
             Object context = null, string debugSceneReferenceName = null)
         {
             if (sceneReference.State == SceneReferenceState.Unsafe)
@@ -119,8 +115,7 @@ namespace HyperUnityCommons
             }
 
             // Unload additive scene and wait
-            AsyncOperation asyncUnloading = SceneManager.UnloadSceneAsync(sceneReference.BuildIndex);
-            await AwaitOperationIsDone(asyncUnloading, isDonePollingPeriodSeconds);
+            await SceneManager.UnloadSceneAsync(sceneReference.BuildIndex);
         }
 
         /// <summary>
@@ -135,7 +130,6 @@ namespace HyperUnityCommons
         /// <param name="previousSceneReferences">List of scenes currently loaded that will be unloaded in order during the transition. Must be loaded when calling this method.</param>
         /// <param name="nextSceneReference">Next scene to load. Must not be loaded when calling this method.</param>
         /// <param name="transitionSceneReference">Scene that acts as transition between the two other scenes (screen overlay, loading screen...). Must not be loaded when calling this method.</param>
-        /// <param name="isDonePollingPeriodSeconds">Period (seconds) used to poll whether each loading/unloading is finished (also used for asset unloading if unloadUnusedAssets is true)</param>
         /// <param name="unloadUnusedAssets">If true, unload unused assets after unloading previous scene. Note that the transition scene, if used, will still be loaded at this point, so its assets won't be unloaded.</param>
         /// <param name="context">Optional context for debugging</param>
         /// <param name="debugPreviousSceneReferenceName">Optional scene name or full symbol with namespace used to access previous scene reference for debugging</param>
@@ -143,68 +137,50 @@ namespace HyperUnityCommons
         /// <param name="debugTransitionSceneReferenceName">Optional scene name or full symbol with namespace used to access transition scene reference for debugging</param>
         public static async Task TransitionFromToScene(List<SceneReference> previousSceneReferences, SceneReference
         nextSceneReference, SceneReference transitionSceneReference,
-            double isDonePollingPeriodSeconds = 0.1f, bool unloadUnusedAssets = false, Object context = null,
+            bool unloadUnusedAssets = false, Object context = null,
             string debugPreviousSceneReferenceName = null, string debugNextSceneReferenceName = null,
             string debugTransitionSceneReferenceName = null)
         {
             // Load transition scene additively for screen transition
-            await LoadSceneAsync(transitionSceneReference, LoadSceneMode.Additive, false, isDonePollingPeriodSeconds,
+            await LoadSceneAsync(transitionSceneReference, LoadSceneMode.Additive, false,
                 context, debugTransitionSceneReferenceName);
 
             // Unload previous scenes one by one (if not performant enough, consider unloading them all in parallel)
             foreach (SceneReference previousSceneReference in previousSceneReferences)
             {
-                await UnloadSceneAsync(previousSceneReference, isDonePollingPeriodSeconds,
+                await UnloadSceneAsync(previousSceneReference,
                     context, debugPreviousSceneReferenceName);
             }
 
             if (unloadUnusedAssets)
             {
-                await AwaitOperationIsDone(Resources.UnloadUnusedAssets(), isDonePollingPeriodSeconds);
+                await Resources.UnloadUnusedAssets();
             }
 
             // Load next scene additively as active scene, so we preserve the transition scene loaded above but still
             // make it the new main scene
             // It should contain its own manager script, which will load any required additive scenes and start running
             // that game state.
-            await LoadSceneAsync(nextSceneReference, LoadSceneMode.Additive, true, isDonePollingPeriodSeconds,
+            await LoadSceneAsync(nextSceneReference, LoadSceneMode.Additive, true,
                 context, debugNextSceneReferenceName);
 
             // Unload transition scene
-            await UnloadSceneAsync(transitionSceneReference, isDonePollingPeriodSeconds,
+            await UnloadSceneAsync(transitionSceneReference,
                 context, debugTransitionSceneReferenceName);
         }
 
         /// Overload of TransitionFromToScene overload that takes a single previous scene reference
         public static async Task TransitionFromToScene(SceneReference previousSceneReference, SceneReference
                 nextSceneReference, SceneReference transitionSceneReference,
-            double isDonePollingPeriodSeconds = 0.1f, bool unloadUnusedAssets = false, Object context = null,
+            bool unloadUnusedAssets = false, Object context = null,
             string debugPreviousSceneReferenceName = null, string debugNextSceneReferenceName = null,
             string debugTransitionSceneReferenceName = null)
         {
             await TransitionFromToScene(new List<SceneReference> { previousSceneReference },
-                nextSceneReference, transitionSceneReference,
-                isDonePollingPeriodSeconds, unloadUnusedAssets, context,
+                nextSceneReference, transitionSceneReference, unloadUnusedAssets, context,
                 debugPreviousSceneReferenceName, debugNextSceneReferenceName, debugTransitionSceneReferenceName);
         }
 
         #endif
-
-        public static async Task AwaitOperationIsDone(AsyncOperation asyncOperation,
-            double isDonePollingPeriodSeconds = 0.1f)
-        {
-            while (true)
-            {
-                // No need to check progress every frame, so just check every polling period
-                await Task.Delay(TimeSpan.FromSeconds(isDonePollingPeriodSeconds));
-
-                if (asyncOperation.isDone)
-                {
-                    break;
-                }
-            }
-
-            // Nothing more to do, just give hand back to awaiter
-        }
     }
 }
