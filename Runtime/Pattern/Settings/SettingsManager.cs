@@ -1,10 +1,7 @@
-﻿// #define DEBUG_SETTINGS_MANAGER
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Audio;
 
 using HyperUnityCommons;
 using UnityEngine.Serialization;
@@ -256,7 +253,8 @@ public class SettingsManager : SingletonManager<SettingsManager>
 
 		string resolutionWidthPlayerPrefKey = $"{resolutionSettingData.playerPrefKey}.Width";
 		string resolutionHeightPlayerPrefKey = $"{resolutionSettingData.playerPrefKey}.Height";
-		string resolutionRefreshRatePlayerPrefKey = $"{resolutionSettingData.playerPrefKey}.RefreshRate";
+		string resolutionRefreshRateNumeratorPlayerPrefKey = $"{resolutionSettingData.playerPrefKey}.RefreshRateNumerator";
+		string resolutionRefreshRateDenominatorPlayerPrefKey = $"{resolutionSettingData.playerPrefKey}.RefreshRateDenominator";
 
 		// The most important preferences are width and height
 		// Obviously, if you work with new code, you should have saved refresh rate too, but in case you are using
@@ -266,18 +264,28 @@ public class SettingsManager : SingletonManager<SettingsManager>
 			int playerPrefResolutionWidth = PlayerPrefs.GetInt(resolutionWidthPlayerPrefKey);
 			int playerPrefResolutionHeight = PlayerPrefs.GetInt(resolutionHeightPlayerPrefKey);
 
-			// To support not knowing preferred refresh rate, if preference is not present, fall back to 0
+			// To support not knowing preferred refresh rate, if preference is not present, fall back to 0/1
 			// IsValueValid and GetFallbackValueFrom below will handle this, detecting invalid refresh rate
 			// and finding a matching resolution at different refresh rate if needed
-			int playerPrefResolutionRefreshRate = PlayerPrefs.HasKey(resolutionRefreshRatePlayerPrefKey)
-				? PlayerPrefs.GetInt(resolutionRefreshRatePlayerPrefKey)
+			uint playerPrefResolutionRefreshRateNumerator = PlayerPrefs.HasKey(resolutionRefreshRateNumeratorPlayerPrefKey)
+				? (uint) PlayerPrefs.GetInt(resolutionRefreshRateNumeratorPlayerPrefKey)
 				: 0;
+
+			uint playerPrefResolutionRefreshRateDenominator = PlayerPrefs.HasKey(resolutionRefreshRateDenominatorPlayerPrefKey)
+				? (uint) PlayerPrefs.GetInt(resolutionRefreshRateDenominatorPlayerPrefKey)
+				: 1;
+
+			RefreshRate playerPrefRefreshRate = new RefreshRate
+			{
+				numerator = playerPrefResolutionRefreshRateNumerator,
+				denominator = playerPrefResolutionRefreshRateDenominator
+			};
 
 			Resolution playerPrefResolution = new Resolution
 			{
 				width = playerPrefResolutionWidth,
 				height = playerPrefResolutionHeight,
-				refreshRate = playerPrefResolutionRefreshRate
+				refreshRateRatio = playerPrefRefreshRate
 			};
 
 			if (resolutionSettingData.IsValueValid(playerPrefResolution))
@@ -683,14 +691,16 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	/// Set Resolution player preference
 	private static void SetResolutionPreference(SettingData<Resolution> resolutionSetting, Resolution resolution)
 	{
-		// Use same convention as LoadResolutionSettingFromPreferences for the key suffixes
+		// Use same convention as InitializeResolutionSetting for the key suffixes
 		string resolutionWidthPlayerPrefKey = $"{resolutionSetting.playerPrefKey}.Width";
 		string resolutionHeightPlayerPrefKey = $"{resolutionSetting.playerPrefKey}.Height";
-		string resolutionRefreshRatePlayerPrefKey = $"{resolutionSetting.playerPrefKey}.RefreshRate";
+		string resolutionRefreshRateNumeratorPlayerPrefKey = $"{resolutionSetting.playerPrefKey}.RefreshRateNumerator";
+		string resolutionRefreshRateDenominatorPlayerPrefKey = $"{resolutionSetting.playerPrefKey}.RefreshRateDenominator";
 
 		PlayerPrefs.SetInt(resolutionWidthPlayerPrefKey, resolution.width);
 		PlayerPrefs.SetInt(resolutionHeightPlayerPrefKey, resolution.height);
-		PlayerPrefs.SetInt(resolutionRefreshRatePlayerPrefKey, resolution.refreshRate);
+		PlayerPrefs.SetInt(resolutionRefreshRateNumeratorPlayerPrefKey, (int)resolution.refreshRateRatio.numerator);
+		PlayerPrefs.SetInt(resolutionRefreshRateDenominatorPlayerPrefKey, (int)resolution.refreshRateRatio.denominator);
 	}
 
 	#endregion
