@@ -20,10 +20,6 @@ public class SettingsManager : SingletonManager<SettingsManager>
 	[Tooltip("Asset containing list of settings of any type to show in order")]
 	public SettingDataList settingDataList;
 
-	[Tooltip("OLD field kept so existing projects can transition to the new settingDataList")]
-	[FormerlySerializedAs("settings")]
-	[FormerlySerializedAs("settingDataList")]
-	public List<BaseSettingData> OLD_settingDataList;
 
 
 	/* State */
