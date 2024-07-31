@@ -38,6 +38,10 @@ v.2.5.0 (2022-12-07) by Laurent Lavigne
                             usually break if not initialized
 v.2.6.0 (2023-03-16) by Muhammet Emin Turgut
                      Added option to apply position to new instantiated prefabs.
+v.2.7.0 (2024-07-31) by hsandt
+                     Fix deprecation warning in Unity 2023 on FindObjectsOfType by using FindObjectsByType
+                     Behavior change: search by tag and by layer now both include inactive game objects
+                     Replace tag string comparison with more efficient CompareTag
 Known Errors: None
 ============================================================*/
 using UnityEngine;
@@ -546,10 +550,10 @@ namespace Community
                     ResetPreview();
                     objectPreview.Clear();
                     objectsToReplace.Clear();
-                    var allGameObjects = FindObjectsOfType<GameObject>();
+                    var allGameObjects = FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                     foreach (var gg in allGameObjects)
                     {
-                        if (gg.tag == TagForSearch)
+                        if (gg.CompareTag(TagForSearch))
                         {
                             if (gg != prefab)
                             {
@@ -565,7 +569,7 @@ namespace Community
                         ResetPreview();
                         objectPreview.Clear();
                         objectsToReplace.Clear();
-                        var allGameObjects = FindObjectsOfType<GameObject>();
+                        var allGameObjects = FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                         foreach (var gg in allGameObjects)
                         {
                             if (gg.layer == LayerForSearch)
