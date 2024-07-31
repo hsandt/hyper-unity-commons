@@ -22,7 +22,7 @@ namespace HyperUnityCommons.Editor
 
 			if (GUILayout.Button("Update version for all UpdateBuildVersion scripts found in active scenes"))
 			{
-				var scripts = FindObjectsOfType<UpdateBuildVersion>();
+				var scripts = FindObjectsByType<UpdateBuildVersion>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 				foreach (UpdateBuildVersion script in scripts)
 				{
 					UpdateBuildVersionEditor.UpdateBuildVersionTextSiblingOf(script);
@@ -39,6 +39,11 @@ namespace HyperUnityCommons.Editor
 		{
 			// Application.dataPath ends with Assets/ so we need to go one directory up to get the project root
 			string projectRootPath = Path.GetDirectoryName(Application.dataPath);
+			if (projectRootPath == null)
+			{
+				return;
+			}
+
 			string buildFolderFullPath = Path.Combine(projectRootPath, "Build");
 
 			// Create directory if needed
