@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Build;
 
 // TODO: add pre-build and post-build hooks via callback methods (create another non-static class to override)
 // It could be useful e.g. to delete debug objects when building for release, or platform-specific objects when
@@ -38,7 +39,7 @@ namespace HyperUnityCommons.Editor
 
 		}
 
-		static Dictionary<BuildTarget, BuildTargetDerivedData> buildTargetDerivedDataDict = new Dictionary<BuildTarget, BuildTargetDerivedData> {
+		static readonly Dictionary<BuildTarget, BuildTargetDerivedData> buildTargetDerivedDataDict = new() {
 			{ BuildTarget.StandaloneWindows64, new BuildTargetDerivedData("Windows", "Windows 64", ".exe") },
 			{ BuildTarget.StandaloneOSX, new BuildTargetDerivedData("OSX", "OSX", ".app") },
 			{ BuildTarget.StandaloneLinux64, new BuildTargetDerivedData("Linux", "Linux 64", ".x86_64") },
@@ -106,8 +107,6 @@ namespace HyperUnityCommons.Editor
 				return;
 			}
 
-			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
-
 			BuildData buildData = GetOrCreateBuildDataInDefaultPath();
 
 			// Example: "Tactical Ops v3.1.7 (WIP) - Windows 64 dev"
@@ -132,10 +131,13 @@ namespace HyperUnityCommons.Editor
 				options = autoRunOption | buildTargetDerivedData.platformSpecificOptions | extraOptions
 			};
 
+			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
+			NamedBuildTarget namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(buildTargetGroup);
+
 			// store original config to restore after build (and avoid unwanted changes in Player Settings that will show in VCS)
-			var originalScriptingBackend = PlayerSettings.GetScriptingBackend(buildTargetGroup);
-			var originalIl2CppCompilerConfiguration = PlayerSettings.GetIl2CppCompilerConfiguration(buildTargetGroup);
-			var originalManagedStrippingLevel = PlayerSettings.GetManagedStrippingLevel(buildTargetGroup);
+			var originalScriptingBackend = PlayerSettings.GetScriptingBackend(namedBuildTarget);
+			var originalIl2CppCompilerConfiguration = PlayerSettings.GetIl2CppCompilerConfiguration(namedBuildTarget);
+			var originalManagedStrippingLevel = PlayerSettings.GetManagedStrippingLevel(namedBuildTarget);
 
 			if (developmentMode)
 			{
@@ -146,14 +148,14 @@ namespace HyperUnityCommons.Editor
 					buildPlayerOptions.options |= standAloneDevelopmentOptions;
 
 					// use Mono for faster build
-					PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.Mono2x);
+					PlayerSettings.SetScriptingBackend(namedBuildTarget, ScriptingImplementation.Mono2x);
 				}
 				else
 				{
 					buildPlayerOptions.options |= webGLDevelopmentOptions;
 
 					// WebGL uses WebAssembly anyway, so at least set C++ config to debug
-					PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Debug);
+					PlayerSettings.SetIl2CppCompilerConfiguration(namedBuildTarget, Il2CppCompilerConfiguration.Debug);
 				}
 
 				// Pass stripping level for development build, which has been made tunable as different project
@@ -162,7 +164,7 @@ namespace HyperUnityCommons.Editor
 				// we must cast it to UnityEditor.ManagedStrippingLevel. It works, because enum values are ordered
 				// exactly the same way.
 				ManagedStrippingLevel managedStrippingLevel = (ManagedStrippingLevel) buildData.devBuildStrippingLevel;
-				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, managedStrippingLevel);
+				PlayerSettings.SetManagedStrippingLevel(namedBuildTarget, managedStrippingLevel);
 			}
 			else
 			{
@@ -203,12 +205,12 @@ namespace HyperUnityCommons.Editor
 
 					if (shouldBuildIL2CPP)
 					{
-						PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.IL2CPP);
+						PlayerSettings.SetScriptingBackend(namedBuildTarget, ScriptingImplementation.IL2CPP);
 						useIL2CPP = true;
 					}
 					else
 					{
-						PlayerSettings.SetScriptingBackend(buildTargetGroup, ScriptingImplementation.Mono2x);
+						PlayerSettings.SetScriptingBackend(namedBuildTarget, ScriptingImplementation.Mono2x);
 						useIL2CPP = false;
 					}
 				}
@@ -217,7 +219,7 @@ namespace HyperUnityCommons.Editor
 				{
 					// unfortunately, IL2CPP Master build fails on Linux, so we stick to Release even for non-development mode
 					// if Master works on Windows/WebGL, though, consider using it for their Releases
-					PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, Il2CppCompilerConfiguration.Release);
+					PlayerSettings.SetIl2CppCompilerConfiguration(namedBuildTarget, Il2CppCompilerConfiguration.Release);
 				}
 
 				// Same remark as with dev build, but we pass the release config this time
@@ -230,7 +232,7 @@ namespace HyperUnityCommons.Editor
 					                 "but stripping level is set to Disabled. Automatically setting it to Low.");
 					managedStrippingLevel = ManagedStrippingLevel.Low;
 				}
-				PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, managedStrippingLevel);
+				PlayerSettings.SetManagedStrippingLevel(namedBuildTarget, managedStrippingLevel);
 			}
 
 			// Note: at this point, PlayerSettings have been changed, so unlike passing BuildPlayerOptions this has
@@ -248,11 +250,11 @@ namespace HyperUnityCommons.Editor
 			// Restore original settings
 			if (buildTarget != BuildTarget.WebGL)
 			{
-				PlayerSettings.SetScriptingBackend(buildTargetGroup, originalScriptingBackend);
+				PlayerSettings.SetScriptingBackend(namedBuildTarget, originalScriptingBackend);
 			}
 
-			PlayerSettings.SetIl2CppCompilerConfiguration(buildTargetGroup, originalIl2CppCompilerConfiguration);
-			PlayerSettings.SetManagedStrippingLevel(buildTargetGroup, originalManagedStrippingLevel);
+			PlayerSettings.SetIl2CppCompilerConfiguration(namedBuildTarget, originalIl2CppCompilerConfiguration);
+			PlayerSettings.SetManagedStrippingLevel(namedBuildTarget, originalManagedStrippingLevel);
 
 			// Unity tends to add "- {fileID: 0}" to preloadedAssets on build, so remove null preloaded assets
 			Object[] cleanedUpPreloadedAssets = PlayerSettings.GetPreloadedAssets()
