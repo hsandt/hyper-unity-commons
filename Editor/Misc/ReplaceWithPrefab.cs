@@ -36,6 +36,8 @@ v.2.4.0 (2020-11-9) by Zan Kievit
 v.2.5.0 (2022-12-07) by Laurent Lavigne
                             no longer copy property values because some people like to put logic in their getters and that'll
                             usually break if not initialized
+v.2.6.0 (2023-03-16) by Muhammet Emin Turgut
+                     Added option to apply position to new instantiated prefabs.
 Known Errors: None
 ============================================================*/
 using UnityEngine;
@@ -47,7 +49,6 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using System.Reflection;
 using UnityEngine.SceneManagement;
-
 namespace Community
 {
     /// <summary>
@@ -65,6 +66,7 @@ namespace Community
         {
             public bool renameObjects;
             public bool orderHierarchyToPreview;
+            public bool applyPosition;
             public bool applyRotation;
             public bool applyScale;
         }
@@ -86,13 +88,11 @@ namespace Community
         Vector2                                             scrollPosition;
         static readonly IDictionary<Type, IComponentCopier> componentCopiers      = new Dictionary<Type, IComponentCopier>();
         static readonly IDictionary<Type, ISet<string>>     componentPartAvoiders = new Dictionary<Type, ISet<string>>();
-
         static ReplaceWithPrefab()
         {
             RegisterComponentCopiers();
             RegisterComponentPartAvoiders();
         }
-
         /// <summary>
         /// Gets or creates a new Replace with Prefab window.
         /// </summary>
@@ -105,15 +105,14 @@ namespace Community
             window.minSize      = window.windowMinSize;
             window.maxSize      = window.windowMaxSize;
         }
-
         public ReplaceWithPrefab()
         {
             replacementPreferences.renameObjects           = false;
             replacementPreferences.orderHierarchyToPreview = false;
+            replacementPreferences.applyPosition           = true;
             replacementPreferences.applyRotation           = true;
             replacementPreferences.applyScale              = true;
         }
-
         /// <summary>
         /// Handles getting the selected objects when the selection changes.
         /// </summary>
@@ -122,7 +121,6 @@ namespace Community
             GetSelection();
             Repaint();
         }
-
         /// <summary>
         /// Draws the window content: object list, configuration and execution buttons.
         /// </summary>
@@ -223,6 +221,7 @@ namespace Community
                         replacementPreferences.renameObjects           = GUILayout.Toggle(replacementPreferences.renameObjects,           "Rename replaced objects",   EditorStyles.toggle);
                         replacementPreferences.orderHierarchyToPreview = GUILayout.Toggle(replacementPreferences.orderHierarchyToPreview, "Oder hierarchy to preview", EditorStyles.toggle);
                         GUILayout.Space(10);
+                        replacementPreferences.applyPosition = GUILayout.Toggle(replacementPreferences.applyPosition, "Apply position", EditorStyles.toggle);
                         replacementPreferences.applyRotation = GUILayout.Toggle(replacementPreferences.applyRotation, "Apply rotation", EditorStyles.toggle);
                         replacementPreferences.applyScale    = GUILayout.Toggle(replacementPreferences.applyScale,    "Apply scale",    EditorStyles.toggle);
                     }
@@ -282,7 +281,6 @@ namespace Community
                 prefab = null;
             }
         }
-
         /// <summary>
         /// Renames the gameObjects, adding numbering following the Naming Scheme Set in the Project Settings.
         /// It checks for already used numbers.
@@ -292,7 +290,6 @@ namespace Community
             var count           = 0;
             var ExistingNumbers = new List<int>();
             SetExistingNumbers(newObjects, ExistingNumbers, namingScheme);
-
             //Apply new names
             foreach (var go in newObjects)
             {
@@ -311,7 +308,6 @@ namespace Community
                 }
             }
         }
-
         /// <summary>
         /// Renames the list of names, adding numbering following the Naming Scheme Set in the Project Settings.
         /// It checks for already used numbers.
@@ -353,7 +349,6 @@ namespace Community
                 }
             }
         }
-
         /// <summary>
         /// Set existing numbers based on the naming scheme set in the project settings
         /// </summary>
@@ -392,7 +387,6 @@ namespace Community
                 }
             }
         }
-
         /// <summary>
         /// Finds the "space" character in the name to identify where the number is, then if needed, strips provided extra characters.
         /// </summary>
@@ -405,7 +399,6 @@ namespace Community
             if (splitChars.Length > 1)
             {
                 var digit = splitChars[1]; // substring which contains number
-
                 //Get the substring that contains digits
                 while (GetDigits(digit) == "")
                 {
@@ -423,7 +416,6 @@ namespace Community
                 return int.Parse(GetDigits(name));
             }
         }
-
         /// <summary>
         /// The number to give the
         /// </summary>
@@ -451,7 +443,6 @@ namespace Community
             count++;
             return count;
         }
-
         /// <summary>
         /// Replaces a given gameObject with a previously chosen prefab.
         /// </summary>
@@ -470,7 +461,6 @@ namespace Community
             Undo.RegisterCreatedObjectUndo(newObject, "Replaced Objects");
             Undo.DestroyObjectImmediate(obj);
         }
-
         void CopyContentsToNew(GameObject oldObject, GameObject newObject)
         {
             newObject.tag   = oldObject.tag;
@@ -518,7 +508,6 @@ namespace Community
                 CopyContentsToNew(child, newChild);
             }
         }
-
         /// <summary>
         /// Gets the currently selected game objects.
         /// </summary>
@@ -600,7 +589,6 @@ namespace Community
                 }
             }
         }
-
         void SetNamingScheme()
         {
 #if UNITY_2020_OR_NEWER
@@ -609,7 +597,6 @@ namespace Community
             namingScheme = NamingScheme.SpaceParenthesis;
 #endif
         }
-
         /// <summary>
         /// Resets the gameObject preview.
         /// </summary>
@@ -624,7 +611,6 @@ namespace Community
             }
             newObjects.Clear();
         }
-
         /// <summary>
         /// Handles window destruction.
         /// </summary>
@@ -632,7 +618,6 @@ namespace Community
         {
             ResetPreview();
         }
-
         /// <summary>
         /// Takes all digits from a string and returns them as one string.
         /// </summary>
@@ -650,25 +635,21 @@ namespace Community
             }
             return digits;
         }
-
         /// <summary>
         /// ASCII comparer class
         /// </summary>
         public class NaturalComparer : Comparer<string>, IDisposable
         {
             Dictionary<string, string[]> table;
-
             public NaturalComparer()
             {
                 table = new Dictionary<string, string[]>();
             }
-
             public void Dispose()
             {
                 table.Clear();
                 table = null;
             }
-
             public override int Compare(string x, string y)
             {
                 if (x == y)
@@ -709,7 +690,6 @@ namespace Community
                     }
                 }
             }
-
             static int PartCompare(string left, string right)
             {
                 int x, y;
@@ -724,7 +704,6 @@ namespace Community
                 return x.CompareTo(y);
             }
         }
-
         /// <summary>
         /// Register component-specific copy objects for any components that require special handling.
         /// </summary>
@@ -734,7 +713,6 @@ namespace Community
             componentCopiers.Add(typeof(MeshRenderer),        new MeshRendererComponentCopier());
             componentCopiers.Add(typeof(SkinnedMeshRenderer), new SkinnedMeshRendererComponentCopier());
         }
-
         /// <summary>
         /// Register component-specific property names to avoid copying in a default manner.
         /// </summary>
@@ -743,13 +721,11 @@ namespace Community
             ISet<string> transformAvoiders = new HashSet<string> {"localRotation", "localScale", "name", "parent"};
             componentPartAvoiders.Add(typeof(Transform), transformAvoiders);
         }
-
         // The interface for component-specific copiers from old to new GameObjects.
         public interface IComponentCopier
         {
             void CopyComponent(ReplacementPreferences replacementPreferences, Component original, GameObject newObject);
         }
-
         // For anything that does not have a component-specific copier, or anything that does but wants to include default copy behaviour.
         public class DefaultComponentCopier : IComponentCopier
         {
@@ -792,7 +768,6 @@ namespace Community
                 // TODO: Should we record any reference types in order to map them to new references later?
             }
         }
-
         // Shared instance of default copier.
         public static DefaultComponentCopier defaultComponentCopier = new();
         /// <summary>
@@ -803,6 +778,10 @@ namespace Community
             public void CopyComponent(ReplacementPreferences replacementPreferences, Component original, GameObject newObject)
             {
                 var oldTransform = (Transform) original;
+                if (replacementPreferences.applyPosition)
+                {
+                    newObject.transform.localPosition = oldTransform.localPosition;
+                }
                 if (replacementPreferences.applyRotation)
                 {
                     newObject.transform.localRotation = oldTransform.localRotation;
