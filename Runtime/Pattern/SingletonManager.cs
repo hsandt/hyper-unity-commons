@@ -92,6 +92,19 @@ namespace HyperUnityCommons
 		/// Override this method to customize Awake behavior while preserving singleton logic
 		protected virtual void Init() {}
 
+		#if UNITY_EDITOR || DEVELOPMENT_BUILD
+		private void OnEnable()
+		{
+			// Verify that instance is set, which is mostly caused by either Awake override (instead of Init override)
+			// or trying to access Instance too early
+			// Obviously this check doesn't work if user *also* overrides OnEnable without call base implementation,
+			// but generally we don't use OnEnable on singletons (since they are enabled once anyway)
+			Debug.AssertFormat(_instance != null, this, "[SingletonManager > {0}] OnEnable: _instance is not set. " +
+				"Make sure that you are not overriding Awake instead of Init, and not trying to access Instance " +
+				"too early (before Awake of this singleton).", typeof(T));			
+		}
+		#endif
+		
 		private void OnDestroy()
 		{
 			// if this was the registered instance, clear singleton instance
