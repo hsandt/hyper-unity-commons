@@ -23,14 +23,14 @@ namespace HyperUnityCommons
         /// <param name="sceneReference">Scene to load</param>
         /// <param name="loadSceneMode">Whether to load as Single or Additive scene</param>
         /// <param name="loadAsActiveScene">If true, the loaded scene will be set as Active scene</param>
-        /// <param name="context">Optional context for debugging</param>
+        /// <param name="debugContext">Optional context for debugging</param>
         /// <param name="debugSceneReferenceName">Optional scene name or full symbol with namespace used to access scene reference for debugging</param>
         public static async Task LoadSceneAsync(SceneReference sceneReference, LoadSceneMode loadSceneMode,
-            bool loadAsActiveScene = false, Object context = null, string debugSceneReferenceName = null)
+            bool loadAsActiveScene = false, Object debugContext = null, string debugSceneReferenceName = null)
         {
             if (sceneReference.State == SceneReferenceState.Unsafe)
             {
-                DebugUtil.LogErrorFormat(context,
+                DebugUtil.LogErrorFormat(debugContext,
                     "[SceneHelper] LoadSceneAsync: Scene reference '{0}' is unsafe because {1}, cannot load scene",
                     debugSceneReferenceName, sceneReference.UnsafeReason);
                 return;
@@ -78,14 +78,14 @@ namespace HyperUnityCommons
         /// Unload scene asynchronously
         /// </summary>
         /// <param name="sceneReference">Scene to unload</param>
-        /// <param name="context">Optional context for debugging</param>
+        /// <param name="debugContext">Optional context for debugging</param>
         /// <param name="debugSceneReferenceName">Optional scene name or full symbol with namespace used to access scene reference for debugging</param>
         public static async Task UnloadSceneAsync(SceneReference sceneReference,
-            Object context = null, string debugSceneReferenceName = null)
+            Object debugContext = null, string debugSceneReferenceName = null)
         {
             if (sceneReference.State == SceneReferenceState.Unsafe)
             {
-                DebugUtil.LogErrorFormat(context,
+                DebugUtil.LogErrorFormat(debugContext,
                     "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' is unsafe because {1}, cannot unload scene",
                     debugSceneReferenceName, sceneReference.UnsafeReason);
                 return;
@@ -94,7 +94,7 @@ namespace HyperUnityCommons
             // Check if scene to unload has already been added
             if (!sceneReference.LoadedScene.IsValid())
             {
-                DebugUtil.LogErrorFormat(context,
+                DebugUtil.LogErrorFormat(debugContext,
                     "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' at '{1}' has not been added, " +
                     "cannot unload scene",
                     debugSceneReferenceName, sceneReference.Path);
@@ -104,7 +104,7 @@ namespace HyperUnityCommons
             // Check if scene to unload is actually loaded
             if (!sceneReference.LoadedScene.isLoaded)
             {
-                DebugUtil.LogErrorFormat(context,
+                DebugUtil.LogErrorFormat(debugContext,
                     "[SceneHelper] UnloadSceneAsync: Scene reference '{0}' at '{1}' has been added, but not loaded, " +
                     "cannot unload scene. If this happened when testing additive scenes directly in the editor " +
                     "(so some scenes have already been added), then it won't be an issue in build. " +
