@@ -71,23 +71,9 @@ namespace HyperUnityCommons
         /// Domain, so the initialization is a kind of ternary state: Guaranteed Initialized, Guaranteed Uninitialized,
         /// and Unknown, in which case both properties return false, so we must always re-initialize when asked to, but
         /// we don't error on assertions either.
-        private bool IsGuaranteedUninitialized
-        {
-            get
-            {
-                #if UNITY_EDITOR
-                if (EditorSettings.enterPlayModeOptionsEnabled &&
-                    EditorSettings.enterPlayModeOptions.HasFlag(EnterPlayModeOptions.DisableDomainReload))
-                {
-                    // Here, m_Initialized is not reliable, the situation is Unknown, so return false (no guarantee)
-                    return false;
-                }
-                #endif
-
-                // We are either in build or reloading domain, so we can trust the cached flag
-                return !m_Initialized;
-            }
-        }
+        /// Note that due to SO flag caching across Play sessions, m_Initialized may be incorrectly true, but it is
+        /// never incorrectly false, so we can just return !m_Initialized this time.
+        private bool IsGuaranteedUninitialized => !m_Initialized;
 
         /// Initialize cache
         /// This should only be called once before usage
@@ -116,7 +102,7 @@ namespace HyperUnityCommons
         }
 
         /// Initialize cache from scratch, whatever it was before
-        /// Useful to call after changing key value paris in the inspector
+        /// Useful to call after changing key value pairs in the inspector
         public void ForceInitCache(Object context = null, bool errorOnNullValue = false)
         {
             InitCache_Internal(context, errorOnNullValue);
