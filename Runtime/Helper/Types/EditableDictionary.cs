@@ -41,28 +41,27 @@ namespace HyperUnityCommons
         /// Use this when you have one clear owner for the editable dictionary
         public void InitCache(Object context = null, bool errorOnNullValue = false)
         {
-            if (m_Initialized)
+            bool success = TryInitCache(context, errorOnNullValue);
+            if (!success)
             {
-                DebugUtil.LogErrorFormat("[EditableDictionary] InitCache: already initialized. " +
+                DebugUtil.LogErrorFormat("[EditableDictionary] InitCache: TryInitCache failed, cache must already be initialized. " +
                     "If you need to force initialize after some changes in the inspector, call ForceInitCache instead. " +
                     "If you need to lazily initialize without error if already initialized, call TryInitCache.");
-                return;
             }
-
-            InitCache_Internal(context, errorOnNullValue);
         }
 
         /// Initialize cache if not already initialized, else do nothing
         /// Use this when you have multiple owners for the editable dictionary and don't know which one will access
         /// it first, so each of them must be able to initialize it without error if already initialized
-        public void TryInitCache(Object context = null, bool errorOnNullValue = false)
+        public bool TryInitCache(Object context = null, bool errorOnNullValue = false)
         {
             if (m_Initialized)
             {
-                return;
+                return false;
             }
 
             InitCache_Internal(context, errorOnNullValue);
+            return true;
         }
 
         /// Initialize cache from scratch, whatever it was before
@@ -139,14 +138,11 @@ namespace HyperUnityCommons
             // 1. playing in the Editor
             // 2. disabling Domain Reload
             // 3. with serialized data stored on a Scriptable Object
-            // We cannot check if this instance is stored on a SO without more context, but we can check 1. and 2.
+            // Make sure to bind the callback even when not using Disable Domain Reload, because user may activate
+            // Disable Domain Reload between two play sessions, and then we still need to have cleared the initialized flag
             // See https://forum.unity.com/threads/scriptableobject-is-it-supposed-to-save-its-state-or-isnt-it.80777/
             #if UNITY_EDITOR
-            if (EditorSettings.enterPlayModeOptionsEnabled &&
-                EditorSettings.enterPlayModeOptions.HasFlag(EnterPlayModeOptions.DisableDomainReload))
-            {
-                EditorApplication.playModeStateChanged += EditorOnPlayModeStateChangedWhenInitialized;
-            }
+            EditorApplication.playModeStateChanged += EditorOnPlayModeStateChangedWhenInitialized;
             #endif
         }
 
