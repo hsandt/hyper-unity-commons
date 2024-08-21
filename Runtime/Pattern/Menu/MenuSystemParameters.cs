@@ -4,9 +4,15 @@ using UnityEngine;
 using UnityEngine.Serialization;
 
 using HyperUnityCommons;
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
 
 /// Main Menu parameters
 [CreateAssetMenu(fileName = "MenuSystemParameters", menuName = "Menu/Menu System Parameters")]
+#if ODIN_INSPECTOR
+[InlineEditor(Expanded = true)]
+#endif
 public class MenuSystemParameters : ScriptableObject
 {
     [Header("Audio assets")]

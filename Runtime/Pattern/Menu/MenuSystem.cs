@@ -2,12 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-// using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
-
-#if UNITY_EXTENSIONS_INSPECT_IN_LINE
-using UnityExtensions;
-#endif
 
 namespace HyperUnityCommons
 {
@@ -20,9 +15,6 @@ namespace HyperUnityCommons
         [Header("Parameter assets")]
 
         [Tooltip("Menu System Parameters asset")]
-        #if UNITY_EXTENSIONS_INSPECT_IN_LINE
-        [InspectInline(canEditRemoteTarget = true)]
-        #endif
         public MenuSystemParameters menuSystemParameters;
 
 
