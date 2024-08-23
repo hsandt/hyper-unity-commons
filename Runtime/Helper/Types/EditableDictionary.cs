@@ -7,6 +7,10 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace HyperUnityCommons
 {
     /// Class that implements IReadOnlyDictionary, but that can be serialized and edited in inspector
@@ -25,6 +29,9 @@ namespace HyperUnityCommons
     {
         [SerializeField, Tooltip("List of key value pairs used to generate the dictionary. InitCache must be called " +
              "once at runtime before the first usage, and after any runtime change of this list.")]
+        #if ODIN_INSPECTOR
+        [OnInspectorInit("@$property.State.Expanded = true")]
+        #endif
         private List<KeyValuePair<TKey, TValue>> m_KeyValuePairs = new();
 
 
