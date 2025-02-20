@@ -51,7 +51,8 @@ namespace HyperUnityCommons
             bool success = TryInitCache(context, errorOnNullValue);
             if (!success)
             {
-                DebugUtil.LogErrorFormat("[EditableDictionary] InitCache: TryInitCache failed, cache must already be initialized. " +
+                DebugUtil.LogErrorFormat("[EditableDictionary] InitCache: TryInitCache failed, so cache is already flagged as initialized. " +
+                    "Make sure that Editor is not set to Recompile and Continue Playing. " +
                     "If you need to force initialize after some changes in the inspector, call ForceInitCache instead. " +
                     "If you need to lazily initialize without error if already initialized, call TryInitCache.");
             }
