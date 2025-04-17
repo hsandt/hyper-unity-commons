@@ -129,13 +129,28 @@ namespace HyperUnityCommons
 		}
 
 		#endregion
+		
+		/// <summary>
+		/// Assert that field object is not null
+		/// </summary>
+		/// <param name="field">Field object to verify</param>
+		/// <param name="context">Object owning the field object. Used as context for the Debug Console.</param>
+		/// <param name="fieldName">Name of field variable for debug. We recommend passing nameof(field).</param>
+		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+		public static void AssertFieldNotNull(Object field, Object context, string fieldName)
+		{
+			if (field == null)
+			{
+				Debug.LogErrorFormat(context, "{0} is null on {1}", fieldName, context);
+			}
+		}
 
 		/// <summary>
 		/// Assert that passed list/array of Objects is not null, and that no elements are null
 		/// </summary>
 		/// <param name="list">List/array of Objects to verify</param>
 		/// <param name="context">Object owning the list/array, if any. Used as context for the Debug Console.</param>
-		/// <param name="listName">Name of list/array variable for debug. We recommend passing nameof(list)</param>
+		/// <param name="listName">Name of list/array variable for debug. We recommend passing nameof(list).</param>
 		/// <typeparam name="T">Type of elements in the list/array</typeparam>
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
 		public static void AssertListElementsNotNull<T>(IReadOnlyList<T> list, Object context, string listName)
@@ -167,7 +182,7 @@ namespace HyperUnityCommons
 		/// <typeparam name="TValue">Type of dictionary values</typeparam>
 		/// <param name="dictionary">Dictionary of TKey => TValue : Object to verify</param>
 		/// <param name="context">Object owning the dictionary, if any. Used as context for the Debug Console.</param>
-		/// <param name="dictName">Name of dictionary variable for debug</param>
+		/// <param name="dictName">Name of dictionary variable for debug. We recommend passing nameof(dictionary).</param>
 		/// <typeparam name="T">Type of elements in the dictionary</typeparam>
 		[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
 		public static void AssertDictionaryElementsNotNull<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> dictionary,
