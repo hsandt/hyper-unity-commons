@@ -110,7 +110,8 @@ namespace HyperUnityCommons.Editor
 			BuildData buildData = GetOrCreateBuildDataInDefaultPath();
 
 			// Example: "Tactical Ops v3.1.7 (WIP) - Windows 64 dev"
-			string baseName = $"{buildData.appName} {buildData.GetVersionString()} - " +
+			string sanitizedAppName = buildData.appName.Replace(":", "");
+			string baseName = $"{sanitizedAppName} {buildData.GetVersionString()} - " +
 				$"{buildTargetDerivedData.targetName}{(developmentMode ? " dev" : "")}";
 
 			// For build configs generating an executable file (and exceptionally an .app folder on OSX),
