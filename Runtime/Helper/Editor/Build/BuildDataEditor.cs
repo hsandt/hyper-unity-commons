@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -17,7 +18,7 @@ namespace HyperUnityCommons.Editor
 			if (GUILayout.Button("Update version in Player settings"))
 			{
 				string version = data.GetVersionString();
-				PlayerSettings.bundleVersion = version;
+				SetNewVersion(version);
 			}
 
 			if (GUILayout.Button("Update version for all UpdateBuildVersion scripts found in active scenes"))
@@ -32,6 +33,61 @@ namespace HyperUnityCommons.Editor
 			if (GUILayout.Button("Open Build folder"))
 			{
 				OpenBuildFolder();
+			}
+		}
+		
+		// Method by EirikWeave posted on https://discussions.unity.com/t/new-build-profiles-is-an-embarrassment/937021/52
+		// MODIFICATIONS by hsandt:
+		// 1. if no `bundleVersion` line is found, continue to next build profile:
+		//    this is normal for profiles that don't override Player Settings
+		// 2. refresh assets after writing new lines to profile file, so we immediately see the changes
+		//    if Build profile window is opened
+		// 3. removed dialog box at the end. Instead, (a) debug log changing version in base Player Settings,
+		//    and (b) improve debug log text for each build profile Player Settings Overrides
+		private static void SetNewVersion(string inputText)
+		{
+			PlayerSettings.bundleVersion = inputText;
+			// Save project:
+			AssetDatabase.SaveAssets();
+			// MODIFICATION 3a
+			Debug.Log($"Updated base Player Settings with new version number {inputText}");
+
+			// There is no API for changing build profile settings, without switching to each and every build profile
+			// first, which requires recompilation in Unity. So we manipulate the text files instead:
+			var folderForBuildProfiles = "Assets/Settings/Build Profiles";
+			var buildProfiles = AssetDatabase.FindAssets(
+				"t:BuildProfile",
+				new[] { folderForBuildProfiles });
+
+			if (buildProfiles.Length == 0)
+				throw new Exception($"No build profiles found in folder {folderForBuildProfiles}");
+
+			foreach (var buildProfileGuid in buildProfiles)
+			{
+				var buildProfilePath = AssetDatabase.GUIDToAssetPath(buildProfileGuid);
+
+				// Load as text, overwrite the line with version number, and save back to disk:
+				var lines = File.ReadAllLines(buildProfilePath);
+
+				var foundVersionLine = false;
+				for (var i = 0; i < lines.Length; i++)
+					if (lines[i].Contains("    - line: '|   bundleVersion: ", StringComparison.Ordinal))
+					{
+						lines[i] = $"    - line: '|   bundleVersion: {inputText}'";
+						foundVersionLine = true;
+						break;
+					}
+
+				if (!foundVersionLine)
+					// MODIFICATION 1
+					continue;
+
+				// Save back to disk:
+				File.WriteAllLines(buildProfilePath, lines);
+				// MODIFICATION 2
+				AssetDatabase.Refresh();
+				// MODIFICATION 3b
+				Debug.Log($"Updated build profile '{buildProfilePath}' Player Settings Overrides with new version number {inputText}");
 			}
 		}
 
