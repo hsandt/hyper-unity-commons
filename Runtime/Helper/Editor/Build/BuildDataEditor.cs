@@ -7,10 +7,11 @@ using UnityEditor;
 
 namespace HyperUnityCommons.Editor
 {
-
 	[CustomEditor(typeof(BuildData))]
-	public class BuildDataEditor : UnityEditor.Editor {
-
+	public class BuildDataEditor : UnityEditor.Editor
+	{
+		private const string BuildProfilesFolder = "Assets/Settings/Build Profiles";
+		
 		public override void OnInspectorGUI() {
 			DrawDefaultInspector();
 
@@ -36,6 +37,15 @@ namespace HyperUnityCommons.Editor
 			}
 		}
 		
+		// Extracted from EirikWeave's SetNewVersion below to be reusable by other scripts
+		public static string[] GetBuildProfileGUIDs()
+		{
+			var buildProfiles = AssetDatabase.FindAssets(
+				"t:BuildProfile",
+				new[] { BuildProfilesFolder });
+			return buildProfiles;
+		}
+		
 		// Method by EirikWeave posted on https://discussions.unity.com/t/new-build-profiles-is-an-embarrassment/937021/52
 		// MODIFICATIONS by hsandt:
 		// 1. if no `bundleVersion` line is found, continue to next build profile:
@@ -54,13 +64,10 @@ namespace HyperUnityCommons.Editor
 
 			// There is no API for changing build profile settings, without switching to each and every build profile
 			// first, which requires recompilation in Unity. So we manipulate the text files instead:
-			var folderForBuildProfiles = "Assets/Settings/Build Profiles";
-			var buildProfiles = AssetDatabase.FindAssets(
-				"t:BuildProfile",
-				new[] { folderForBuildProfiles });
+			var buildProfiles = GetBuildProfileGUIDs();
 
 			if (buildProfiles.Length == 0)
-				throw new Exception($"No build profiles found in folder {folderForBuildProfiles}");
+				throw new Exception($"No build profiles found in folder {BuildProfilesFolder}");
 
 			foreach (var buildProfileGuid in buildProfiles)
 			{
@@ -113,5 +120,4 @@ namespace HyperUnityCommons.Editor
 			EditorUtility.OpenWithDefaultApp(buildFolderFullPath);
 		}
 	}
-
 }
