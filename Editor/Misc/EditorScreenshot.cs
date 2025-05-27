@@ -100,7 +100,6 @@ namespace HyperUnityCommons.Editor
 				editorScreenshot.renderHeight = defaultRenderHeight;
 				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.renderWidth", defaultRenderWidth);
 				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.renderHeight", defaultRenderHeight);
-
 			}
 
 			return editorScreenshot;
