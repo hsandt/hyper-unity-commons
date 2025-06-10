@@ -15,6 +15,11 @@ namespace HyperUnityCommons.Editor
 	{
 		private const string defaultScreenshotFolderPath = "Screenshots";
 		private const string defaultScreenshotFilenamePrefix = "screenshot_";
+		
+		/// Name of convert image bash script, that must be put in PATH to use the Convert PNG to WEBP button
+		/// You can find an example of such a script on this gist:
+		/// https://gist.github.com/hsandt/d922a14e1f8b10faa1dee2a05894729a
+		private const string convertImageScriptName = "convert_image.sh";
 
 		// Default parameters for render and transparent screenshots
 		private const int defaultRenderWidth = 1920;
@@ -130,9 +135,10 @@ namespace HyperUnityCommons.Editor
 			if (GUILayout.Button("Take render screenshot")) TakeRenderScreenshot();
 			if (GUILayout.Button("Take transparent screenshot via RGBA32")) TakeSimpleTransparentScreenshot();
 			if (GUILayout.Button("Take transparent screenshot via black/white comparison")) TakeAdvancedTransparentScreenshot();
+			if (GUILayout.Button("Convert PNG to WEBP")) ConvertPngToWebp();
 			if (GUILayout.Button("Open Screenshots folder")) OpenScreenshotsFolder();
 		}
-
+		
 		private string ConstructScreenshotPath(string suffix)
 		{
 			// Add title and version if available
@@ -429,11 +435,15 @@ namespace HyperUnityCommons.Editor
 			EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
 		}
 
+		private void ConvertPngToWebp()
+		{
+			EditorRunCommand.RunCommand($"{convertImageScriptName} png webp", GetScreenshotFolderFullPath());
+		}
+
 		private void OpenScreenshotsFolder()
 		{
 			// Application.dataPath ends with Assets/ so we need to go one directory up to get the project root
-			string projectRootPath = Path.GetDirectoryName(Application.dataPath);
-			string screenshotFolderFullPath = Path.Combine(projectRootPath, screenshotFolderPath);
+			var screenshotFolderFullPath = GetScreenshotFolderFullPath();
 
 			// Create directory if needed
 			if (!Directory.Exists(screenshotFolderFullPath))
@@ -444,6 +454,13 @@ namespace HyperUnityCommons.Editor
 			// Open Screenshots folder
 			// https://forum.unity.com/threads/editorutility-revealinfinder-inconsistency.383939/#post-8431145
 			EditorUtility.OpenWithDefaultApp(screenshotFolderFullPath);
+		}
+
+		private string GetScreenshotFolderFullPath()
+		{
+			string projectRootPath = Path.GetDirectoryName(Application.dataPath);
+			string screenshotFolderFullPath = Path.Combine(projectRootPath, screenshotFolderPath);
+			return screenshotFolderFullPath;
 		}
 	}
 }
