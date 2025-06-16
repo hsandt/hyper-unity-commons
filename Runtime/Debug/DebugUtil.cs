@@ -129,7 +129,24 @@ namespace HyperUnityCommons
 		}
 
 		#endregion
-		
+
+		/// Similar to DebugUtil.Assert, but returns true iff condition is true
+		/// so that it can be used inside an `if` statement, similarly to Unreal Engine's `ensure` macro
+		public static bool Ensure(bool condition, object message, Object context)
+		{
+			Assert(condition, message, context);
+			return condition;
+		}
+
+		/// Similar to DebugUtil.Assert, but returns true iff condition is true and auto-generates a message
+		/// from className, methodName, assertionExpression
+		public static bool Ensure(bool condition, string assertionExpression,
+			Object context, string className, string methodName)
+		{
+			return Ensure(condition,
+				$"[{className}] {methodName}: assertion '{assertionExpression}' failed", context);
+		}
+
 		/// <summary>
 		/// Assert that field object is not null
 		/// </summary>
