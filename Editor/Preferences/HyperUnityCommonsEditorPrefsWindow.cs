@@ -15,10 +15,14 @@ namespace HyperUnityCommons.Editor
         public static readonly string RemoveUnloadedScenesDuringPlayKey =
             $"{EDITOR_PREFS_NAMESPACE}.RemoveUnloadedScenesDuringPlay";
 
+        public static readonly string SimulateReleaseBuildKey =
+            $"{EDITOR_PREFS_NAMESPACE}.SimulateReleaseBuild";
+
 
         /* Queried elements */
 
         private Toggle m_RemoveUnloadedScenesDuringPlayToggle;
+        private Toggle m_SimulateReleaseBuildToggle;
 
 
         [MenuItem("Window/Hyper Unity Commons/Editor Prefs Window")]
@@ -45,9 +49,16 @@ namespace HyperUnityCommons.Editor
             Debug.AssertFormat(m_RemoveUnloadedScenesDuringPlayToggle != null, visualTree,
                 "[HyperUnityCommonsEditorPrefsWindow] No Toggle 'RemoveUnloadedScenesDuringPlayToggle' found on Hyper Unity Commons Prefs Window UXML");
 
+            m_SimulateReleaseBuildToggle = root.Q<Toggle>("SimulateReleaseBuildToggle");
+            Debug.AssertFormat(m_SimulateReleaseBuildToggle != null, visualTree,
+                "[HyperUnityCommonsEditorPrefsWindow] No Toggle 'SimulateReleaseBuildToggle' found on Hyper Unity Commons Prefs Window UXML");
+
             // Initialise toggles and bind callbacks
             m_RemoveUnloadedScenesDuringPlayToggle.SetValueWithoutNotify(GetRemoveUnloadedScenesDuringPlayKeyPref());
             m_RemoveUnloadedScenesDuringPlayToggle.RegisterValueChangedCallback(OnRemoveUnloadedScenesDuringPlayChangedEvent);
+
+            m_SimulateReleaseBuildToggle.SetValueWithoutNotify(GetSimulateReleaseBuildKeyPref());
+            m_SimulateReleaseBuildToggle.RegisterValueChangedCallback(OnSimulateReleaseBuildChangedEvent);
         }
 
         private void OnRemoveUnloadedScenesDuringPlayChangedEvent(ChangeEvent<bool> changeEvent)
@@ -63,6 +74,21 @@ namespace HyperUnityCommons.Editor
         public static void SetRemoveUnloadedScenesDuringPlayKeyPref(bool value)
         {
             EditorPrefs.SetBool(RemoveUnloadedScenesDuringPlayKey, value);
+        }
+
+        private void OnSimulateReleaseBuildChangedEvent(ChangeEvent<bool> changeEvent)
+        {
+            SetSimulateReleaseBuildKeyPref(changeEvent.newValue);
+        }
+
+        public static bool GetSimulateReleaseBuildKeyPref()
+        {
+            return EditorPrefs.GetBool(SimulateReleaseBuildKey);
+        }
+
+        public static void SetSimulateReleaseBuildKeyPref(bool value)
+        {
+            EditorPrefs.SetBool(SimulateReleaseBuildKey, value);
         }
     }
 }
