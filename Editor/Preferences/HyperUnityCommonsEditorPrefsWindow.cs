@@ -54,39 +54,39 @@ namespace HyperUnityCommons.Editor
                 "[HyperUnityCommonsEditorPrefsWindow] No Toggle 'SimulateReleaseBuildToggle' found on Hyper Unity Commons Prefs Window UXML");
 
             // Initialise toggles and bind callbacks
-            m_RemoveUnloadedScenesDuringPlayToggle.SetValueWithoutNotify(GetRemoveUnloadedScenesDuringPlayKeyPref());
+            m_RemoveUnloadedScenesDuringPlayToggle.SetValueWithoutNotify(GetRemoveUnloadedScenesDuringPlayPref());
             m_RemoveUnloadedScenesDuringPlayToggle.RegisterValueChangedCallback(OnRemoveUnloadedScenesDuringPlayChangedEvent);
 
-            m_SimulateReleaseBuildToggle.SetValueWithoutNotify(GetSimulateReleaseBuildKeyPref());
+            m_SimulateReleaseBuildToggle.SetValueWithoutNotify(GetSimulateReleaseBuildPref());
             m_SimulateReleaseBuildToggle.RegisterValueChangedCallback(OnSimulateReleaseBuildChangedEvent);
         }
 
         private void OnRemoveUnloadedScenesDuringPlayChangedEvent(ChangeEvent<bool> changeEvent)
         {
-            SetRemoveUnloadedScenesDuringPlayKeyPref(changeEvent.newValue);
+            SetRemoveUnloadedScenesDuringPlayPref(changeEvent.newValue);
         }
 
-        public static bool GetRemoveUnloadedScenesDuringPlayKeyPref()
+        public static bool GetRemoveUnloadedScenesDuringPlayPref()
         {
             return EditorPrefs.GetBool(RemoveUnloadedScenesDuringPlayKey);
         }
 
-        public static void SetRemoveUnloadedScenesDuringPlayKeyPref(bool value)
+        public static void SetRemoveUnloadedScenesDuringPlayPref(bool value)
         {
             EditorPrefs.SetBool(RemoveUnloadedScenesDuringPlayKey, value);
         }
 
         private void OnSimulateReleaseBuildChangedEvent(ChangeEvent<bool> changeEvent)
         {
-            SetSimulateReleaseBuildKeyPref(changeEvent.newValue);
+            SetSimulateReleaseBuildPref(changeEvent.newValue);
         }
 
-        public static bool GetSimulateReleaseBuildKeyPref()
+        public static bool GetSimulateReleaseBuildPref()
         {
             return EditorPrefs.GetBool(SimulateReleaseBuildKey);
         }
 
-        public static void SetSimulateReleaseBuildKeyPref(bool value)
+        public static void SetSimulateReleaseBuildPref(bool value)
         {
             EditorPrefs.SetBool(SimulateReleaseBuildKey, value);
         }

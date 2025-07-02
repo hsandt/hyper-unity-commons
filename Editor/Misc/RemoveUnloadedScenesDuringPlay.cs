@@ -32,7 +32,7 @@ namespace HyperUnityCommons
             // call would be invalid and cause an error
             if (state == PlayModeStateChange.ExitingEditMode)
             {
-                if (HyperUnityCommonsEditorPrefsWindow.GetRemoveUnloadedScenesDuringPlayKeyPref())
+                if (HyperUnityCommonsEditorPrefsWindow.GetRemoveUnloadedScenesDuringPlayPref())
                 {
                     // Check current scene setup array (do not fill s_SceneSetupsBackup yet, as it would mean that
                     // we need to restore backup later on PlayModeStateChange.EnteredEditMode)
