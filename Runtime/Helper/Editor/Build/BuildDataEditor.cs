@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 
 namespace HyperUnityCommons.Editor
 {
@@ -11,7 +12,7 @@ namespace HyperUnityCommons.Editor
 	public class BuildDataEditor : UnityEditor.Editor
 	{
 		private const string BuildProfilesFolder = "Assets/Settings/Build Profiles";
-		
+
 		public override void OnInspectorGUI() {
 			DrawDefaultInspector();
 
@@ -22,13 +23,9 @@ namespace HyperUnityCommons.Editor
 				SetNewVersion(version);
 			}
 
-			if (GUILayout.Button("Update version for all UpdateBuildVersion scripts found in active scenes"))
+			if (GUILayout.Button("Update version for all UpdateBuildVersion scripts found in active scenes or prefab"))
 			{
-				var scripts = FindObjectsByType<UpdateBuildVersion>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-				foreach (UpdateBuildVersion script in scripts)
-				{
-					UpdateBuildVersionEditor.UpdateBuildVersionTextSiblingOf(script);
-				}
+				UpdateBuildVersionTextInActiveScenesOrPrefab();
 			}
 
 			if (GUILayout.Button("Open Build folder"))
@@ -36,7 +33,44 @@ namespace HyperUnityCommons.Editor
 				OpenBuildFolder();
 			}
 		}
-		
+
+		private static void UpdateBuildVersionTextInActiveScenesOrPrefab()
+		{
+			PrefabStage currentPrefabStage = null;
+
+			// Check current stage
+			Stage currentStage = StageUtility.GetCurrentStage();
+			if (currentStage is PrefabStage prefabStage)
+			{
+				// Prefab edit mode
+				currentPrefabStage = prefabStage;
+			}
+			else if (currentStage is not MainStage)
+			{
+				// Not Prefab edit mode nor Main scene, must be a custom stage
+				Debug.LogWarning("[BuildDataEditor] UpdateBuildVersionTextInActiveScenesOrPrefab: custom stages are not supported");
+				return;
+			}
+
+			UpdateBuildVersion[] scripts;
+
+			if (currentPrefabStage != null)
+			{
+				// Prefab edit mode requires working with the prefab stage
+				scripts = currentPrefabStage.FindComponentsOfType<UpdateBuildVersion>();
+			}
+			else
+			{
+				// FindObjectsByType only works in actual scenes
+				scripts = FindObjectsByType<UpdateBuildVersion>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+			}
+
+			foreach (UpdateBuildVersion script in scripts)
+			{
+				UpdateBuildVersionEditor.UpdateBuildVersionTextSiblingOf(script);
+			}
+		}
+
 		// Extracted from EirikWeave's SetNewVersion below to be reusable by other scripts
 		public static string[] GetBuildProfileGUIDs()
 		{
@@ -45,7 +79,7 @@ namespace HyperUnityCommons.Editor
 				new[] { BuildProfilesFolder });
 			return buildProfiles;
 		}
-		
+
 		// Method by EirikWeave posted on https://discussions.unity.com/t/new-build-profiles-is-an-embarrassment/937021/52
 		// MODIFICATIONS by hsandt:
 		// 1. if no `bundleVersion` line is found, continue to next build profile:
