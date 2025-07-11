@@ -5,6 +5,7 @@
 // see comments above each
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -15,7 +16,7 @@ namespace HyperUnityCommons.Editor
 	{
 		private const string defaultScreenshotFolderPath = "Screenshots";
 		private const string defaultScreenshotFilenamePrefix = "screenshot_";
-		
+
 		/// Name of convert image bash script, that must be put in PATH to use the Convert PNG to WEBP button
 		/// You can find an example of such a script on this gist:
 		/// https://gist.github.com/hsandt/d922a14e1f8b10faa1dee2a05894729a
@@ -135,10 +136,10 @@ namespace HyperUnityCommons.Editor
 			if (GUILayout.Button("Take render screenshot")) TakeRenderScreenshot();
 			if (GUILayout.Button("Take transparent screenshot via RGBA32")) TakeSimpleTransparentScreenshot();
 			if (GUILayout.Button("Take transparent screenshot via black/white comparison")) TakeAdvancedTransparentScreenshot();
-			if (GUILayout.Button("Convert PNG to WEBP")) ConvertPngToWebp();
+			if (GUILayout.Button("Convert PNG to WEBP and delete PNG")) ConvertPngToWebpAndDeletePng();
 			if (GUILayout.Button("Open Screenshots folder")) OpenScreenshotsFolder();
 		}
-		
+
 		private string ConstructScreenshotPath(string suffix)
 		{
 			// Add title and version if available
@@ -435,9 +436,18 @@ namespace HyperUnityCommons.Editor
 			EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
 		}
 
-		private void ConvertPngToWebp()
+		private void ConvertPngToWebpAndDeletePng()
 		{
-			EditorRunCommand.RunCommand($"{convertImageScriptName} png webp", GetScreenshotFolderFullPath());
+			string screenshotFolderFullPath = GetScreenshotFolderFullPath();
+			EditorRunCommand.RunCommand($"{convertImageScriptName} png webp", screenshotFolderFullPath);
+
+			IEnumerable<string> filePaths = Directory.EnumerateFiles(screenshotFolderFullPath, "*.png");
+			foreach (string filePath in filePaths)
+			{
+				File.Delete(filePath);
+			}
+
+			Debug.Log($"Deleted all .png in {screenshotFolderFullPath}");
 		}
 
 		private void OpenScreenshotsFolder()
