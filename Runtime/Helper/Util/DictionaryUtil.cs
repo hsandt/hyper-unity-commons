@@ -20,5 +20,17 @@ namespace HyperUnityCommons
 
             return cloneDictionary;
         }
+
+        /// Perform a shallow copy of source dictionary to target dictionary, clearing it first if needed
+        public static void CopyFrom<TKey, TValue>(this IDictionary<TKey, TValue> targetDictionary, IDictionary<TKey, TValue> sourceDictionary)
+        {
+            targetDictionary.Clear();
+
+            // Copy entries one by one
+            foreach ((TKey key, TValue value) in sourceDictionary)
+            {
+                targetDictionary.Add(key, value);
+            }
+        }
     }
 }
