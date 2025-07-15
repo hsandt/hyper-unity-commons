@@ -40,6 +40,8 @@ namespace HyperUnityCommons
         /// Generated cached dictionary
         private Dictionary<TKey, TValue> m_CachedDictionary = new();
 
+        public Dictionary<TKey, TValue> CachedDictionary => m_CachedDictionary;
+
         /// True when the cached dictionary has been initialized at least once
         private bool m_Initialized = false;
 
@@ -165,6 +167,18 @@ namespace HyperUnityCommons
             }
         }
         #endif
+
+        public static EditableDictionary<TKey, TValue> FromDictionary(Dictionary<TKey, TValue> dictionary)
+        {
+            EditableDictionary<TKey, TValue> editableDictionary = new();
+
+            foreach ((TKey key, TValue value) in dictionary)
+            {
+                editableDictionary.m_KeyValuePairs.Add(new KeyValuePair<TKey, TValue>(key, value));
+            }
+
+            return editableDictionary;
+        }
 
 
         /* IReadOnlyDictionary */
