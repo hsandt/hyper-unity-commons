@@ -147,14 +147,18 @@ namespace HyperUnityCommons.Editor
 			}
 			if (GUILayout.Button("Select", GUILayout.Width(65)))
 			{
-				convertImageScriptPath = EditorUtility.OpenFilePanel("Select Convert Image script", ".", "sh");
-				// since we're not modifying a serialized property, the field just above won't be automatically updated
-				// and EndChangeCheck block won't be entered, so we need to manually set editor pref, as well as repaint
-				// the control
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.convertImageScriptPath", convertImageScriptPath);
-				// if text field was selected focused, it won't refresh until user deselects field, so to be safe deselect any controls
-				GUI.FocusControl(null);
-				Repaint();
+				string path = EditorUtility.OpenFilePanel("Select Convert Image script", ".", "sh");
+				if (!string.IsNullOrEmpty(path))
+				{
+					convertImageScriptPath = path;
+					// since we're not modifying a serialized property, the field just above won't be automatically updated
+					// and EndChangeCheck block won't be entered, so we need to manually set editor pref, as well as repaint
+					// the control
+					EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.convertImageScriptPath", convertImageScriptPath);
+					// if text field was selected focused, it won't refresh until user deselects field, so to be safe deselect any controls
+					GUI.FocusControl(null);
+					Repaint();
+				}
 			}
 			EditorGUILayout.EndHorizontal();
 
