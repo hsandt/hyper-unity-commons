@@ -40,6 +40,14 @@ namespace HyperUnityCommons.Editor
 		/// https://gist.github.com/hsandt/d922a14e1f8b10faa1dee2a05894729a
 		private string convertImageScriptPath = "convert_image.sh";
 
+		public static string ScreenshotFolderPathKey => $"EditorScreenshot.{Application.productName}.{nameof(screenshotFolderPath)}";
+		public static string ScreenshotFilenamePrefixKey => $"EditorScreenshot.{Application.productName}.{nameof(screenshotFilenamePrefix)}";
+		public static string NextScreenshotIndexKey => $"EditorScreenshot.{Application.productName}.{nameof(nextScreenshotIndex)}";
+		public static string RenderWidthKey => $"EditorScreenshot.{Application.productName}.{nameof(renderWidth)}";
+		public static string RenderHeightKey => $"EditorScreenshot.{Application.productName}.{nameof(renderHeight)}";
+		public static string RenderTransparentKey => $"EditorScreenshot.{Application.productName}.{nameof(renderTransparent)}";
+		public static string ConvertImageScriptPathKey => $"EditorScreenshot.{Application.productName}.{nameof(convertImageScriptPath)}";
+
 
 		[MenuItem("Window/Hyper Unity Commons/Editor Screenshot")]
 		private static void Init()
@@ -57,53 +65,53 @@ namespace HyperUnityCommons.Editor
 		{
 			EditorScreenshot editorScreenshot = GetWindow<EditorScreenshot>(title: "Screenshot");
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.{nameof(screenshotFolderPath)}"))
+			if (EditorPrefs.HasKey(ScreenshotFolderPathKey))
 			{
-				editorScreenshot.screenshotFolderPath = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.{nameof(screenshotFolderPath)}");
+				editorScreenshot.screenshotFolderPath = EditorPrefs.GetString(ScreenshotFolderPathKey);
 			}
 
 			// if empty, revert to default
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFolderPath))
 			{
 				editorScreenshot.screenshotFolderPath = defaultScreenshotFolderPath;
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.{nameof(screenshotFolderPath)}", defaultScreenshotFolderPath);
+				EditorPrefs.SetString(ScreenshotFolderPathKey, defaultScreenshotFolderPath);
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.{nameof(screenshotFilenamePrefix)}"))
+			if (EditorPrefs.HasKey(ScreenshotFilenamePrefixKey))
 			{
-				editorScreenshot.screenshotFilenamePrefix = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.{nameof(screenshotFilenamePrefix)}");
+				editorScreenshot.screenshotFilenamePrefix = EditorPrefs.GetString(ScreenshotFilenamePrefixKey);
 			}
 
 			// if empty, revert to default
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFilenamePrefix))
 			{
 				editorScreenshot.screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.{nameof(screenshotFilenamePrefix)}", defaultScreenshotFilenamePrefix);
+				EditorPrefs.SetString(ScreenshotFilenamePrefixKey, defaultScreenshotFilenamePrefix);
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.{nameof(nextScreenshotIndex)}"))
+			if (EditorPrefs.HasKey(NextScreenshotIndexKey))
 			{
-				editorScreenshot.nextScreenshotIndex = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.{nameof(nextScreenshotIndex)}");
+				editorScreenshot.nextScreenshotIndex = EditorPrefs.GetInt(NextScreenshotIndexKey);
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.{nameof(renderWidth)}"))
+			if (EditorPrefs.HasKey(RenderWidthKey))
 			{
-				editorScreenshot.renderWidth = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.{nameof(renderWidth)}");
+				editorScreenshot.renderWidth = EditorPrefs.GetInt(RenderWidthKey);
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.{nameof(renderHeight)}"))
+			if (EditorPrefs.HasKey(RenderHeightKey))
 			{
-				editorScreenshot.renderHeight = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.{nameof(renderHeight)}");
+				editorScreenshot.renderHeight = EditorPrefs.GetInt(RenderHeightKey);
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.{nameof(renderTransparent)}"))
+			if (EditorPrefs.HasKey(RenderTransparentKey))
 			{
-				editorScreenshot.renderTransparent = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.{nameof(renderTransparent)}") > 0;
+				editorScreenshot.renderTransparent = EditorPrefs.GetInt(RenderTransparentKey) > 0;
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.{nameof(convertImageScriptPath)}"))
+			if (EditorPrefs.HasKey(ConvertImageScriptPathKey))
 			{
-				editorScreenshot.convertImageScriptPath = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.{nameof(convertImageScriptPath)}");
+				editorScreenshot.convertImageScriptPath = EditorPrefs.GetString(ConvertImageScriptPathKey);
 			}
 
 			// if one dimension is 0, revert to default
@@ -111,8 +119,8 @@ namespace HyperUnityCommons.Editor
 			{
 				editorScreenshot.renderWidth = defaultRenderWidth;
 				editorScreenshot.renderHeight = defaultRenderHeight;
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.{nameof(renderWidth)}", defaultRenderWidth);
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.{nameof(renderHeight)}", defaultRenderHeight);
+				EditorPrefs.SetInt(RenderWidthKey, defaultRenderWidth);
+				EditorPrefs.SetInt(RenderHeightKey, defaultRenderHeight);
 			}
 
 			return editorScreenshot;
@@ -131,20 +139,24 @@ namespace HyperUnityCommons.Editor
 			renderTransparent = EditorGUILayout.Toggle("Render transparent", renderTransparent);
 
 			if (EditorGUI.EndChangeCheck()) {
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.{nameof(screenshotFolderPath)}", screenshotFolderPath);
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.{nameof(screenshotFilenamePrefix)}", screenshotFilenamePrefix);
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.{nameof(nextScreenshotIndex)}", nextScreenshotIndex);
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.{nameof(renderWidth)}", renderWidth);
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.{nameof(renderHeight)}", renderHeight);
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.{nameof(renderTransparent)}", renderTransparent ? 1 : 0);
+				EditorPrefs.SetString(ScreenshotFolderPathKey, screenshotFolderPath);
+				EditorPrefs.SetString(ScreenshotFilenamePrefixKey, screenshotFilenamePrefix);
+				EditorPrefs.SetInt(NextScreenshotIndexKey, nextScreenshotIndex);
+				EditorPrefs.SetInt(RenderWidthKey, renderWidth);
+				EditorPrefs.SetInt(RenderHeightKey, renderHeight);
+				EditorPrefs.SetInt(RenderTransparentKey, renderTransparent ? 1 : 0);
 			}
 
 			EditorGUILayout.BeginHorizontal();
+
 			EditorGUI.BeginChangeCheck();
+
 			convertImageScriptPath = EditorGUILayout.TextField("Convert Image script path", convertImageScriptPath);
+
 			if (EditorGUI.EndChangeCheck()) {
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.{nameof(convertImageScriptPath)}", convertImageScriptPath);
+				EditorPrefs.SetString(ConvertImageScriptPathKey, convertImageScriptPath);
 			}
+
 			if (GUILayout.Button("Select", GUILayout.Width(65)))
 			{
 				string path = EditorUtility.OpenFilePanel("Select Convert Image script", ".", "sh");
@@ -154,12 +166,13 @@ namespace HyperUnityCommons.Editor
 					// since we're not modifying a serialized property, the field just above won't be automatically updated
 					// and EndChangeCheck block won't be entered, so we need to manually set editor pref, as well as repaint
 					// the control
-					EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.{nameof(convertImageScriptPath)}", convertImageScriptPath);
+					EditorPrefs.SetString(ConvertImageScriptPathKey, convertImageScriptPath);
 					// if text field was selected focused, it won't refresh until user deselects field, so to be safe deselect any controls
 					GUI.FocusControl(null);
 					Repaint();
 				}
 			}
+
 			EditorGUILayout.EndHorizontal();
 
 			if (GUILayout.Button("Take standard screenshot")) TakeStandardScreenshot();
