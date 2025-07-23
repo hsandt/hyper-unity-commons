@@ -15,11 +15,11 @@ namespace HyperUnityCommons.Editor
     public static class EditorRunCommand
     {
         /// <summary>
-        /// Run a bash command
+        /// Run a bash command and return true in case of success, false in case of failure
         /// </summary>
         /// <param name="bashCommand">Bash command in the format "script.sh [arg1] [arg2]"</param>
         /// <param name="workingDirectory">Working directory to execute the command in</param>
-        public static void RunCommand(string bashCommand, string workingDirectory)
+        public static bool RunCommand(string bashCommand, string workingDirectory)
         {
             using (Process process = new Process())
             {
@@ -30,14 +30,26 @@ namespace HyperUnityCommons.Editor
                 process.StartInfo.Arguments = bashCommand;
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
                 process.Start();
 
-                // because of the indirection, we cannot easily check if bash script is missing,
-                // we will just see an empty output log
+                string error = process.StandardError.ReadToEnd();
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    Debug.LogError(error);
+
+                    process.WaitForExit();
+                    return false;
+                }
+
                 string output = process.StandardOutput.ReadToEnd();
-                Debug.Log(output);
+                if (!string.IsNullOrWhiteSpace(output))
+                {
+                    Debug.Log(output);
+                }
 
                 process.WaitForExit();
+                return true;
             }
         }
     }
