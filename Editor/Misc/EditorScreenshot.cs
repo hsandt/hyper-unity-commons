@@ -65,53 +65,62 @@ namespace HyperUnityCommons.Editor
 		{
 			EditorScreenshot editorScreenshot = GetWindow<EditorScreenshot>(title: "Screenshot");
 
-			if (EditorPrefs.HasKey(ScreenshotFolderPathKey))
+			// minor optimization: interpolate keys once
+			string screenshotFolderPathKey = ScreenshotFolderPathKey;
+			string nextScreenshotIndexKey = NextScreenshotIndexKey;
+			string renderWidthKey = RenderWidthKey;
+			string renderHeightKey = RenderHeightKey;
+			string renderTransparentKey = RenderTransparentKey;
+			string convertImageScriptPathKey = ConvertImageScriptPathKey;
+
+			if (EditorPrefs.HasKey(screenshotFolderPathKey))
 			{
-				editorScreenshot.screenshotFolderPath = EditorPrefs.GetString(ScreenshotFolderPathKey);
+				editorScreenshot.screenshotFolderPath = EditorPrefs.GetString(screenshotFolderPathKey);
 			}
 
 			// if empty, revert to default
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFolderPath))
 			{
 				editorScreenshot.screenshotFolderPath = defaultScreenshotFolderPath;
-				EditorPrefs.SetString(ScreenshotFolderPathKey, defaultScreenshotFolderPath);
+				EditorPrefs.SetString(screenshotFolderPathKey, defaultScreenshotFolderPath);
 			}
 
-			if (EditorPrefs.HasKey(ScreenshotFilenamePrefixKey))
+			string screenshotFilenamePrefixKey = ScreenshotFilenamePrefixKey;
+			if (EditorPrefs.HasKey(screenshotFilenamePrefixKey))
 			{
-				editorScreenshot.screenshotFilenamePrefix = EditorPrefs.GetString(ScreenshotFilenamePrefixKey);
+				editorScreenshot.screenshotFilenamePrefix = EditorPrefs.GetString(screenshotFilenamePrefixKey);
 			}
 
 			// if empty, revert to default
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFilenamePrefix))
 			{
 				editorScreenshot.screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
-				EditorPrefs.SetString(ScreenshotFilenamePrefixKey, defaultScreenshotFilenamePrefix);
+				EditorPrefs.SetString(screenshotFilenamePrefixKey, defaultScreenshotFilenamePrefix);
 			}
 
-			if (EditorPrefs.HasKey(NextScreenshotIndexKey))
+			if (EditorPrefs.HasKey(nextScreenshotIndexKey))
 			{
-				editorScreenshot.nextScreenshotIndex = EditorPrefs.GetInt(NextScreenshotIndexKey);
+				editorScreenshot.nextScreenshotIndex = EditorPrefs.GetInt(nextScreenshotIndexKey);
 			}
 
-			if (EditorPrefs.HasKey(RenderWidthKey))
+			if (EditorPrefs.HasKey(renderWidthKey))
 			{
-				editorScreenshot.renderWidth = EditorPrefs.GetInt(RenderWidthKey);
+				editorScreenshot.renderWidth = EditorPrefs.GetInt(renderWidthKey);
 			}
 
-			if (EditorPrefs.HasKey(RenderHeightKey))
+			if (EditorPrefs.HasKey(renderHeightKey))
 			{
-				editorScreenshot.renderHeight = EditorPrefs.GetInt(RenderHeightKey);
+				editorScreenshot.renderHeight = EditorPrefs.GetInt(renderHeightKey);
 			}
 
-			if (EditorPrefs.HasKey(RenderTransparentKey))
+			if (EditorPrefs.HasKey(renderTransparentKey))
 			{
-				editorScreenshot.renderTransparent = EditorPrefs.GetInt(RenderTransparentKey) > 0;
+				editorScreenshot.renderTransparent = EditorPrefs.GetInt(renderTransparentKey) > 0;
 			}
 
-			if (EditorPrefs.HasKey(ConvertImageScriptPathKey))
+			if (EditorPrefs.HasKey(convertImageScriptPathKey))
 			{
-				editorScreenshot.convertImageScriptPath = EditorPrefs.GetString(ConvertImageScriptPathKey);
+				editorScreenshot.convertImageScriptPath = EditorPrefs.GetString(convertImageScriptPathKey);
 			}
 
 			// if one dimension is 0, revert to default
@@ -119,8 +128,8 @@ namespace HyperUnityCommons.Editor
 			{
 				editorScreenshot.renderWidth = defaultRenderWidth;
 				editorScreenshot.renderHeight = defaultRenderHeight;
-				EditorPrefs.SetInt(RenderWidthKey, defaultRenderWidth);
-				EditorPrefs.SetInt(RenderHeightKey, defaultRenderHeight);
+				EditorPrefs.SetInt(renderWidthKey, defaultRenderWidth);
+				EditorPrefs.SetInt(renderHeightKey, defaultRenderHeight);
 			}
 
 			return editorScreenshot;
