@@ -168,7 +168,9 @@ namespace HyperUnityCommons.Editor
 
 			if (GUILayout.Button("Select", GUILayout.Width(65)))
 			{
-				string path = EditorUtility.OpenFilePanel("Select Convert Image script", ".", "sh");
+				DirectoryInfo parentInfo = Directory.GetParent(convertImageScriptPath);
+				string startDirectory = parentInfo != null && parentInfo.Exists ? parentInfo.FullName : ".";
+				string path = EditorUtility.OpenFilePanel("Select Convert Image script", startDirectory, "sh");
 				if (!string.IsNullOrEmpty(path))
 				{
 					convertImageScriptPath = path;
