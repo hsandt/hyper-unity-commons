@@ -17,11 +17,6 @@ namespace HyperUnityCommons.Editor
 		private const string defaultScreenshotFolderPath = "Screenshots";
 		private const string defaultScreenshotFilenamePrefix = "screenshot_";
 
-		/// Name of convert image bash script, that must be put in PATH to use the Convert PNG to WEBP button
-		/// You can find an example of such a script on this gist:
-		/// https://gist.github.com/hsandt/d922a14e1f8b10faa1dee2a05894729a
-		private const string convertImageScriptName = "convert_image.sh";
-
 		// Default parameters for render and transparent screenshots
 		private const int defaultRenderWidth = 1920;
 		private const int defaultRenderHeight = 1080;
@@ -37,6 +32,13 @@ namespace HyperUnityCommons.Editor
 		[Tooltip("If true, use RGBA32 instead of RGB24, allowing alpha transparency when camera uses a transparent " +
 			"solid color as background")]
 		public bool renderTransparent = false;
+
+		/// Path to convert image bash script, used to Convert PNG to WEBP button
+		/// On Linux, it must a full path, unless it is placed directly in some system PATH like /usr/bin,
+		/// since C# Process cannot use the user PATH in this context.
+		/// You can find an example of working script `convert_image.sh` on this gist:
+		/// https://gist.github.com/hsandt/d922a14e1f8b10faa1dee2a05894729a
+		private string convertImageScriptPath = "convert_image.sh";
 
 
 		[MenuItem("Window/Hyper Unity Commons/Editor Screenshot")]
@@ -99,6 +101,11 @@ namespace HyperUnityCommons.Editor
 				editorScreenshot.renderTransparent = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.renderTransparent") > 0;
 			}
 
+			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.convertImageScriptPath"))
+			{
+				editorScreenshot.convertImageScriptPath = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.convertImageScriptPath");
+			}
+
 			// if one dimension is 0, revert to default
 			if (editorScreenshot.renderWidth == 0 || editorScreenshot.renderHeight == 0)
 			{
@@ -131,6 +138,25 @@ namespace HyperUnityCommons.Editor
 				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.renderHeight", renderHeight);
 				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.renderTransparent", renderTransparent ? 1 : 0);
 			}
+
+			EditorGUILayout.BeginHorizontal();
+			EditorGUI.BeginChangeCheck();
+			convertImageScriptPath = EditorGUILayout.TextField("Convert Image script path", convertImageScriptPath);
+			if (EditorGUI.EndChangeCheck()) {
+				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.convertImageScriptPath", convertImageScriptPath);
+			}
+			if (GUILayout.Button("Select", GUILayout.Width(65)))
+			{
+				convertImageScriptPath = EditorUtility.OpenFilePanel("Select Convert Image script", ".", "sh");
+				// since we're not modifying a serialized property, the field just above won't be automatically updated
+				// and EndChangeCheck block won't be entered, so we need to manually set editor pref, as well as repaint
+				// the control
+				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.convertImageScriptPath", convertImageScriptPath);
+				// if text field was selected focused, it won't refresh until user deselects field, so to be safe deselect any controls
+				GUI.FocusControl(null);
+				Repaint();
+			}
+			EditorGUILayout.EndHorizontal();
 
 			if (GUILayout.Button("Take standard screenshot")) TakeStandardScreenshot();
 			if (GUILayout.Button("Take render screenshot")) TakeRenderScreenshot();
@@ -439,7 +465,13 @@ namespace HyperUnityCommons.Editor
 		private void ConvertPngToWebpAndDeletePng()
 		{
 			string screenshotFolderFullPath = GetScreenshotFolderFullPath();
-			EditorRunCommand.RunCommand($"{convertImageScriptName} png webp", screenshotFolderFullPath);
+			bool success = EditorRunCommand.RunCommand($"\"{convertImageScriptPath}\" png webp", screenshotFolderFullPath);
+
+			if (!success)
+			{
+				Debug.LogError($"Convert Image script failed, STOP. Do not delete original .png files.");
+				return;
+			}
 
 			IEnumerable<string> filePaths = Directory.EnumerateFiles(screenshotFolderFullPath, "*.png");
 			foreach (string filePath in filePaths)
