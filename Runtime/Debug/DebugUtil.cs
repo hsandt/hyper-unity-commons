@@ -132,6 +132,7 @@ namespace HyperUnityCommons
 
 		/// Similar to DebugUtil.Assert, but returns true iff condition is true
 		/// so that it can be used inside an `if` statement, similarly to Unreal Engine's `ensure` macro
+		/// Performance warning: if message is a formatted string, it will be evaluated even in Release
 		public static bool Ensure(bool condition, object message, Object context)
 		{
 			Assert(condition, message, context);
@@ -140,6 +141,7 @@ namespace HyperUnityCommons
 
 		/// Similar to DebugUtil.Assert, but returns true iff condition is true and auto-generates a message
 		/// from className, methodName, assertionExpression
+		/// Performance warning: message is a formatted string and will be evaluated even in Release
 		public static bool Ensure(bool condition, string assertionExpression,
 			Object context, string className, string methodName)
 		{
