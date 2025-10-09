@@ -8,8 +8,8 @@ using UnityEngine.UI;
 
 using HyperUnityCommons;
 
-#if NL_ELRACCOONE_TWEENS
-using ElRaccoone.Tweens;
+#if NL_JEFFREYLANTERS_TWEENS
+using Tweens;
 #endif
 
 /// Main component of Canvas Splash Screen
@@ -34,7 +34,7 @@ public class CanvasSplashScreen : MonoBehaviour
 
     #if UNITY_EDITOR
 
-    #if NL_ELRACCOONE_TWEENS
+    #if NL_JEFFREYLANTERS_TWEENS
     [Header("Editor only")]
 
     [SerializeField, Tooltip("Check to skip splash screen for quicker iterations")]
@@ -67,7 +67,7 @@ public class CanvasSplashScreen : MonoBehaviour
         splashLogo.color = splashLogoColor;
     }
 
-    #if NL_ELRACCOONE_TWEENS
+    #if NL_JEFFREYLANTERS_TWEENS
     /// Show splash logo with fading, but stop just before fading out background itself
     public Task PlaySplashScreenSequenceAsync()
     {
@@ -91,9 +91,22 @@ public class CanvasSplashScreen : MonoBehaviour
             // Note that Tween Await() doesn't take a cancellationToken, but it stops on Cancel via Decommission,
             // so calling StopAllTweens() during a tween will effectively make the execution proceed to
             // the Delay after it, so you can cancel the task immediately.
-            await splashLogo.TweenGraphicAlpha(1f, splashScreenParameters.logoFadeInDuration).Await();
+            var fadeInTween = new GraphicAlphaTween
+            {
+                to = 1f,
+                duration = splashScreenParameters.logoFadeInDuration,
+            };
+            await splashLogo.gameObject.AddTween(fadeInTween).AwaitDecommissionAsync();
+
             await Task.Delay(TimeSpan.FromSeconds(splashScreenParameters.logoStayDuration), cancellationToken);
-            await splashLogo.TweenGraphicAlpha(0f, splashScreenParameters.logoFadeOutDuration).Await();
+
+            var fadeOutTween = new GraphicAlphaTween
+            {
+                to = 0f,
+                duration = splashScreenParameters.logoFadeOutDuration,
+            };
+            await splashLogo.gameObject.AddTween(fadeOutTween).AwaitDecommissionAsync();
+
             await Task.Delay(TimeSpan.FromSeconds(splashScreenParameters.backgroundStayAfterLogoDuration), cancellationToken);
         }
     }
@@ -104,7 +117,7 @@ public class CanvasSplashScreen : MonoBehaviour
     /// PlaySplashScreenSequenceAsync to fully skip the splash screen sequence (excluding BG fade out)
     public void FinishAllTweensImmediately()
     {
-        splashLogo.TweenCancelAll();
+        splashLogo.gameObject.CancelTweens();
         SetSplashLogoTransparent();
     }
 
@@ -122,7 +135,12 @@ public class CanvasSplashScreen : MonoBehaviour
 
         if (splashLogo != null)
         {
-            await splashBackground.TweenGraphicAlpha(0f, splashScreenParameters.backgroundFadeOutDuration).Await();
+            var tween = new GraphicAlphaTween
+            {
+                to = 0f,
+                duration = splashScreenParameters.backgroundFadeOutDuration,
+            };
+            await splashBackground.gameObject.AddTween(tween).AwaitDecommissionAsync();
 
             // Graphics are now invisible, deactivate game object completely for cleanup
             gameObject.SetActive(false);

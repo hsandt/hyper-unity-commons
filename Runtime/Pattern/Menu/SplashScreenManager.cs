@@ -7,8 +7,8 @@ using UnityEngine.UI;
 
 using HyperUnityCommons;
 
-#if NL_ELRACCOONE_TWEENS
-using ElRaccoone.Tweens;
+#if NL_JEFFREYLANTERS_TWEENS
+using Tweens;
 #endif
 
 /// Splash Screen Manager
@@ -30,7 +30,7 @@ public class SplashScreenManager : SingletonManager<SplashScreenManager>
 
     #if UNITY_EDITOR
 
-    #if NL_ELRACCOONE_TWEENS
+    #if NL_JEFFREYLANTERS_TWEENS
     [Header("Editor only")]
 
     [SerializeField, Tooltip("Check to skip splash screen for quicker iterations")]
@@ -60,7 +60,7 @@ public class SplashScreenManager : SingletonManager<SplashScreenManager>
         }
     }
 
-    #if NL_ELRACCOONE_TWEENS
+    #if NL_JEFFREYLANTERS_TWEENS
     public async Task PlaySplashScreenSequence()
     {
         #if UNITY_EDITOR
@@ -72,9 +72,21 @@ public class SplashScreenManager : SingletonManager<SplashScreenManager>
 
         if (splashLogo != null)
         {
-            await splashLogo.TweenGraphicAlpha(1f, splashScreenParameters.logoFadeInDuration).Await();
+            var fadeInTween = new GraphicAlphaTween
+            {
+                to = 1f,
+                duration = splashScreenParameters.logoFadeInDuration,
+            };
+            await splashLogo.gameObject.AddTween(fadeInTween).AwaitDecommissionAsync();
+
             await Task.Delay(TimeSpan.FromSeconds(splashScreenParameters.logoStayDuration));
-            await splashLogo.TweenGraphicAlpha(0f, splashScreenParameters.logoFadeOutDuration).Await();
+
+            var fadeOutTween = new GraphicAlphaTween
+            {
+                to = 0f,
+                duration = splashScreenParameters.logoFadeOutDuration,
+            };
+            await splashLogo.gameObject.AddTween(fadeOutTween).AwaitDecommissionAsync();
         }
     }
     #endif

@@ -6,8 +6,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-#if NL_ELRACCOONE_TWEENS
-using ElRaccoone.Tweens;
+#if NL_JEFFREYLANTERS_TWEENS
+using Tweens;
 #endif
 
 namespace HyperUnityCommons
@@ -100,23 +100,45 @@ namespace HyperUnityCommons
             }
         }
 
-        #if NL_ELRACCOONE_TWEENS
+        #if NL_JEFFREYLANTERS_TWEENS
         public async Task FadeOutAsync(float duration)
         {
             List<Task> tasks = new();
 
             if (coreLabel != null)
             {
-                tasks.Add(coreLabel.TweenGraphicAlpha(0f, duration).Await());
+                var tween = new GraphicAlphaTween
+                {
+                    to = 0f,
+                    duration = duration,
+                };
+                tasks.Add(coreLabel.gameObject.AddTween(tween).AwaitDecommissionAsync());
             }
 
             if (coreTMPLabel != null)
             {
-                tasks.Add(coreTMPLabel.TweenGraphicAlpha(0f, duration).Await());
+                var tween = new GraphicAlphaTween
+                {
+                    to = 0f,
+                    duration = duration,
+                };
+                tasks.Add(coreTMPLabel.gameObject.AddTween(tween).AwaitDecommissionAsync());
             }
 
-            tasks.AddRange(outlineLabels.Select(outlineLabel => outlineLabel.TweenGraphicAlpha(0f, duration).Await()));
-            tasks.AddRange(outlineTMPLabels.Select(outlineTMPLabel => outlineTMPLabel.TweenGraphicAlpha(0f, duration).Await()));
+            var outlineLabelTween = new GraphicAlphaTween
+            {
+                to = 0f,
+                duration = duration,
+            };
+
+            var outlineTMPLabelTween = new GraphicAlphaTween
+            {
+                to = 0f,
+                duration = duration,
+            };
+
+            tasks.AddRange(outlineLabels.Select(outlineLabel => outlineLabel.gameObject.AddTween(outlineLabelTween).AwaitDecommissionAsync()));
+            tasks.AddRange(outlineTMPLabels.Select(outlineTMPLabel => outlineTMPLabel.gameObject.AddTween(outlineTMPLabelTween).AwaitDecommissionAsync()));
 
             await Task.WhenAll(tasks);
         }

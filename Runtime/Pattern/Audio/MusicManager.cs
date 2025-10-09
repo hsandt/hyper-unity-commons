@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 using HyperUnityCommons;
-#if NL_ELRACCOONE_TWEENS
-using ElRaccoone.Tweens;
+#if NL_JEFFREYLANTERS_TWEENS
+using Tweens;
 #endif
 #if COM_E7_INTROLOOP
 using E7.Introloop;
@@ -16,7 +16,7 @@ using E7.Introloop;
 /// Good to play simple looping BGM
 /// Also used to play non-looping stingers, on a different source
 /// If you have installed nl.elraccoone.tweens, Hyper Unity Commons Runtime assembly definition should define
-/// NL_ELRACCOONE_TWEENS and you will unlock FadeOutBgmAsync.
+/// NL_JEFFREYLANTERS_TWEENS and you will unlock FadeOutBgmAsync.
 /// If you have installed Introloop, Hyper Unity Commons Runtime assembly definition should define COM_E7_INTROLOOP
 /// and you will unlock Introloop-specific API (and you don't need nl.elraccoone.tweens to fade out Introloop BGM).
 /// To use FadeOutAnyBgmAsync you need at least one of the two packages, nl.elraccoone.tweens or Introloop.
@@ -132,7 +132,7 @@ public class MusicManager : SingletonManager<MusicManager>
         bgmAudioSource.clip = null;
     }
 
-    #if NL_ELRACCOONE_TWEENS
+    #if NL_JEFFREYLANTERS_TWEENS
     /// Fade out current native BGM over [duration] seconds and wait for fading to end
     public IEnumerator FadeOutBgmCoroutine(float duration)
     {
@@ -143,7 +143,12 @@ public class MusicManager : SingletonManager<MusicManager>
         // Note that while this is linear as we want, this clamps updates to the framerate
         // For a smoother update, consider updating the BGM AudioMixer volume instead (using log conversion)
         // See https://johnleonardfrench.com/how-to-fade-audio-in-unity-i-tested-every-method-this-ones-the-best/
-        yield return bgmAudioSource.TweenAudioSourceVolume(0f, duration).Yield();
+        var tween = new AudioSourceVolumeTween
+        {
+            to = 0f,
+            duration = duration,
+        };
+        yield return bgmAudioSource.gameObject.AddTween(tween).AwaitDecommission();
 
         // To clean up, stop BGM properly then restore old volume so BGM source is ready for next play
         bgmAudioSource.Stop();
@@ -159,7 +164,12 @@ public class MusicManager : SingletonManager<MusicManager>
         // Same implementation as FadeOutBgmCoroutine, except using await
         float oldVolume = bgmAudioSource.volume;
 
-        await bgmAudioSource.TweenAudioSourceVolume(0f, duration).Await();
+        var tween = new AudioSourceVolumeTween
+        {
+            to = 0f,
+            duration = duration,
+        };
+        await bgmAudioSource.gameObject.AddTween(tween).AwaitDecommissionAsync();
 
         bgmAudioSource.Stop();
         bgmAudioSource.volume = oldVolume;
@@ -370,7 +380,7 @@ public class MusicManager : SingletonManager<MusicManager>
         }
     }
 
-    #if COM_E7_INTROLOOP || NL_ELRACCOONE_TWEENS
+    #if COM_E7_INTROLOOP || NL_JEFFREYLANTERS_TWEENS
     /// Fade out current BGM of any type over [duration] seconds
     public async void FadeOutAnyBgm(float duration)
     {
@@ -391,7 +401,7 @@ public class MusicManager : SingletonManager<MusicManager>
         }
         #endif
 
-        #if NL_ELRACCOONE_TWEENS
+        #if NL_JEFFREYLANTERS_TWEENS
         if (bgmAudioSource.isPlaying)
         {
             await FadeOutBgmAsync(duration);
