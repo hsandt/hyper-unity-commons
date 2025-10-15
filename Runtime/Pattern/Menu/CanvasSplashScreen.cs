@@ -13,7 +13,7 @@ using Tweens;
 #endif
 
 /// Main component of Canvas Splash Screen
-/// Async methods require ElRaccoone.Tweens and without them,
+/// Async methods require jeffreylanters-tweens v3+ package and without them,
 /// this class doesn't do much, so it is strongly recommended to install that package
 public class CanvasSplashScreen : MonoBehaviour
 {
