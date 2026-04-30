@@ -10,16 +10,16 @@ public class ImageMaterialPropertyController : MaterialPropertyController<Image>
     {
         // MaterialPropertyController.Awake also calls DebugUtil.AssertListElementsNotNull so no need to log errors
         // on null entries again, just check for not null
-        if (controlledComponentsWithMaterial != null)
+        if (additionalControlledComponentsWithMaterial != null)
         {
-            for (int i = 0; i < controlledComponentsWithMaterial.Count; i++)
+            for (int i = 0; i < additionalControlledComponentsWithMaterial.Count; i++)
             {
-                if (controlledComponentsWithMaterial[i] != null)
+                if (additionalControlledComponentsWithMaterial[i] != null)
                 {
                     // Image.material is a shared material, unlike SpriteRenderer, so we need to create a temporary copy
                     // for each image, so we can work on material instances
                     // https://forum.unity.com/threads/image-material-being-treated-like-renderer-sharedmaterial-any-workaround.279723/#post-7811535
-                    controlledComponentsWithMaterial[i].material = new Material(controlledComponentsWithMaterial[i].material);
+                    additionalControlledComponentsWithMaterial[i].material = new Material(additionalControlledComponentsWithMaterial[i].material);
                 }
             }
         }

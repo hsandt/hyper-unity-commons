@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 using HyperUnityCommons;
 
@@ -17,14 +18,6 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
     private readonly int brightnessPropertyID = Shader.PropertyToID("_Brightness");
 
 
-    [Header("Child references")]
-
-    [Tooltip("List of sprites to apply property changes to. If Search Components Mode is not None, this is filled " +
-        "automatically on initialization. Note that components found this way are added to the ones already " +
-        "set in the inspector, without checking for duplicates.")]
-    public List<TComponent> controlledComponentsWithMaterial;
-
-
     [Header("Parameters")]
 
     [SerializeField, Tooltip("Determines if we should automatically register TComponent components, " +
@@ -33,7 +26,17 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
          "do not add the concerned sprite renderers again manually.")]
     private SearchComponentsMode searchComponentsMode = SearchComponentsMode.Self;
 
-    [Header("Parameters")]
+
+    [Header("References")]
+
+    [Tooltip("Additional list of components to apply property changes to, besides the ones found via search following Search Components Mode. " +
+             "Note the script doesn't check for duplicates, so only use this for components that cannot be trivially found in the children hierarchy " +
+             "(such as components on isolated children or grandchildren that should be picked without their siblings, or on a non-child game object).")]
+    [FormerlySerializedAs("controlledComponentsWithMaterial")]
+    public List<TComponent> additionalControlledComponentsWithMaterial;
+
+
+    [Header("Dynamic parameters")]
 
     [Tooltip("Check this to enable the two override fields below. The material properties " +
          "will be set to those values every Update. Use this as an alternative to calling Set... methods " +
@@ -100,7 +103,7 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
         m_PropertyChangeEndTimer = new Timer(callback: ResetProperties);
 
         // Search for any extra controlled components with material in hierarchy
-        GameObjectUtil.FillComponentsSearchingInHierarchy(controlledComponentsWithMaterial, gameObject, searchComponentsMode);
+        GameObjectUtil.FillComponentsSearchingInHierarchy(additionalControlledComponentsWithMaterial, gameObject, searchComponentsMode);
 
         // Must be called just after FillComponentsSearchingInHierarchy so we instantiate materials for all wanted
         // shared materials if needed, and before setting m_CachedTargetMaterialInstances since
@@ -108,7 +111,7 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
         InstantiateMaterials();
 
         // Cache material instances from components
-        m_CachedTargetMaterialInstances = controlledComponentsWithMaterial?
+        m_CachedTargetMaterialInstances = additionalControlledComponentsWithMaterial?
             .Select(GetTargetMaterialInstance)
             .ToList();
 
@@ -124,7 +127,7 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
                 "{0}, which means material instance {1} from component {2} has been added twice, " +
                 "or once in Inspector to controlledComponentsWithMaterial, and once via FillComponentsSearchingInHierarchy " +
                 "on {2}. Make sure that the search is not redundant with manual entry.",
-                targetMaterialInstance.GetInstanceID(), targetMaterialInstance, controlledComponentsWithMaterial[i], this);
+                targetMaterialInstance.GetInstanceID(), targetMaterialInstance, additionalControlledComponentsWithMaterial[i], this);
 
             m_InitialTintDict.Add(targetMaterialInstance.GetInstanceID(),
                 targetMaterialInstance.GetColor(colorPropertyID));
