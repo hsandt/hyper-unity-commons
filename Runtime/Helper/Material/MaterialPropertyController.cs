@@ -82,11 +82,7 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
     private bool m_WasUpdatingPropertiesWithOverride = false;
 
 
-    /* Methods to override */
-
-    /// If child class has old members, process them to be compatible with new version
-    /// (e.g. filling controlledComponentsWithMaterial with old component array content)
-    protected virtual void UpdateVersion() {}
+    #region Methods to override
 
     /// If child class is using shared material, create unique material instances for every target
     protected virtual void InstantiateMaterials() {}
@@ -94,12 +90,13 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
     /// Return enumerable to target material properties
     protected abstract Material GetTargetMaterialInstance(TComponent component);
 
+    #endregion
+
+
+    #region MonoBehaviour Methods
 
     private void Awake()
     {
-        // Call it first, may adjust controlledComponentsWithMaterial
-        UpdateVersion();
-
         m_PropertyChangeEndTimer = new Timer(callback: ResetProperties);
 
         // Search for any extra controlled components with material in hierarchy
@@ -164,16 +161,20 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
         m_WasUpdatingPropertiesWithOverride = updatePropertiesWithOverride;
     }
 
+    #endregion
 
-    /* ClearableBehaviour override */
+
+    #region ClearableBehaviour override
 
     public override void Clear()
     {
         ResetProperties();
     }
 
+    #endregion
 
-    /* Own methods */
+
+    #region Own Methods
 
     /// Set tint property on passed material instance
     private void SetTintOnMaterialInstance(Material materialInstance, Color tint)
@@ -270,4 +271,6 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
         SetProperties(tint, brightness);
         m_PropertyChangeEndTimer.SetTime(duration);
     }
+
+    #endregion
 }

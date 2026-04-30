@@ -1,40 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Serialization;
 
 /// MaterialPropertyController for Images
 /// MAT_UI_Default-with-Brightness (Packages/com.longnguyenhuu.hyper-unity-commons/Runtime/Helper/Shaders/MAT_UI_Default-with-Brightness.mat)
 /// is an example of material for images with the properties _Color and _Brightness.
 public class ImageMaterialPropertyController : MaterialPropertyController<Image>
 {
-    [Header("Sibling & child references")]
-
-    [Tooltip("Old images to apply property changes to")]
-    [FormerlySerializedAs("images")]
-    public Image[] OLD_images;
-
-
-    protected override void UpdateVersion()
-    {
-        // Version upgrade: for projects which have not transferred all sprite renderers from
-        // old list OLD_images to new list controlledComponentsWithMaterial (on base class) yet,
-        // add entries from the old list
-        if (controlledComponentsWithMaterial.Count == 0)
-        {
-            if (OLD_images.Length > 0)
-            {
-                Debug.LogWarningFormat(this,
-                    "[ImageMaterialPropertyController] Init: {0} still using entries in old array " +
-                    "OLD_images, please move them to new list controlledComponentsWithMaterial",
-                    this);
-                controlledComponentsWithMaterial.AddRange(OLD_images);
-            }
-        }
-    }
-
     protected override void InstantiateMaterials()
     {
         // MaterialPropertyController.Awake also calls DebugUtil.AssertListElementsNotNull so no need to log errors
