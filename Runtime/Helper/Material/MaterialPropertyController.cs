@@ -72,10 +72,10 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
     /* Initial state */
 
     /// Dictionary of initial tints, with key: material instance ID
-    private readonly Dictionary<int, Color> m_InitialTintDict = new();
+    private readonly Dictionary<EntityId, Color> m_InitialTintDict = new();
 
     /// Dictionary of initial brightnesses, with key: material instance ID
-    private readonly Dictionary<int, float> m_InitialBrightnessDict = new();
+    private readonly Dictionary<EntityId, float> m_InitialBrightnessDict = new();
 
 
     /* Current state */
@@ -111,7 +111,7 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
         InstantiateMaterials();
 
         // Cache material instances from components
-        m_CachedTargetMaterialInstances = additionalControlledComponentsWithMaterial?
+        m_CachedTargetMaterialInstances = additionalControlledComponentsWithMaterial
             .Select(GetTargetMaterialInstance)
             .ToList();
 
@@ -121,17 +121,17 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
             var targetMaterialInstance = m_CachedTargetMaterialInstances[i];
 
             // Just check m_InitialTintDict, as m_InitialBrightnessDict should have the same keys
-            DebugUtil.AssertFormat(!m_InitialTintDict.ContainsKey(targetMaterialInstance.GetInstanceID()),
+            DebugUtil.AssertFormat(!m_InitialTintDict.ContainsKey(targetMaterialInstance.GetEntityId()),
                 this,
                 "[MaterialPropertyController] Awake: m_InitialTintDict already contains key " +
                 "{0}, which means material instance {1} from component {2} has been added twice, " +
                 "or once in Inspector to controlledComponentsWithMaterial, and once via FillComponentsSearchingInHierarchy " +
-                "on {2}. Make sure that the search is not redundant with manual entry.",
-                targetMaterialInstance.GetInstanceID(), targetMaterialInstance, additionalControlledComponentsWithMaterial[i], this);
+                "on {3}. Make sure that the search is not redundant with manual entry.",
+                targetMaterialInstance.GetEntityId(), targetMaterialInstance, additionalControlledComponentsWithMaterial[i], this);
 
-            m_InitialTintDict.Add(targetMaterialInstance.GetInstanceID(),
+            m_InitialTintDict.Add(targetMaterialInstance.GetEntityId(),
                 targetMaterialInstance.GetColor(colorPropertyID));
-            m_InitialBrightnessDict.Add(targetMaterialInstance.GetInstanceID(),
+            m_InitialBrightnessDict.Add(targetMaterialInstance.GetEntityId(),
                 targetMaterialInstance.GetFloat(brightnessPropertyID));
         }
     }
@@ -189,7 +189,7 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
     private void ResetTintOnMaterialInstance(Material targetMaterialInstance)
     {
         SetTintOnMaterialInstance(targetMaterialInstance,
-            m_InitialTintDict[targetMaterialInstance.GetInstanceID()]);
+            m_InitialTintDict[targetMaterialInstance.GetEntityId()]);
     }
 
     /// Set brightness property on passed material instance
@@ -202,7 +202,7 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
     private void ResetBrightnessOnMaterialInstance(Material targetMaterialInstance)
     {
         SetBrightnessOnMaterialInstance(targetMaterialInstance,
-            m_InitialBrightnessDict[targetMaterialInstance.GetInstanceID()]);
+            m_InitialBrightnessDict[targetMaterialInstance.GetEntityId()]);
     }
 
     /// Set tint property on all target material instances
@@ -237,7 +237,7 @@ public abstract class MaterialPropertyController<TComponent> : ClearableBehaviou
     {
         foreach (var targetMaterialInstance in m_CachedTargetMaterialInstances)
         {
-            SetBrightness(m_InitialBrightnessDict[targetMaterialInstance.GetInstanceID()]);
+            SetBrightness(m_InitialBrightnessDict[targetMaterialInstance.GetEntityId()]);
         }
     }
 
