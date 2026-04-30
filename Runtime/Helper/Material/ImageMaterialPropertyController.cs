@@ -1,32 +1,38 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// MaterialPropertyController for Images
-/// MAT_UI_Default-with-Brightness (Packages/com.longnguyenhuu.hyper-unity-commons/Runtime/Helper/Shaders/MAT_UI_Default-with-Brightness.mat)
-/// is an example of material for images with the properties _Color and _Brightness.
-public class ImageMaterialPropertyController : MaterialPropertyController<Image>
+namespace HyperUnityCommons
 {
-    protected override void InstantiateMaterials()
+    /// MaterialPropertyController for Images
+    /// MAT_UI_Default-with-Brightness (Packages/com.longnguyenhuu.hyper-unity-commons/Runtime/Helper/Shaders/MAT_UI_Default-with-Brightness.mat)
+    /// is an example of material for images with the properties _Color and _Brightness.
+    public class ImageMaterialPropertyController : MaterialPropertyController<Image>
     {
-        // MaterialPropertyController.Awake also calls DebugUtil.AssertListElementsNotNull so no need to log errors
-        // on null entries again, just check for not null
-        if (additionalControlledComponentsWithMaterial != null)
+        protected override void InstantiateMaterials()
         {
-            for (int i = 0; i < additionalControlledComponentsWithMaterial.Count; i++)
+            // MaterialPropertyController.Awake also calls DebugUtil.AssertListElementsNotNull so no need to log errors
+            // on null entries again, just check for not null
+            if (additionalControlledComponentsWithMaterial != null)
             {
-                if (additionalControlledComponentsWithMaterial[i] != null)
+                for (int i = 0; i < additionalControlledComponentsWithMaterial.Count; i++)
                 {
-                    // Image.material is a shared material, unlike SpriteRenderer, so we need to create a temporary copy
-                    // for each image, so we can work on material instances
-                    // https://forum.unity.com/threads/image-material-being-treated-like-renderer-sharedmaterial-any-workaround.279723/#post-7811535
-                    additionalControlledComponentsWithMaterial[i].material = new Material(additionalControlledComponentsWithMaterial[i].material);
+                    if (additionalControlledComponentsWithMaterial[i] != null)
+                    {
+                        // Image.material is a shared material, unlike SpriteRenderer, so we need to create a temporary copy
+                        // for each image, so we can work on material instances
+                        // https://forum.unity.com/threads/image-material-being-treated-like-renderer-sharedmaterial-any-workaround.279723/#post-7811535
+                        additionalControlledComponentsWithMaterial[i].material = new Material(additionalControlledComponentsWithMaterial[i].material);
+                    }
                 }
             }
         }
-    }
 
-    protected override Material GetTargetMaterialInstance(Image component)
-    {
-        return component.material;
+        protected override Material GetTargetMaterialInstance(Image component)
+        {
+            return component.material;
+        }
     }
 }
