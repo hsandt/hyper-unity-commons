@@ -182,9 +182,9 @@ namespace HyperUnityCommons
 				{
 					// Just like GetComponentOrFail extension method (but still true in Unity 2021),
 					// we noticed that undefined list entries (with Object type) are not truly null,
-					// but some dummy Object with instance ID = 0, to allow showing an
-					// UnassignedReferenceException with details on which field is undefined to the developer.
-					Debug.AssertFormat(list[i] != null && list[i].GetInstanceID() != 0,
+					// but are some dummy Object with instance ID = 0
+					// In Unity 6.4, GetInstanceID is deprecated but we kept the closest check using EntityID we could
+					Debug.AssertFormat(list[i] != null && list[i].GetEntityId().IsValid(),
 						context, "{0}[{1}] is null/undefined/missing on {2}", listName, i, context);
 				}
 			}
@@ -215,9 +215,9 @@ namespace HyperUnityCommons
 				{
 					// Just like GetComponentOrFail extension method (but still true in Unity 2021),
 					// we noticed that undefined dictionary entries (with Object type) are not truly null,
-					// but some dummy Object with instance ID = 0, to allow showing an
-					// UnassignedReferenceException with details on which field is undefined to the developer.
-					Debug.AssertFormat(value != null && value.GetInstanceID() != 0,
+					// but are some dummy Object with instance ID = 0
+					// In Unity 6.4, GetInstanceID is deprecated but we kept the closest check using EntityID we could
+					Debug.AssertFormat(value != null && value.GetEntityId().IsValid(),
 						context, "{0}[{1}] is null/undefined/missing on {2}", dictName, key, context);
 				}
 			}

@@ -108,10 +108,9 @@ namespace HyperUnityCommons
                             i, key);
                         }
                         // Just like AssertDictionaryElementsNotNull, we need to check for dictionary entries
-                        // (with Object type) that are not truly null, but some dummy Object with instance ID = 0,
-                        // to allow showing an UnassignedReferenceException with details on which field is undefined
-                        // to the developer.
-                        else if (value is Object objectValue && objectValue.GetInstanceID() == 0)
+                        // (with Object type) that are not truly null, but some dummy Object with instance ID = 0
+    					// In Unity 6.4, GetInstanceID is deprecated but we kept the closest check using EntityID we could
+                        else if (value is Object objectValue && !objectValue.GetEntityId().IsValid())
                         {
                             Debug.LogErrorFormat("[EditableDictionary] InitCache: value for key " +
                                 "m_KeyValuePairs[{0}].key = {1} is undefined/missing. It will still be added to cached dictionary, but caller " +
