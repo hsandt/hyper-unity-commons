@@ -23,7 +23,7 @@ namespace HyperUnityCommons
         [MenuItem ("Debug/Run Detect Rect Transform Override")]
         public static void RunDetectRectTransformOverride()
         {
-            DetectRectTransformOverrideFlag[] flags = Object.FindObjectsByType<DetectRectTransformOverrideFlag>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            DetectRectTransformOverrideFlag[] flags = Object.FindObjectsByType<DetectRectTransformOverrideFlag>(FindObjectsInactive.Include);
             foreach (DetectRectTransformOverrideFlag flag in flags)
             {
                 GameObject gameObject = flag.gameObject;

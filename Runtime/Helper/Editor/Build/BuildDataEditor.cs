@@ -62,7 +62,7 @@ namespace HyperUnityCommons.Editor
 			else
 			{
 				// FindObjectsByType only works in actual scenes
-				scripts = FindObjectsByType<UpdateBuildVersion>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+				scripts = FindObjectsByType<UpdateBuildVersion>(FindObjectsInactive.Include);
 			}
 
 			foreach (UpdateBuildVersion script in scripts)
