@@ -38,18 +38,23 @@ namespace HyperUnityCommons
 
         [Header("Dynamic parameters")]
 
-        [Tooltip("Check this to enable the two override fields below. The material properties " +
-                 "will be set to those values every Update. Use this as an alternative to calling Set... methods " +
-                 "by code, for instance to animate a property directly with an animation. " +
-                 "To avoid updating all properties for nothing when no animation is running, we recommend to " +
-                 "set this to true only when needed, for instance during animations that continuously animate " +
-                 "the properties. As a safety, when the value becomes false, the component will automatically " +
-                 "call ResetProperties once to clear any remaining override.")]
-        public bool updatePropertiesWithOverride = false;
+        [Tooltip("When true, set the tint of all controlled material instances to currentTintOverride on Update. " +
+                 "Unlike setters, this allows to edit a property via an animation.<br><br>" +
+                 "For performance reasons, we recommend to enable this only when needed, for instance during animations " +
+                 "that continuously animate the properties.<br><br>" +
+                 "When the value becomes false, the component will automatically call ResetTint once to clear any remaining override.")]
+        public bool updateTintWithOverride = false;
 
         [Tooltip("When Update Properties With Override is checked, set all material tints to this value " +
                  "every Update.")]
         public Color currentTintOverride = Color.white;
+
+        [Tooltip("When true, set the tint of all controlled material instances to currentTintOverride on Update. " +
+                 "Unlike setters, this allows to edit a property via an animation.<br><br>" +
+                 "For performance reasons, we recommend to enable this only when needed, for instance during animations " +
+                 "that continuously animate the properties.<br><br>" +
+                 "When the value becomes false, the component will automatically call ResetTint once to clear any remaining override.")]
+        public bool updateBrightnessWithOverride = false;
 
         [Tooltip("When Update Properties With Override is checked, set all material brightnesses to this value " +
                  "every Update.")]
@@ -58,8 +63,11 @@ namespace HyperUnityCommons
 
         /* Custom components */
 
-        /// Timer counting down toward end of property changes
-        private Timer m_PropertyChangeEndTimer;
+        /// Timer counting down toward end of tint change
+        private Timer m_TintChangeEndTimer;
+
+        /// Timer counting down toward end of brightness change
+        private Timer m_BrightnessChangeEndTimer;
 
 
         /* Cached references */
@@ -80,9 +88,13 @@ namespace HyperUnityCommons
 
         /* Current state */
 
-        /// Flag that tracks whether updatePropertiesWithOverride was true last frame
-        /// to detect when it becomes false, so we can ResetProperties to reach a clean state.
-        private bool m_WasUpdatingPropertiesWithOverride = false;
+        /// Flag that tracks whether updateTintWithOverride was true last frame
+        /// to detect when it becomes false, so we can ResetTint to reach a clean state
+        private bool m_WasUpdatingTintWithOverride = false;
+
+        /// Flag that tracks whether updateBrightnessWithOverride was true last frame
+        /// to detect when it becomes false, so we can ResetBrightness to reach a clean state
+        private bool m_WasUpdatingBrightnessWithOverride = false;
 
 
         #region Methods to override
@@ -100,7 +112,8 @@ namespace HyperUnityCommons
 
         private void Awake()
         {
-            m_PropertyChangeEndTimer = new Timer(callback: ResetProperties);
+            m_TintChangeEndTimer = new Timer(callback: ResetTint);
+            m_BrightnessChangeEndTimer = new Timer(callback: ResetBrightness);
 
             // Search for any extra controlled components with material in hierarchy
             GameObjectUtil.FillComponentsSearchingInHierarchy(additionalControlledComponentsWithMaterial, gameObject, searchComponentsMode);
@@ -147,30 +160,54 @@ namespace HyperUnityCommons
 
         private void Update()
         {
-            if (updatePropertiesWithOverride)
+            UpdateTint();
+            UpdateBrightness();
+        }
+
+        private void UpdateTint()
+        {
+            if (updateTintWithOverride)
             {
                 // Update mode: set properties directly from override values
-                SetProperties(currentTintOverride, currentBrightnessOverride);
+                SetTint(currentTintOverride);
             }
             else
             {
-                if (m_WasUpdatingPropertiesWithOverride)
+                if (m_WasUpdatingTintWithOverride)
                 {
-                    // updatePropertiesWithOverride just became false, so we reset all the properties
-                    // to reach a clean state, in case some override properties are left
-                    ResetProperties();
+                    // updateTintWithOverride just became false, so we reset tint
+                    // to reach a clean state, in case some override tint is left
+                    ResetTint();
                 }
 
-                // Manual mode: most of the work is done via direct calls to the Set... methods
-                // but we must also count down timers.
-                // This is not compatible with Update mode (for instance, if we count down the timer,
-                // during Update mode, it may reach 0 and do a ResetProperties only to be overwritten
-                // by the SetProperties above), so we may as well pause all count downs until Update mode
-                // is over.
-                m_PropertyChangeEndTimer.CountDown(Time.deltaTime);
+                // Manual mode: tint is not overriden, so update tint timer
+                m_TintChangeEndTimer.CountDown(Time.deltaTime);
+            }
+        }
+
+        private void UpdateBrightness()
+        {
+            m_WasUpdatingTintWithOverride = updateTintWithOverride;
+
+            if (updateBrightnessWithOverride)
+            {
+                // Update mode: set properties directly from override values
+                SetBrightness(currentBrightnessOverride);
+            }
+            else
+            {
+                if (m_WasUpdatingBrightnessWithOverride)
+                {
+                    // updateBrightnessWithOverride just became false, so we reset brightness
+                    // to reach a clean state, in case some override brightness is left
+                    ResetBrightness();
+                }
+
+                // Manual mode: brightness is not overriden, so update brightness timer
+                m_BrightnessChangeEndTimer.CountDown(Time.deltaTime);
             }
 
-            m_WasUpdatingPropertiesWithOverride = updatePropertiesWithOverride;
+            m_WasUpdatingBrightnessWithOverride = updateBrightnessWithOverride;
         }
 
         #endregion
@@ -263,25 +300,25 @@ namespace HyperUnityCommons
         }
 
         /// Set sprite material tint for given duration
-        /// It also resets the timer shared with other properties, so this may lengthen or shorten other property changes.
         public void SetTintForDuration(Color tint, float duration)
         {
             SetTint(tint);
-            m_PropertyChangeEndTimer.SetTime(duration);
+            m_TintChangeEndTimer.SetTime(duration);
         }
 
         /// Set sprite material brightness for given duration
-        /// It also resets the timer shared with other properties, so this may lengthen or shorten other property changes.
         public void SetBrightnessForDuration(float brightness, float duration)
         {
             SetBrightness(brightness);
-            m_PropertyChangeEndTimer.SetTime(duration);
+            m_BrightnessChangeEndTimer.SetTime(duration);
         }
 
+        /// Set all supported material properties for given duration
         public void SetPropertiesForDuration(Color tint, float brightness, float duration)
         {
             SetProperties(tint, brightness);
-            m_PropertyChangeEndTimer.SetTime(duration);
+            m_TintChangeEndTimer.SetTime(duration);
+            m_BrightnessChangeEndTimer.SetTime(duration);
         }
 
         #endregion
