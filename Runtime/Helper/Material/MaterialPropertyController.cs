@@ -129,6 +129,15 @@ namespace HyperUnityCommons
                     "on {3}. Make sure that the search is not redundant with manual entry.",
                     targetMaterialInstance.GetEntityId(), targetMaterialInstance, additionalControlledComponentsWithMaterial[i], this);
 
+                // Assertion message based on native error message of GetColor/GetFloat when property is missing,
+                // but adding game object information
+                DebugUtil.AssertFormat(targetMaterialInstance.HasColor(colorPropertyID), additionalControlledComponentsWithMaterial[i].gameObject,
+                    "[MaterialPropertyController] Awake: on {0}, Material '{1}' with Shader '{2}' has no color property '_Color'",
+                    additionalControlledComponentsWithMaterial[i].gameObject, targetMaterialInstance.name, targetMaterialInstance.shader.name);
+                DebugUtil.AssertFormat(targetMaterialInstance.HasFloat(brightnessPropertyID), additionalControlledComponentsWithMaterial[i].gameObject,
+                    "[MaterialPropertyController] Awake: on {0}, Material '{1}' with Shader '{2}' has no float property '_Brightness'",
+                    additionalControlledComponentsWithMaterial[i].gameObject, targetMaterialInstance.name, targetMaterialInstance.shader.name);
+
                 m_InitialTintDict.Add(targetMaterialInstance.GetEntityId(),
                     targetMaterialInstance.GetColor(colorPropertyID));
                 m_InitialBrightnessDict.Add(targetMaterialInstance.GetEntityId(),
