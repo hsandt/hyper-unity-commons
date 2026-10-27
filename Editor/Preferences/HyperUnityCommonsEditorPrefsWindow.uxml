@@ -1,3 +1,4 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:Toggle label="Remove Unloaded Scenes during Play" name="RemoveUnloadedScenesDuringPlayToggle" tooltip="Temporarily remove unloaded scenes in the editor before Play, and restore them after Stop (back to Edit mode)" />
+    <ui:Toggle label="Simulate Release Build" name="SimulateReleaseBuildToggle" tooltip="If checked, `HyperUnityCommonsEditorPrefsWindow.ShouldSimulateReleaseBuild` will return true. Check this along with `#if DEVELOPMENT_BUILD || UNITY_EDITOR` to toggle development vs release build behaviour." />
 </ui:UXML>

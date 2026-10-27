@@ -23,7 +23,7 @@ public class SettingGaugeLabel : BaseSettingLabel
     public AudioClip sfxSliderMove;
 
 
-    [Header("External references")]
+    [Header("External scene references")]
 
     [Tooltip("Slider of gauge associated to this label")]
     [FormerlySerializedAs("optionGaugeSlider")]

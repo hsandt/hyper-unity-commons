@@ -52,8 +52,9 @@ namespace HyperUnityCommons
 			T component = gameObject.GetComponent<T>();
 			// At some point Unity returned a pseudo-null if component was missing, which had to be checked via instance ID or ToString
 			// https://stackoverflow.com/questions/44991173/getcomponent-returning-null-instead-of-null
-			// Now it returns a proper null again, but for backward compatibility we still check the instance ID.
-	        if (component == null || component.GetInstanceID() == 0) {
+			// Now it returns a proper null again, and in the meantime even GetInstanceID was deprecated,
+			// but just in case we kept the closest check using EntityID we could
+	        if (component == null || !component.GetEntityId().IsValid()) {
 		        #if UNITY_EDITOR || DEVELOPMENT_BUILD
 		        Debug.LogErrorFormat(gameObject, "GetComponentOrFail: no component of type {0} found on {1}", typeof(T), gameObject);
 		        throw new Exception("GetComponentOrFail failed, see error above");

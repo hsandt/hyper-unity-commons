@@ -19,7 +19,7 @@ namespace HyperUnityCommons
 
         public void AssertIsValid()
         {
-            // In theory we should verify that there is no redundancy, etc.
+            // In theory, we should verify that there is no redundancy, etc.
             // but the most common issue is null entry due to missing data or adding an entry and forgetting to fill it,
             // so just check this
             DebugUtil.AssertListElementsNotNull(entries, this, nameof(entries));

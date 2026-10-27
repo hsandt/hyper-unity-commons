@@ -1,14 +1,17 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 
 namespace HyperUnityCommons.Editor
 {
-
 	[CustomEditor(typeof(BuildData))]
-	public class BuildDataEditor : UnityEditor.Editor {
+	public class BuildDataEditor : UnityEditor.Editor
+	{
+		private const string BuildProfilesFolder = "Assets/Settings/Build Profiles";
 
 		public override void OnInspectorGUI() {
 			DrawDefaultInspector();
@@ -17,16 +20,12 @@ namespace HyperUnityCommons.Editor
 			if (GUILayout.Button("Update version in Player settings"))
 			{
 				string version = data.GetVersionString();
-				PlayerSettings.bundleVersion = version;
+				SetNewVersion(version);
 			}
 
-			if (GUILayout.Button("Update version for all UpdateBuildVersion scripts found in active scenes"))
+			if (GUILayout.Button("Update version for all UpdateBuildVersion scripts found in active scenes or prefab"))
 			{
-				var scripts = FindObjectsOfType<UpdateBuildVersion>();
-				foreach (UpdateBuildVersion script in scripts)
-				{
-					UpdateBuildVersionEditor.UpdateBuildVersionTextSiblingOf(script);
-				}
+				UpdateBuildVersionTextInActiveScenesOrPrefab();
 			}
 
 			if (GUILayout.Button("Open Build folder"))
@@ -35,10 +34,113 @@ namespace HyperUnityCommons.Editor
 			}
 		}
 
+		private static void UpdateBuildVersionTextInActiveScenesOrPrefab()
+		{
+			PrefabStage currentPrefabStage = null;
+
+			// Check current stage
+			Stage currentStage = StageUtility.GetCurrentStage();
+			if (currentStage is PrefabStage prefabStage)
+			{
+				// Prefab edit mode
+				currentPrefabStage = prefabStage;
+			}
+			else if (currentStage is not MainStage)
+			{
+				// Not Prefab edit mode nor Main scene, must be a custom stage
+				Debug.LogWarning("[BuildDataEditor] UpdateBuildVersionTextInActiveScenesOrPrefab: custom stages are not supported");
+				return;
+			}
+
+			UpdateBuildVersion[] scripts;
+
+			if (currentPrefabStage != null)
+			{
+				// Prefab edit mode requires working with the prefab stage
+				scripts = currentPrefabStage.FindComponentsOfType<UpdateBuildVersion>();
+			}
+			else
+			{
+				// FindObjectsByType only works in actual scenes
+				scripts = FindObjectsByType<UpdateBuildVersion>(FindObjectsInactive.Include);
+			}
+
+			foreach (UpdateBuildVersion script in scripts)
+			{
+				UpdateBuildVersionEditor.UpdateBuildVersionTextSiblingOf(script);
+			}
+		}
+
+		// Extracted from EirikWeave's SetNewVersion below to be reusable by other scripts
+		public static string[] GetBuildProfileGUIDs()
+		{
+			var buildProfiles = AssetDatabase.FindAssets(
+				"t:BuildProfile",
+				new[] { BuildProfilesFolder });
+			return buildProfiles;
+		}
+
+		// Method by EirikWeave posted on https://discussions.unity.com/t/new-build-profiles-is-an-embarrassment/937021/52
+		// MODIFICATIONS by hsandt:
+		// 1. if no `bundleVersion` line is found, continue to next build profile:
+		//    this is normal for profiles that don't override Player Settings
+		// 2. refresh assets after writing new lines to profile file, so we immediately see the changes
+		//    if Build profile window is opened
+		// 3. removed dialog box at the end. Instead, (a) debug log changing version in base Player Settings,
+		//    and (b) improve debug log text for each build profile Player Settings Overrides
+		private static void SetNewVersion(string inputText)
+		{
+			PlayerSettings.bundleVersion = inputText;
+			// Save project:
+			AssetDatabase.SaveAssets();
+			// MODIFICATION 3a
+			Debug.Log($"Updated base Player Settings with new version number {inputText}");
+
+			// There is no API for changing build profile settings, without switching to each and every build profile
+			// first, which requires recompilation in Unity. So we manipulate the text files instead:
+			var buildProfiles = GetBuildProfileGUIDs();
+
+			if (buildProfiles.Length == 0)
+				throw new Exception($"No build profiles found in folder {BuildProfilesFolder}");
+
+			foreach (var buildProfileGuid in buildProfiles)
+			{
+				var buildProfilePath = AssetDatabase.GUIDToAssetPath(buildProfileGuid);
+
+				// Load as text, overwrite the line with version number, and save back to disk:
+				var lines = File.ReadAllLines(buildProfilePath);
+
+				var foundVersionLine = false;
+				for (var i = 0; i < lines.Length; i++)
+					if (lines[i].Contains("    - line: '|   bundleVersion: ", StringComparison.Ordinal))
+					{
+						lines[i] = $"    - line: '|   bundleVersion: {inputText}'";
+						foundVersionLine = true;
+						break;
+					}
+
+				if (!foundVersionLine)
+					// MODIFICATION 1
+					continue;
+
+				// Save back to disk:
+				File.WriteAllLines(buildProfilePath, lines);
+				// MODIFICATION 2
+				AssetDatabase.Refresh();
+				// MODIFICATION 3b
+				Debug.Log($"Updated build profile '{buildProfilePath}' Player Settings Overrides with new version number {inputText}");
+			}
+		}
+
 		private void OpenBuildFolder()
 		{
 			// Application.dataPath ends with Assets/ so we need to go one directory up to get the project root
 			string projectRootPath = Path.GetDirectoryName(Application.dataPath);
+			if (projectRootPath == null)
+			{
+				return;
+			}
+
 			string buildFolderFullPath = Path.Combine(projectRootPath, "Build");
 
 			// Create directory if needed
@@ -52,5 +154,4 @@ namespace HyperUnityCommons.Editor
 			EditorUtility.OpenWithDefaultApp(buildFolderFullPath);
 		}
 	}
-
 }

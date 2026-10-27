@@ -23,9 +23,9 @@
             "define": "UNITY_EXTENSIONS_INSPECT_IN_LINE"
         },
         {
-            "name": "nl.elraccoone.tweens",
-            "expression": "1.6",
-            "define": "NL_ELRACCOONE_TWEENS"
+            "name": "nl.jeffreylanters.tweens",
+            "expression": "3.4",
+            "define": "NL_JEFFREYLANTERS_TWEENS"
         },
         {
             "name": "com.eflatun.scenereference",

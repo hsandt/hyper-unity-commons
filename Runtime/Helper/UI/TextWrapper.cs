@@ -6,8 +6,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-#if NL_ELRACCOONE_TWEENS
-using ElRaccoone.Tweens;
+#if NL_JEFFREYLANTERS_TWEENS
+using Tweens;
 #endif
 
 namespace HyperUnityCommons
@@ -100,25 +100,61 @@ namespace HyperUnityCommons
             }
         }
 
-        #if NL_ELRACCOONE_TWEENS
+        #if NL_JEFFREYLANTERS_TWEENS
         public async Task FadeOutAsync(float duration)
         {
-            List<Task> tasks = new();
+            // Prepare list of awaitables, setting capacity to expected count which is easy to predict
+
+            int awaitablesCount = 0;
+            if (coreLabel != null)
+            {
+                ++awaitablesCount;
+            }
+            if (coreTMPLabel != null)
+            {
+                ++awaitablesCount;
+            }
+            awaitablesCount += outlineLabels.Length;
+            awaitablesCount += outlineTMPLabels.Length;
+
+            List<Awaitable> awaitables = new(awaitablesCount);
 
             if (coreLabel != null)
             {
-                tasks.Add(coreLabel.TweenGraphicAlpha(0f, duration).Await());
+                var tween = new GraphicAlphaTween
+                {
+                    to = 0f,
+                    duration = duration,
+                };
+                awaitables.Add(coreLabel.gameObject.AddTween(tween).AwaitDecommissionAsync());
             }
 
             if (coreTMPLabel != null)
             {
-                tasks.Add(coreTMPLabel.TweenGraphicAlpha(0f, duration).Await());
+                var tween = new GraphicAlphaTween
+                {
+                    to = 0f,
+                    duration = duration,
+                };
+                awaitables.Add(coreTMPLabel.gameObject.AddTween(tween).AwaitDecommissionAsync());
             }
 
-            tasks.AddRange(outlineLabels.Select(outlineLabel => outlineLabel.TweenGraphicAlpha(0f, duration).Await()));
-            tasks.AddRange(outlineTMPLabels.Select(outlineTMPLabel => outlineTMPLabel.TweenGraphicAlpha(0f, duration).Await()));
+            var outlineLabelTween = new GraphicAlphaTween
+            {
+                to = 0f,
+                duration = duration,
+            };
 
-            await Task.WhenAll(tasks);
+            var outlineTMPLabelTween = new GraphicAlphaTween
+            {
+                to = 0f,
+                duration = duration,
+            };
+
+            awaitables.AddRange(outlineLabels.Select(outlineLabel => outlineLabel.gameObject.AddTween(outlineLabelTween).AwaitDecommissionAsync()));
+            awaitables.AddRange(outlineTMPLabels.Select(outlineTMPLabel => outlineTMPLabel.gameObject.AddTween(outlineTMPLabelTween).AwaitDecommissionAsync()));
+
+            await awaitables.WhenAll();
         }
         #endif
     }

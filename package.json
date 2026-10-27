@@ -5,7 +5,10 @@
   "description": "A collection of utility scripts for Unity",
   "unity": "2021.2",
   "unityRelease": "12f1",
-  "dependencies": {},
+  "dependencies": {
+    "com.unity.inputsystem": "1.19.0"
+  },
+  "resolutionStrategy": "highestMinor",
   "keywords": [
     "utility"
   ],

@@ -34,7 +34,7 @@ namespace HyperUnityCommons
 				// esp. as differences between dimensions are already pretty big)
 				float resolutionDistance = Mathf.Pow(referenceResolution.width - resolution.width, 2f) +
 					Mathf.Pow(referenceResolution.height - resolution.height, 2f) +
-					Mathf.Abs(referenceResolution.refreshRate - resolution.refreshRate) / 200f;
+					Mathf.Abs((float)referenceResolution.refreshRateRatio.value - (float)resolution.refreshRateRatio.value) / 200f;
 
 				// Look for the closest match in the available resolutions. Focus on dimensions first.
 				if (resolutionDistance == 0f)
@@ -58,7 +58,7 @@ namespace HyperUnityCommons
             if (!string.IsNullOrWhiteSpace(overrideStringFormat))
             {
 	            return string.Format(overrideStringFormat,
-		            representedValue.width, representedValue.height, representedValue.refreshRate);
+		            representedValue.width, representedValue.height, representedValue.refreshRateRatio);
             }
             else
             {
@@ -101,7 +101,7 @@ namespace HyperUnityCommons
 	        {
 		        width = Screen.width,
 		        height = Screen.height,
-		        refreshRate = Screen.currentResolution.refreshRate
+		        refreshRateRatio = Screen.currentResolution.refreshRateRatio
 	        };
         }
 
@@ -112,7 +112,7 @@ namespace HyperUnityCommons
 	        #endif
 
 	        // Preserve FullScreen Mode (set via another setting), and set the other 3 settings from Resolution fields
-	        Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreenMode, resolution.refreshRate);
+	        Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreenMode, resolution.refreshRateRatio);
         }
 	}
 }

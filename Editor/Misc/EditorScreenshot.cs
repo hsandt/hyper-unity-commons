@@ -5,6 +5,7 @@
 // see comments above each
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -32,6 +33,21 @@ namespace HyperUnityCommons.Editor
 			"solid color as background")]
 		public bool renderTransparent = false;
 
+		/// Path to convert image bash script, used to Convert PNG to WEBP button
+		/// On Linux, it must a full path, unless it is placed directly in some system PATH like /usr/bin,
+		/// since C# Process cannot use the user PATH in this context.
+		/// You can find an example of working script `convert_image.sh` on this gist:
+		/// https://gist.github.com/hsandt/d922a14e1f8b10faa1dee2a05894729a
+		private string convertImageScriptPath = "convert_image.sh";
+
+		public static string ScreenshotFolderPathKey => $"EditorScreenshot.{Application.productName}.{nameof(screenshotFolderPath)}";
+		public static string ScreenshotFilenamePrefixKey => $"EditorScreenshot.{Application.productName}.{nameof(screenshotFilenamePrefix)}";
+		public static string NextScreenshotIndexKey => $"EditorScreenshot.{Application.productName}.{nameof(nextScreenshotIndex)}";
+		public static string RenderWidthKey => $"EditorScreenshot.{Application.productName}.{nameof(renderWidth)}";
+		public static string RenderHeightKey => $"EditorScreenshot.{Application.productName}.{nameof(renderHeight)}";
+		public static string RenderTransparentKey => $"EditorScreenshot.{Application.productName}.{nameof(renderTransparent)}";
+		public static string ConvertImageScriptPathKey => $"EditorScreenshot.{Application.productName}.{nameof(convertImageScriptPath)}";
+
 
 		[MenuItem("Window/Hyper Unity Commons/Editor Screenshot")]
 		private static void Init()
@@ -49,48 +65,62 @@ namespace HyperUnityCommons.Editor
 		{
 			EditorScreenshot editorScreenshot = GetWindow<EditorScreenshot>(title: "Screenshot");
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.screenshotFolderPath"))
+			// minor optimization: interpolate keys once
+			string screenshotFolderPathKey = ScreenshotFolderPathKey;
+			string nextScreenshotIndexKey = NextScreenshotIndexKey;
+			string renderWidthKey = RenderWidthKey;
+			string renderHeightKey = RenderHeightKey;
+			string renderTransparentKey = RenderTransparentKey;
+			string convertImageScriptPathKey = ConvertImageScriptPathKey;
+
+			if (EditorPrefs.HasKey(screenshotFolderPathKey))
 			{
-				editorScreenshot.screenshotFolderPath = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath");
+				editorScreenshot.screenshotFolderPath = EditorPrefs.GetString(screenshotFolderPathKey);
 			}
 
 			// if empty, revert to default
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFolderPath))
 			{
 				editorScreenshot.screenshotFolderPath = defaultScreenshotFolderPath;
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath", defaultScreenshotFolderPath);
+				EditorPrefs.SetString(screenshotFolderPathKey, defaultScreenshotFolderPath);
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix"))
+			string screenshotFilenamePrefixKey = ScreenshotFilenamePrefixKey;
+			if (EditorPrefs.HasKey(screenshotFilenamePrefixKey))
 			{
-				editorScreenshot.screenshotFilenamePrefix = EditorPrefs.GetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix");
+				editorScreenshot.screenshotFilenamePrefix = EditorPrefs.GetString(screenshotFilenamePrefixKey);
 			}
 
 			// if empty, revert to default
 			if (string.IsNullOrWhiteSpace(editorScreenshot.screenshotFilenamePrefix))
 			{
 				editorScreenshot.screenshotFilenamePrefix = defaultScreenshotFilenamePrefix;
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", defaultScreenshotFilenamePrefix);
+				EditorPrefs.SetString(screenshotFilenamePrefixKey, defaultScreenshotFilenamePrefix);
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.nextScreenshotIndex"))
+			if (EditorPrefs.HasKey(nextScreenshotIndexKey))
 			{
-				editorScreenshot.nextScreenshotIndex = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex");
+				editorScreenshot.nextScreenshotIndex = EditorPrefs.GetInt(nextScreenshotIndexKey);
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.renderWidth"))
+			if (EditorPrefs.HasKey(renderWidthKey))
 			{
-				editorScreenshot.renderWidth = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.renderWidth");
+				editorScreenshot.renderWidth = EditorPrefs.GetInt(renderWidthKey);
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.renderHeight"))
+			if (EditorPrefs.HasKey(renderHeightKey))
 			{
-				editorScreenshot.renderHeight = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.renderHeight");
+				editorScreenshot.renderHeight = EditorPrefs.GetInt(renderHeightKey);
 			}
 
-			if (EditorPrefs.HasKey($"EditorScreenshot.{Application.productName}.renderTransparent"))
+			if (EditorPrefs.HasKey(renderTransparentKey))
 			{
-				editorScreenshot.renderTransparent = EditorPrefs.GetInt($"EditorScreenshot.{Application.productName}.renderTransparent") > 0;
+				editorScreenshot.renderTransparent = EditorPrefs.GetInt(renderTransparentKey) > 0;
+			}
+
+			if (EditorPrefs.HasKey(convertImageScriptPathKey))
+			{
+				editorScreenshot.convertImageScriptPath = EditorPrefs.GetString(convertImageScriptPathKey);
 			}
 
 			// if one dimension is 0, revert to default
@@ -98,9 +128,8 @@ namespace HyperUnityCommons.Editor
 			{
 				editorScreenshot.renderWidth = defaultRenderWidth;
 				editorScreenshot.renderHeight = defaultRenderHeight;
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.renderWidth", defaultRenderWidth);
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.renderHeight", defaultRenderHeight);
-
+				EditorPrefs.SetInt(renderWidthKey, defaultRenderWidth);
+				EditorPrefs.SetInt(renderHeightKey, defaultRenderHeight);
 			}
 
 			return editorScreenshot;
@@ -119,18 +148,49 @@ namespace HyperUnityCommons.Editor
 			renderTransparent = EditorGUILayout.Toggle("Render transparent", renderTransparent);
 
 			if (EditorGUI.EndChangeCheck()) {
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFolderPath", screenshotFolderPath);
-				EditorPrefs.SetString($"EditorScreenshot.{Application.productName}.screenshotFilenamePrefix", screenshotFilenamePrefix);
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.renderWidth", renderWidth);
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.renderHeight", renderHeight);
-				EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.renderTransparent", renderTransparent ? 1 : 0);
+				EditorPrefs.SetString(ScreenshotFolderPathKey, screenshotFolderPath);
+				EditorPrefs.SetString(ScreenshotFilenamePrefixKey, screenshotFilenamePrefix);
+				EditorPrefs.SetInt(NextScreenshotIndexKey, nextScreenshotIndex);
+				EditorPrefs.SetInt(RenderWidthKey, renderWidth);
+				EditorPrefs.SetInt(RenderHeightKey, renderHeight);
+				EditorPrefs.SetInt(RenderTransparentKey, renderTransparent ? 1 : 0);
 			}
+
+			EditorGUILayout.BeginHorizontal();
+
+			EditorGUI.BeginChangeCheck();
+
+			convertImageScriptPath = EditorGUILayout.TextField("Convert Image script path", convertImageScriptPath);
+
+			if (EditorGUI.EndChangeCheck()) {
+				EditorPrefs.SetString(ConvertImageScriptPathKey, convertImageScriptPath);
+			}
+
+			if (GUILayout.Button("Select", GUILayout.Width(65)))
+			{
+				DirectoryInfo parentInfo = Directory.GetParent(convertImageScriptPath);
+				string startDirectory = parentInfo != null && parentInfo.Exists ? parentInfo.FullName : ".";
+				string path = EditorUtility.OpenFilePanel("Select Convert Image script", startDirectory, "sh");
+				if (!string.IsNullOrEmpty(path))
+				{
+					convertImageScriptPath = path;
+					// since we're not modifying a serialized property, the field just above won't be automatically updated
+					// and EndChangeCheck block won't be entered, so we need to manually set editor pref, as well as repaint
+					// the control
+					EditorPrefs.SetString(ConvertImageScriptPathKey, convertImageScriptPath);
+					// if text field was selected focused, it won't refresh until user deselects field, so to be safe deselect any controls
+					GUI.FocusControl(null);
+					Repaint();
+				}
+			}
+
+			EditorGUILayout.EndHorizontal();
 
 			if (GUILayout.Button("Take standard screenshot")) TakeStandardScreenshot();
 			if (GUILayout.Button("Take render screenshot")) TakeRenderScreenshot();
 			if (GUILayout.Button("Take transparent screenshot via RGBA32")) TakeSimpleTransparentScreenshot();
 			if (GUILayout.Button("Take transparent screenshot via black/white comparison")) TakeAdvancedTransparentScreenshot();
+			if (GUILayout.Button("Convert PNG to WEBP and delete PNG")) ConvertPngToWebpAndDeletePng();
 			if (GUILayout.Button("Open Screenshots folder")) OpenScreenshotsFolder();
 		}
 
@@ -430,11 +490,30 @@ namespace HyperUnityCommons.Editor
 			EditorPrefs.SetInt($"EditorScreenshot.{Application.productName}.nextScreenshotIndex", nextScreenshotIndex);
 		}
 
+		private void ConvertPngToWebpAndDeletePng()
+		{
+			string screenshotFolderFullPath = GetScreenshotFolderFullPath();
+			bool success = EditorRunCommand.RunCommand($"\"{convertImageScriptPath}\" png webp", screenshotFolderFullPath);
+
+			if (!success)
+			{
+				Debug.LogError($"Convert Image script failed, STOP. Do not delete original .png files.");
+				return;
+			}
+
+			IEnumerable<string> filePaths = Directory.EnumerateFiles(screenshotFolderFullPath, "*.png");
+			foreach (string filePath in filePaths)
+			{
+				File.Delete(filePath);
+			}
+
+			Debug.Log($"Deleted all .png in {screenshotFolderFullPath}");
+		}
+
 		private void OpenScreenshotsFolder()
 		{
 			// Application.dataPath ends with Assets/ so we need to go one directory up to get the project root
-			string projectRootPath = Path.GetDirectoryName(Application.dataPath);
-			string screenshotFolderFullPath = Path.Combine(projectRootPath, screenshotFolderPath);
+			var screenshotFolderFullPath = GetScreenshotFolderFullPath();
 
 			// Create directory if needed
 			if (!Directory.Exists(screenshotFolderFullPath))
@@ -445,6 +524,13 @@ namespace HyperUnityCommons.Editor
 			// Open Screenshots folder
 			// https://forum.unity.com/threads/editorutility-revealinfinder-inconsistency.383939/#post-8431145
 			EditorUtility.OpenWithDefaultApp(screenshotFolderFullPath);
+		}
+
+		private string GetScreenshotFolderFullPath()
+		{
+			string projectRootPath = Path.GetDirectoryName(Application.dataPath);
+			string screenshotFolderFullPath = Path.Combine(projectRootPath, screenshotFolderPath);
+			return screenshotFolderFullPath;
 		}
 	}
 }

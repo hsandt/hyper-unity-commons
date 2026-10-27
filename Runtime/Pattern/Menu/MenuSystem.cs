@@ -2,12 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
-
-#if UNITY_EXTENSIONS_INSPECT_IN_LINE
-using UnityExtensions;
-#endif
 
 namespace HyperUnityCommons
 {
@@ -20,9 +15,6 @@ namespace HyperUnityCommons
         [Header("Parameter assets")]
 
         [Tooltip("Menu System Parameters asset")]
-        #if UNITY_EXTENSIONS_INSPECT_IN_LINE
-        [InspectInline(canEditRemoteTarget = true)]
-        #endif
         public MenuSystemParameters menuSystemParameters;
 
 
@@ -239,19 +231,22 @@ namespace HyperUnityCommons
 
         private void MoveAnySelectorToSelectable(Transform menuSelectableTransform)
         {
-            if (menuSelectableTransform is RectTransform menuSelectableRectTransform)
+            if (selectorRectTransform != null)
             {
-                // We don't do anything special with the fact it's a RectTransform for now, but may be useful
-                // if we switch from parenting to setting canvas global position of selector directly with coordinate
-                // conversion
-                selectorRectTransform.SetParent(menuSelectableRectTransform, false);
-            }
-            else
-            {
-                Debug.LogErrorFormat(menuSelectableTransform,
-                    "[MenuSystem] MoveAnySelectorToSelectable: menuSelectableTransform ({0}) is not " +
-                    "a RectTransform",
-                    menuSelectableTransform);
+                if (menuSelectableTransform is RectTransform menuSelectableRectTransform)
+                {
+                    // We don't do anything special with the fact it's a RectTransform for now, but may be useful
+                    // if we switch from parenting to setting canvas global position of selector directly with coordinate
+                    // conversion
+                    selectorRectTransform.SetParent(menuSelectableRectTransform, false);
+                }
+                else
+                {
+                    Debug.LogErrorFormat(menuSelectableTransform,
+                        "[MenuSystem] MoveAnySelectorToSelectable: menuSelectableTransform ({0}) is not " +
+                        "a RectTransform",
+                        menuSelectableTransform);
+                }
             }
         }
 

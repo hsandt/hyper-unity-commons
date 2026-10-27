@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 using HyperUnityCommons;
-#if NL_ELRACCOONE_TWEENS
-using ElRaccoone.Tweens;
+#if NL_JEFFREYLANTERS_TWEENS
+using Tweens;
 #endif
 #if COM_E7_INTROLOOP
 using E7.Introloop;
@@ -15,10 +15,11 @@ using E7.Introloop;
 /// Music Manager
 /// Good to play simple looping BGM
 /// Also used to play non-looping stingers, on a different source
-/// If you have installed nl.elraccoone.tweens, Hyper Unity Commons Runtime assembly definition should define
-/// NL_ELRACCOONE_TWEENS and you will unlock FadeOutBgmAsync.
+/// If you have installed nl.jeffreylanters.tweens, Hyper Unity Commons Runtime assembly definition should define
+/// NL_JEFFREYLANTERS_TWEENS and you will unlock FadeOutBgmAsync.
 /// If you have installed Introloop, Hyper Unity Commons Runtime assembly definition should define COM_E7_INTROLOOP
-/// and you will unlock Introloop-specific API (and you don't need nl.elraccoone.tweens to fade out Introloop BGM).
+/// and you will unlock Introloop-specific API (and you don't need nl.jeffreylanters.tweens to fade out Introloop BGM).
+/// To use FadeOutAnyBgmAsync you need at least one of the two packages, nl.jeffreylanters.tweens or Introloop.
 /// We recommend to use the MusicManager_Base prefab provided in Commons Pattern/Audio, which has a child with
 /// an audio source set as bgmAudioSource.
 /// Then, if you need to customize things further (e.g. set Audio Source Output Mixer to game-specific BGM channel),
@@ -66,10 +67,6 @@ public class MusicManager : SingletonManager<MusicManager>
         DebugUtil.AssertFormat(bgmAudioSource.loop,
             "[MusicManager] bgmAudioSource is not set to loop. BGM will still be played once, and natural end " +
             "of track will be detected, but this is probably a misconfiguration. Use Stinger for this instead.");
-
-        #if COM_E7_INTROLOOP
-        DebugUtil.Assert(introloopPlayer != null, "[MusicManager] introloopPlayer not set on Music Manager", this);
-        #endif
     }
 
 
@@ -135,7 +132,7 @@ public class MusicManager : SingletonManager<MusicManager>
         bgmAudioSource.clip = null;
     }
 
-    #if NL_ELRACCOONE_TWEENS
+    #if NL_JEFFREYLANTERS_TWEENS
     /// Fade out current native BGM over [duration] seconds and wait for fading to end
     public IEnumerator FadeOutBgmCoroutine(float duration)
     {
@@ -146,7 +143,12 @@ public class MusicManager : SingletonManager<MusicManager>
         // Note that while this is linear as we want, this clamps updates to the framerate
         // For a smoother update, consider updating the BGM AudioMixer volume instead (using log conversion)
         // See https://johnleonardfrench.com/how-to-fade-audio-in-unity-i-tested-every-method-this-ones-the-best/
-        yield return bgmAudioSource.TweenAudioSourceVolume(0f, duration).Yield();
+        var tween = new AudioSourceVolumeTween
+        {
+            to = 0f,
+            duration = duration,
+        };
+        yield return bgmAudioSource.gameObject.AddTween(tween).AwaitDecommission();
 
         // To clean up, stop BGM properly then restore old volume so BGM source is ready for next play
         bgmAudioSource.Stop();
@@ -162,7 +164,12 @@ public class MusicManager : SingletonManager<MusicManager>
         // Same implementation as FadeOutBgmCoroutine, except using await
         float oldVolume = bgmAudioSource.volume;
 
-        await bgmAudioSource.TweenAudioSourceVolume(0f, duration).Await();
+        var tween = new AudioSourceVolumeTween
+        {
+            to = 0f,
+            duration = duration,
+        };
+        await bgmAudioSource.gameObject.AddTween(tween).AwaitDecommissionAsync();
 
         bgmAudioSource.Stop();
         bgmAudioSource.volume = oldVolume;
@@ -266,20 +273,39 @@ public class MusicManager : SingletonManager<MusicManager>
     #region AnyBgm
 
     /// Play BGM wrapper and return true if any, else do nothing return false
-    public bool PlayBgmWrapperIfAny(AudioAssetWrapper bgmWrapper)
+    /// Introloop only: fade to next BGM over [introloopFadeLengthSeconds] seconds
+    public bool PlayBgmWrapperIfAny(AudioAssetWrapper bgmWrapper, float introloopFadeLengthSeconds = 0)
     {
         if (bgmWrapper != null)
         {
             #if COM_E7_INTROLOOP
             if (bgmWrapper.introloopAudio != null)
             {
-                PlayIntroloopBgm(bgmWrapper.introloopAudio);
-                return true;
+                if (introloopPlayer != null)
+                {
+                    PlayIntroloopBgm(bgmWrapper.introloopAudio, introloopFadeLengthSeconds);
+                    return true;
+                }
+                else
+                {
+                    DebugUtil.LogWarningFormat(this, "[MusicManager] PlayBgmWrapperIfAny: passed bgmWrapper has an introloopAudio ({0}), " +
+                        "but there is no introloopPlayer set on the MusicManager. BGM will still be played, but natively (ignoring fading).",
+                        bgmWrapper.introloopAudio);
+                }
             }
             #endif
 
             if (bgmWrapper.nativeAudioClip != null)
             {
+                #if UNITY_EDITOR || DEVELOPMENT_BUILD
+                if (introloopFadeLengthSeconds > 0)
+                {
+                    DebugUtil.LogWarningFormat(this, "[MusicManager] PlayBgmWrapperIfAny: passed introloopFadeLengthSeconds is positive ({0}), " +
+                        "but it is not supported when using native audio. BGM will still be played, but without fading.",
+                        introloopFadeLengthSeconds);
+                }
+                #endif
+
                 PlayBgm(bgmWrapper.nativeAudioClip);
                 return true;
             }
@@ -289,9 +315,10 @@ public class MusicManager : SingletonManager<MusicManager>
     }
 
     /// Play BGM wrapper
-    public void PlayBgmWrapper(AudioAssetWrapper bgmWrapper)
+    /// Introloop only: fade to next BGM over [introloopFadeLengthSeconds] seconds
+    public void PlayBgmWrapper(AudioAssetWrapper bgmWrapper, float introloopFadeLengthSeconds = 0)
     {
-        bool success = PlayBgmWrapperIfAny(bgmWrapper);
+        bool success = PlayBgmWrapperIfAny(bgmWrapper, introloopFadeLengthSeconds);
         DebugUtil.AssertFormat(success, "[MusicManager] PlayBgmWrapper: bgmWrapper is null, could not play");
     }
 
@@ -353,6 +380,7 @@ public class MusicManager : SingletonManager<MusicManager>
         }
     }
 
+    #if COM_E7_INTROLOOP || NL_JEFFREYLANTERS_TWEENS
     /// Fade out current BGM of any type over [duration] seconds
     public async void FadeOutAnyBgm(float duration)
     {
@@ -373,11 +401,14 @@ public class MusicManager : SingletonManager<MusicManager>
         }
         #endif
 
+        #if NL_JEFFREYLANTERS_TWEENS
         if (bgmAudioSource.isPlaying)
         {
             await FadeOutBgmAsync(duration);
         }
+        #endif
     }
+    #endif
 
     #endregion
 

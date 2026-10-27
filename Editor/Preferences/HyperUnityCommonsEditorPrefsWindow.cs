@@ -8,17 +8,10 @@ namespace HyperUnityCommons.Editor
 {
     public class HyperUnityCommonsEditorPrefsWindow : EditorWindow
     {
-        /* Editor pref parameters */
-
-        public const string EDITOR_PREFS_NAMESPACE = "HyperUnityCommons.EditorPrefsWindow";
-
-        public static readonly string RemoveUnloadedScenesDuringPlayKey =
-            $"{EDITOR_PREFS_NAMESPACE}.RemoveUnloadedScenesDuringPlay";
-
-
         /* Queried elements */
 
         private Toggle m_RemoveUnloadedScenesDuringPlayToggle;
+        private Toggle m_SimulateReleaseBuildToggle;
 
 
         [MenuItem("Window/Hyper Unity Commons/Editor Prefs Window")]
@@ -45,24 +38,18 @@ namespace HyperUnityCommons.Editor
             Debug.AssertFormat(m_RemoveUnloadedScenesDuringPlayToggle != null, visualTree,
                 "[HyperUnityCommonsEditorPrefsWindow] No Toggle 'RemoveUnloadedScenesDuringPlayToggle' found on Hyper Unity Commons Prefs Window UXML");
 
+            m_SimulateReleaseBuildToggle = root.Q<Toggle>("SimulateReleaseBuildToggle");
+            Debug.AssertFormat(m_SimulateReleaseBuildToggle != null, visualTree,
+                "[HyperUnityCommonsEditorPrefsWindow] No Toggle 'SimulateReleaseBuildToggle' found on Hyper Unity Commons Prefs Window UXML");
+
             // Initialise toggles and bind callbacks
-            m_RemoveUnloadedScenesDuringPlayToggle.SetValueWithoutNotify(GetRemoveUnloadedScenesDuringPlayKeyPref());
-            m_RemoveUnloadedScenesDuringPlayToggle.RegisterValueChangedCallback(OnRemoveUnloadedScenesDuringPlayChangedEvent);
-        }
+            m_RemoveUnloadedScenesDuringPlayToggle.SetValueWithoutNotify(HyperPrefs.GetRemoveUnloadedScenesDuringPlayPref());
+            m_RemoveUnloadedScenesDuringPlayToggle.RegisterValueChangedCallback(
+                changeEvent => HyperPrefs.SetRemoveUnloadedScenesDuringPlayPref(changeEvent.newValue));
 
-        private void OnRemoveUnloadedScenesDuringPlayChangedEvent(ChangeEvent<bool> changeEvent)
-        {
-            SetRemoveUnloadedScenesDuringPlayKeyPref(changeEvent.newValue);
-        }
-
-        public static bool GetRemoveUnloadedScenesDuringPlayKeyPref()
-        {
-            return EditorPrefs.GetBool(RemoveUnloadedScenesDuringPlayKey);
-        }
-
-        public static void SetRemoveUnloadedScenesDuringPlayKeyPref(bool value)
-        {
-            EditorPrefs.SetBool(RemoveUnloadedScenesDuringPlayKey, value);
+            m_SimulateReleaseBuildToggle.SetValueWithoutNotify(HyperPrefs.GetSimulateReleaseBuildPref());
+            m_SimulateReleaseBuildToggle.RegisterValueChangedCallback(
+                changeEvent => HyperPrefs.SetSimulateReleaseBuildPref(changeEvent.newValue));
         }
     }
 }

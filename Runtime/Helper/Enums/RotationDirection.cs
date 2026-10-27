@@ -1,10 +1,8 @@
 namespace HyperUnityCommons
 {
-
-	﻿public enum RotationDirection {
+	public enum RotationDirection {
 		CW,
 	    CCW
 	}
-
 }
 
