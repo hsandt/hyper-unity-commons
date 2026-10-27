@@ -18,23 +18,18 @@
     "defineConstraints": [],
     "versionDefines": [
         {
-            "name": "garettbass.unity-extensions.inspect-in-line",
-            "expression": "0.2",
-            "define": "UNITY_EXTENSIONS_INSPECT_IN_LINE"
-        },
-        {
             "name": "nl.jeffreylanters.tweens",
-            "expression": "3.4",
+            "expression": "[3.4,4.0)",
             "define": "NL_JEFFREYLANTERS_TWEENS"
         },
         {
             "name": "com.eflatun.scenereference",
-            "expression": "1.2.2",
+            "expression": "[4.1,5.0)",
             "define": "COM_EFLATUN_SCENEREFERENCE"
         },
         {
             "name": "com.e7.introloop",
-            "expression": "6",
+            "expression": "[6.0,7.0)",
             "define": "COM_E7_INTROLOOP"
         }
     ],
