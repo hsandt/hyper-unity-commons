@@ -15,8 +15,7 @@ Improvement suggestions are welcome. I don't take pull requests at the moment, b
 
 ## Dependencies
 
-- Unity.TextMeshPro (installed by default)
-- Unity.InputSystem (requires manual installation)
+- Unity.InputSystem (installed by default since Unity 6)
 
 ## Optional assemblies and Scripting Define Symbols
 
@@ -26,7 +25,6 @@ In most cases, the Define Constraints are defined automatically using Version De
 
 The following free 3rd party packages are optional:
 
-- [UnityExtensions.InspectInline (d4160's fork)](https://github.com/d4160/UnityExtensions.InspectInline) (available on [openupm](https://openupm.com/packages/garettbass.unity-extensions.inspect-in-line/); if present, UNITY_EXTENSIONS_INSPECT_IN_LINE is defined)
 - [nl.jeffreylanters.tweens](https://github.com/jeffreylanters/unity-tweens) (available on [openupm](https://openupm.com/packages/nl.jeffreylanters.tweens/); if present, NL_JEFFREYLANTERS_TWEENS is defined)
 - [com.eflatun.scenereference](https://github.com/starikcetin/Eflatun.SceneReference) (available on [openupm](https://openupm.com/packages/com.eflatun.scenereference/); if present, COM_EFLATUN_SCENEREFERENCE is defined)
 
