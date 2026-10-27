@@ -13,6 +13,10 @@ b. download and adapt individual scripts as needed (just copy the MIT LICENSE al
 
 Improvement suggestions are welcome. I don't take pull requests at the moment, but you can reach me at hs@gamedesignshortcut.com.
 
+## Supported Unity versions
+
+- Unity 6000.4
+
 ## Dependencies
 
 - Unity.InputSystem (installed by default since Unity 6)
